@@ -5,12 +5,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --glow-text: rgba(243, 235, 0, 0.7); /* Mengurangi opacity dari orange */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #17082f;
     --foreground: #ededed;
+    --glow-text: rgba(246, 176, 13, 0.7); /* Lebih redup di dark mode */
   }
 }
 
@@ -18,4 +20,60 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes star {
+  0% {
+    transform: translateX(-100px) translateY(100px) rotate(-45deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5; /* Mengurangi opacity maksimum */
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(200px) translateY(-200px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-star {
+    opacity: 0;
+    animation: none;
+  }
+
+  /* Glow effect yang lebih halus */
+  .text-glow {
+    text-shadow: 0 0 3px var(--glow-text),
+                 0 0 8px var(--glow-text),
+                 0 0 15px var(--glow-text);
+  }
+  
+  .text-glow-sm {
+    text-shadow: 0 0 2px var(--glow-text),
+                 0 0 4px var(--glow-text),
+                 0 0 6px var(--glow-text);
+  }
+  
+  .text-glow-lg {
+    text-shadow: 0 0 5px var(--glow-text),
+                 0 0 20px var(--glow-text),
+                 0 0 25px var(--glow-text);
+  }
+
+  .animate-star.start-animation {
+    animation: star 6s linear infinite;
+  }
+}
+
+@layer base {
+  :root {
+    --background: #0a0a0a;
+    --glow-outer: rgba(2, 50, 126, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+  }
 }
