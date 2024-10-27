@@ -90,13 +90,13 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         </div>
 
         {}
-        <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg bg-black">
+        <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg bg-black ">
           <Image
             src={src}
             alt="Profile Picture"
-            width={220}
-            height={220}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            width={200}
+            height={200}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 "
             priority
           />
 
@@ -117,7 +117,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
               x: ["-100%", "200%"],
             }}
             transition={{
-              duration: 1.5,
+              duration: 3,
               repeat: Infinity,
               ease: "linear",
               repeatType: "loop",
@@ -126,7 +126,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
           {}
           <motion.div
-            className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100 "
             initial={false}
           />
 
@@ -139,7 +139,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
               transition: {
                 duration: 0.6,
                 ease: "easeInOut",
-                times: [0, 0.3, 0.6, 1]
+                times: [0, 0.3, 0.6, 3]
               }
             }}
           />
