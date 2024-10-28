@@ -7,6 +7,14 @@ import MovingStars from "@/components/ui/Movingstars";
 import TypeWriter from "./components/TypeWritter";
 import { useAstronautSize } from "@/hooks/useMediaQuery";
 import ProfilePicture from "@/components/common/ProfilePicture";
+import {
+  heroLeftContentVariants,
+  heroRightContentVariants,
+  heroChildVariants,
+  astronautFloatVariants,
+  scrollIndicatorVariants,
+  scrollArrowVariants
+} from "@/lib/animations";
 
 const Hero: React.FC = () => {
   const words = ["Web Developer", "UI/UX Designer", "Full Stack Developer"];
@@ -27,8 +35,9 @@ const Hero: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:items-center">
           {/* Left Column - Text Content */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={heroLeftContentVariants}
+            initial="hidden"
+            animate="visible"
             className="relative z-10 lg:col-span-7 xl:col-span-6"
           >
             <div className="md:flex md:items-center">
@@ -52,9 +61,12 @@ const Hero: React.FC = () => {
 
               <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
                 {/* Welcome Text - Mobile & Tablet */}
-                <div className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4">
+                <motion.div 
+                  variants={heroChildVariants}
+                  className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4"
+                >
                   Welcome to my Portfolio
-                </div>
+                </motion.div>
 
                 {/* Desktop Layout */}
                 <div className="hidden lg:block lg:-mt-10">
@@ -65,12 +77,18 @@ const Hero: React.FC = () => {
                       fromLeft={true}
                     />
                   </div>
-                  <div className="bg-purple-800/20 text-white px-6 py-2.5 rounded-lg inline-block mb-4 backdrop-blur-sm text-lg">
+                  <motion.div 
+                    variants={heroChildVariants}
+                    className="bg-purple-800/20 text-white px-6 py-2.5 rounded-lg inline-block mb-4 backdrop-blur-sm text-lg"
+                  >
                     Welcome to my Portfolio
-                  </div>
+                  </motion.div>
                 </div>
 
-                <h1 className="font-bold text-white mb-3">
+                <motion.h1 
+                  variants={heroChildVariants}
+                  className="font-bold text-white mb-3"
+                >
                   <div className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl mb-2">
                     Hi! I'm{" "}
                     <span className="text-yellow-400 text-glow">
@@ -80,15 +98,21 @@ const Hero: React.FC = () => {
                   <div className="min-h-[40px] sm:min-h-[45px] lg:min-h-[60px] overflow-visible text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
                     I'm a <TypeWriter words={words} />
                   </div>
-                </h1>
+                </motion.h1>
 
-                <p className="text-gray-400 mb-6 text-base sm:text-lg xl:text-xl xl:leading-relaxed">
+                <motion.p 
+                  variants={heroChildVariants}
+                  className="text-gray-400 mb-6 text-base sm:text-lg xl:text-xl xl:leading-relaxed"
+                >
                   Passionate about creating beautiful, functional, and
                   user-centered digital experiences. Specializing in modern web
                   technologies and creative solutions.
-                </p>
+                </motion.p>
 
-                <div className="flex flex-wrap gap-3 sm:gap-4">
+                <motion.div 
+                  variants={heroChildVariants}
+                  className="flex flex-wrap gap-3 sm:gap-4"
+                >
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -118,37 +142,31 @@ const Hero: React.FC = () => {
                   >
                     Download CV
                   </motion.button>
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
 
           {/* Right Column - Astronaut */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6 }}
+            variants={heroRightContentVariants}
+            initial="hidden"
+            animate="visible"
             className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-5 xl:col-span-6"
           >
             {/* Container for both glow and astronaut */}
-            <div className="relative flex items-center justify-center lg:translate-y-20">
+            <div className="relative flex items-center justify-center lg:translate-y-0">
               {/* Glowing Background */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="absolute w-full max-w-[600px] sm:max-w-[800px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-90 lg:scale-100" />
                 <div className="absolute w-full max-w-[400px] sm:max-w-[600px] aspect-square rounded-full bg-[var(--glow-middle)] blur-2xl scale-90 lg:scale-100" />
                 <div className="absolute w-full max-w-[300px] sm:max-w-[500px] aspect-square rounded-full bg-[var(--glow-inner)] blur-xl scale-90 lg:scale-100" />
               </div>
+              
               {/* Floating Astronaut */}
               <motion.div
-                animate={{
-                  y: [-15, 0, -15],
-                  rotate: [-3, 3, -3],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                animate={astronautFloatVariants.animate}
+                transition={astronautFloatVariants.transition}
                 className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
               >
                 <Image
@@ -167,21 +185,15 @@ const Hero: React.FC = () => {
 
       {/* Scroll Indicator */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
+        variants={scrollIndicatorVariants}
+        initial="initial"
+        animate="animate"
         className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white/50"
       >
         <span className="text-xs sm:text-sm mb-2">Scroll to explore</span>
         <motion.div
-          animate={{
-            y: [0, 8, 0],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          animate={scrollArrowVariants.animate}
+          transition={scrollArrowVariants.transition}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
