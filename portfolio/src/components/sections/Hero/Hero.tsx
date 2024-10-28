@@ -21,7 +21,7 @@ const Hero: React.FC = () => {
   const { width, height } = useAstronautSize();
 
   return (
-    <section className="relative min-h-screen bg-[var(--background)] overflow-hidden pt-16 sm:pt-20 lg:pt-16">
+    <section className="relative min-h-screen bg-[var(--background)] overflow-hidden pt-16 sm:pt-20 lg:pt-0">
       {/* Background Stars */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
@@ -31,10 +31,11 @@ const Hero: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a] z-1" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 relative z-10 md:mt-20">
+      <div className="container mx-auto px-4 relative z-10 md:mt-20 lg:mb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:items-center">
           {/* Left Column - Text Content */}
           <motion.div
+            id = "hero-content"
             variants={heroLeftContentVariants}
             initial="hidden"
             animate="visible"
@@ -45,7 +46,7 @@ const Hero: React.FC = () => {
               <div className="hidden md:block lg:hidden mr-4">
                 <ProfilePicture
                   src="/profile.png"
-                  className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px]"
+                  className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
                   fromLeft={false}
                 />
               </div>
@@ -69,11 +70,11 @@ const Hero: React.FC = () => {
                 </motion.div>
 
                 {/* Desktop Layout */}
-                <div className="hidden lg:block lg:-mt-10">
-                  <div className="mb-10">
+                <div className="hidden lg:block">
+                  <div className="mb-6 ml-3">
                     <ProfilePicture
                       src="/profile.png"
-                      className="w-[240px] h-[240px]"
+                      className="w-[220px] h-[220px]"
                       fromLeft={true}
                     />
                   </div>
@@ -149,6 +150,7 @@ const Hero: React.FC = () => {
 
           {/* Right Column - Astronaut */}
           <motion.div
+            id="hero-content"
             variants={heroRightContentVariants}
             initial="hidden"
             animate="visible"

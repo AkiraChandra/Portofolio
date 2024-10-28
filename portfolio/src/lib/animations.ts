@@ -71,24 +71,7 @@ export const menuItemVariants = {
 // Hero Section Animations
 export const heroLeftContentVariants = {
   hidden: { 
-    x: -100,
-    opacity: 0 
-  },
-  visible: { 
-    x: 0,
-    opacity: 1,
-    transition: {
-      duration: 3,
-      ease: "easeOut",
-      delay: 0.5,
-      // staggerChildren: 0.8
-    }
-  }
-};
-
-export const heroRightContentVariants = {
-  hidden: { 
-    x: 100,
+    x: -300,
     opacity: 0 
   },
   visible: { 
@@ -97,7 +80,24 @@ export const heroRightContentVariants = {
     transition: {
       duration: 4,
       ease: "easeOut",
-      delay: 0.5
+      delay: 0.1,
+      // staggerChildren: 0.8
+    }
+  }
+};
+
+export const heroRightContentVariants = {
+  hidden: { 
+    x: 600,
+    opacity: 0 
+  },
+  visible: { 
+    x: 0,
+    opacity: 1,
+    transition: {
+      duration: 4,
+      ease: "easeOut",
+      delay: 0.1
     }
   }
 };
