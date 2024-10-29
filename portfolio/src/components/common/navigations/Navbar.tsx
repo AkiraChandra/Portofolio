@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Linkedin, Instagram } from 'lucide-react';
-import MenuButton from '@/components/ui/MenuButton';
+import MenuButton from '@/components/common/buttons/MenuButton';
 import { mobileMenuVariants, menuItemVariants } from '@/lib/animations';
 
 const Navbar = () => {

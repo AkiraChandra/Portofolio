@@ -3,10 +3,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import MovingStars from "@/components/ui/Movingstars";
+import MovingStars from "@/components/ui/animations/Movingstars";
 import TypeWriter from "./components/TypeWritter";
-import { useAstronautSize } from "@/hooks/useMediaQuery";
-import ProfilePicture from "@/components/common/ProfilePicture";
+import { useAstronautSize } from "@/hooks/common/useMediaQuery";
+import ProfilePicture from "@/components/sections/Hero/components/ProfilePicture";
 import {
   heroLeftContentVariants,
   heroRightContentVariants,
@@ -31,51 +31,51 @@ const Hero: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a] z-1" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 relative z-10 md:mt-20 lg:mb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:items-center">
+      <div className="container mx-auto px-12 relative z-10 md:mt-20 lg:mb-20 xl:px-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-4 lg:items-center">
           {/* Left Column - Text Content */}
           <motion.div
-            id = "hero-content"
-            variants={heroLeftContentVariants}
-            initial="hidden"
-            animate="visible"
-            className="relative z-10 lg:col-span-7 xl:col-span-6"
+        id="hero-content"
+        variants={heroLeftContentVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 lg:col-span-6 xl:col-span-6"
           >
-            <div className="md:flex md:items-center">
-              {/* Profile Picture - Tablet */}
-              <div className="hidden md:block lg:hidden mr-4">
-                <ProfilePicture
-                  src="/profile.png"
-                  className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
-                  fromLeft={false}
-                />
-              </div>
+        <div className="md:flex md:items-center">
+          {/* Profile Picture - Tablet */}
+          <div className="hidden md:block lg:hidden mr-4">
+            <ProfilePicture
+          src="/profile.png"
+          className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
+          fromLeft={false}
+            />
+          </div>
 
-              {/* Profile Picture - Mobile */}
-              <div className="md:hidden mb-4 flex justify-center">
-                <ProfilePicture
-                  src="/profile.png"
-                  className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
-                  fromLeft={true}
-                />
-              </div>
+          {/* Profile Picture - Mobile */}
+          <div className="md:hidden mb-4 flex justify-center">
+            <ProfilePicture
+          src="/profile.png"
+          className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
+          fromLeft={true}
+            />
+          </div>
 
-              <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
-                {/* Welcome Text - Mobile & Tablet */}
-                <motion.div 
-                  variants={heroChildVariants}
-                  className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4"
-                >
-                  Welcome to my Portfolio
-                </motion.div>
+          <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
+            {/* Welcome Text - Mobile & Tablet */}
+            <motion.div 
+          variants={heroChildVariants}
+          className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4"
+            >
+          Welcome to my Portfolio
+            </motion.div>
 
-                {/* Desktop Layout */}
-                <div className="hidden lg:block">
-                  <div className="mb-6 ml-3">
-                    <ProfilePicture
-                      src="/profile.png"
-                      className="w-[220px] h-[220px]"
-                      fromLeft={true}
+            {/* Desktop Layout */}
+            <div className="hidden lg:block">
+          <div className="mb-6 ml-4">
+            <ProfilePicture
+              src="/profile.png"
+              className="w-[200px] h-[200px]"
+              fromLeft={true}
                     />
                   </div>
                   <motion.div 
@@ -88,28 +88,28 @@ const Hero: React.FC = () => {
 
                 <motion.h1 
                   variants={heroChildVariants}
-                  className="font-bold text-white mb-3"
+                  className="font-bold text-white mb-2"
                 >
-                  <div className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl mb-2">
-                    Hi! I'm{" "}
-                    <span className="text-yellow-400 text-glow">
-                      Akira Chandra
-                    </span>
+                  <div className="flex flex-wrap items-baseline text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem] mb-2">
+                    <span className="whitespace-nowrap">Hi! I'm&nbsp;</span>
+                    <span className="text-yellow-400 text-glow whitespace-nowrap">AkiraChandra</span>
                   </div>
-                  <div className="min-h-[40px] sm:min-h-[45px] lg:min-h-[60px] overflow-visible text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
-                    I'm a <TypeWriter words={words} />
+                  <div className="min-h-[40px] sm:min-h-[45px] lg:min-h-[60px] overflow-visible text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem]">
+                    <span className="whitespace-nowrap">I'm a </span>
+                    <TypeWriter words={words} />
                   </div>
                 </motion.h1>
 
                 <motion.p 
                   variants={heroChildVariants}
-                  className="text-gray-400 mb-6 text-base sm:text-lg xl:text-xl xl:leading-relaxed"
+                  className="text-gray-400 mb-2 text-base sm:text-lg xl:text-[1.05rem] xl:leading-relaxed"
                 >
                   Passionate about creating beautiful, functional, and
                   user-centered digital experiences. Specializing in modern web
                   technologies and creative solutions.
                 </motion.p>
 
+                {/* Rest of the component remains the same */}
                 <motion.div 
                   variants={heroChildVariants}
                   className="flex flex-wrap gap-3 sm:gap-4"
@@ -154,7 +154,7 @@ const Hero: React.FC = () => {
             variants={heroRightContentVariants}
             initial="hidden"
             animate="visible"
-            className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-5 xl:col-span-6"
+            className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6"
           >
             {/* Container for both glow and astronaut */}
             <div className="relative flex items-center justify-center lg:translate-y-0">
