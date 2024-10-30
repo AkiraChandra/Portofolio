@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { config } from '@/config';
 import { useEffect, useState } from 'react';
+import { useTheme } from '@/hooks/theme/useTheme';
 
 const MovingStars = () => {
   const [starPositions, setStarPositions] = useState<Array<{
@@ -10,21 +11,19 @@ const MovingStars = () => {
     left: number;
   }>>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { theme } = useTheme();
 
-  
   const generatePosition = (existingPositions: Array<{ bottom: number; left: number }>) => {
-    const minDistance = 20; 
+    const minDistance = 20;
     let attempts = 0;
     const maxAttempts = 100;
 
     while (attempts < maxAttempts) {
-      
       const newPosition = {
         bottom: -20 + Math.random() * 140,
         left: -20 + Math.random() * 140,
       };
 
-      
       const isFarEnough = existingPositions.every((pos) => {
         const distance = Math.sqrt(
           Math.pow(pos.bottom - newPosition.bottom, 2) +
@@ -40,7 +39,6 @@ const MovingStars = () => {
       attempts++;
     }
 
-    
     return {
       bottom: -20 + Math.random() * 140,
       left: -20 + Math.random() * 140,
@@ -48,15 +46,13 @@ const MovingStars = () => {
   };
 
   useEffect(() => {
-    
     const positions: Array<{ bottom: number; left: number }> = [];
-    const totalStars = 70; 
+    const totalStars = 70;
     for (let i = 0; i < totalStars; i++) {
       positions.push(generatePosition(positions));
     }
 
     setStarPositions(positions);
-    
     
     const timer = setTimeout(() => {
       setIsLoaded(true);
@@ -79,29 +75,29 @@ const MovingStars = () => {
               isLoaded ? 'start-animation' : ''
             }`}
             style={{
-              height: config.star.trail.height,
-              width: config.star.trail.width,
-              background: config.star.trail.gradient,
+              height: '1px',
+              width: '50px',
+              background: 'linear-gradient(90deg, transparent, rgb(var(--color-text-primary)), transparent)',
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
-              animationDelay: `${i * 0.5}s`, 
+              animationDelay: `${i * 0.5}s`,
             }}
           >
             <div
               className="absolute"
               style={{
-                top: config.star.position.top,
-                right: config.star.position.right,
+                top: '-8px',
+                right: '0',
               }}
             >
               <Image
                 src="/star.png"
                 alt="star"
-                width={config.star.size.width}
-                height={config.star.size.height}
+                width={20}
+                height={20}
                 className="object-contain"
                 style={{
-                  filter: config.star.effects.glow,
+                  filter: 'drop-shadow(0 0 3px rgb(var(--color-text-primary)))',
                 }}
               />
             </div>

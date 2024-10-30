@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useEffect, useState } from 'react';
+import { useTheme } from '@/hooks/theme/useTheme';
 
 interface TypeWriterProps {
   words: string[];
@@ -13,7 +14,7 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   const [reverse, setReverse] = useState(false);
   const [blink, setBlink] = useState(true);
   const [text, setText] = useState('');
-
+  const { theme } = useTheme();
   
   useEffect(() => {
     const timeout2 = setTimeout(() => {
@@ -22,7 +23,6 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
     return () => clearTimeout(timeout2);
   }, [blink]);
 
-  
   useEffect(() => {
     if (!words.length || !words[index]) return;
 
@@ -48,7 +48,7 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   if (!words.length) return null;
 
   return (
-    <span className="text-yellow-400 text-glow-lg">
+    <span className="text-primary dark:text-primary-dark text-glow-lg transition-colors duration-300">
       {text}
       <span className={`${blink ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100`}>
         |

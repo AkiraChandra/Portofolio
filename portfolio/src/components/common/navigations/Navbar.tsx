@@ -68,9 +68,9 @@ const Navbar = () => {
 
   return (
     <motion.nav 
-      className="fixed w-full z-50 py-4 sm:py-6"
+      className="fixed w-full z-50 py-4 sm:py-6 transition-colors duration-300"
       style={{
-        backgroundColor: isScrolled ? theme.colors.background.dark : 'transparent'
+        backgroundColor: isScrolled ? 'rgb(var(--color-background-primary))' : 'transparent'
       }}
     >
       <div className="container mx-auto px-4 sm:px-6">

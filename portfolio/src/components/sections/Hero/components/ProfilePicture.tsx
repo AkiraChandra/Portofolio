@@ -1,7 +1,10 @@
+// src/components/sections/Hero/components/ProfilePicture.tsx
+
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { config } from "@/config";
+import { useTheme } from "@/hooks/theme/useTheme";
 
 interface ProfilePictureProps {
   src: string;
@@ -18,15 +21,12 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
   className = "",
   fromLeft = true,
 }) => {
-  const { animations: { profile }, theme } = config;
+  const { animations: { profile } } = config;
+  const { theme } = useTheme();
 
   const Wave: React.FC<WaveProps> = ({ delay = 0 }) => (
     <motion.div
-      className="absolute inset-0"
-      style={{
-        backgroundColor: theme.colors.primary.dark + "4D", // Adding 30% opacity
-        borderRadius: "50%",
-      }}
+      className="absolute inset-0 bg-primary/30 dark:bg-primary-dark/30 rounded-full transition-colors duration-300"
       variants={profile.wave.variants}
       initial="initial"
       animate="animate"
@@ -61,7 +61,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
         </div>
 
         {/* Profile Image Container */}
-        <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg bg-black">
+        <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg bg-background-tertiary dark:bg-background-tertiary-dark transition-colors duration-300">
           <Image
             src={src}
             alt="Profile Picture"
@@ -73,10 +73,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
           {/* Ring Effect */}
           <motion.div
-            className="absolute inset-0 shadow-inner"
-            style={{
-              boxShadow: `inset 0 0 0 2px ${theme.colors.primary.dark}1A` // 10% opacity
-            }}
+            className="absolute inset-0 ring-2 ring-primary/10 dark:ring-primary-dark/10 transition-colors duration-300"
             variants={profile.ring}
             initial="initial"
             animate="animate"
@@ -84,7 +81,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
           {/* Gradient Overlay */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-background-secondary/40 dark:via-background-secondary-dark/40 to-transparent transition-colors duration-300"
             variants={profile.gradient.variants}
             initial="initial"
             animate="animate"
@@ -93,7 +90,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
           {/* Hover Overlay */}
           <motion.div
-            className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 bg-black/20 dark:bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             initial={false}
           />
 

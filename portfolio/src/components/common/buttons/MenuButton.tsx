@@ -1,6 +1,8 @@
-// /src/components/ui/MenuButton/MenuButton.tsx
+// src/components/common/buttons/MenuButton.tsx
+
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/hooks/theme/useTheme';
 
 interface MenuButtonProps {
   isOpen: boolean;
@@ -9,12 +11,14 @@ interface MenuButtonProps {
 }
 
 const MenuButton: React.FC<MenuButtonProps> = ({ isOpen, toggle, className = '' }) => {
+  const { theme } = useTheme();
+
   const variant = {
     opened: {
-      backgroundColor: '#17082f',
+      backgroundColor: 'rgb(var(--color-background-secondary))',
     },
     closed: {
-      backgroundColor: '#17082f',
+      backgroundColor: 'rgb(var(--color-background-secondary))',
     },
   };
 
@@ -53,7 +57,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({ isOpen, toggle, className = '' 
 
   return (
     <motion.button
-      className={`relative w-10 h-10 rounded-lg flex items-center justify-center ${className}`}
+      className={`relative w-10 h-10 rounded-lg flex items-center justify-center transition-colors duration-300 ${className}`}
       onClick={toggle}
       animate={isOpen ? 'opened' : 'closed'}
       initial="closed"
@@ -63,17 +67,17 @@ const MenuButton: React.FC<MenuButtonProps> = ({ isOpen, toggle, className = '' 
     >
       <div className="relative w-6 h-5 flex flex-col justify-center items-center">
         <motion.span
-          className="absolute top-0 w-6 h-0.5 bg-current rounded-full"
+          className="absolute top-0 w-6 h-0.5 bg-text-primary dark:bg-text-primary-dark rounded-full transition-colors duration-300"
           variants={topVariant}
           transition={{ duration: 0.3 }}
         />
         <motion.span
-          className="absolute w-6 h-0.5 bg-current rounded-full"
+          className="absolute w-6 h-0.5 bg-text-primary dark:bg-text-primary-dark rounded-full transition-colors duration-300"
           variants={centerVariant}
           transition={{ duration: 0.3 }}
         />
         <motion.span
-          className="absolute bottom-0 w-6 h-0.5 bg-current rounded-full"
+          className="absolute bottom-0 w-6 h-0.5 bg-text-primary dark:bg-text-primary-dark rounded-full transition-colors duration-300"
           variants={bottomVariant}
           transition={{ duration: 0.3 }}
         />
