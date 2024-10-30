@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { starConfig } from '@/config/star.config';
+import { config } from '@/config';
 import { useEffect, useState } from 'react';
 
 const MovingStars = () => {
@@ -13,14 +13,13 @@ const MovingStars = () => {
 
   
   const generatePosition = (existingPositions: Array<{ bottom: number; left: number }>) => {
-    const minDistance = 15; 
+    const minDistance = 20; 
     let attempts = 0;
-    const maxAttempts = 50;
+    const maxAttempts = 100;
 
     while (attempts < maxAttempts) {
       
       const newPosition = {
-        
         bottom: -20 + Math.random() * 140,
         left: -20 + Math.random() * 140,
       };
@@ -52,7 +51,6 @@ const MovingStars = () => {
     
     const positions: Array<{ bottom: number; left: number }> = [];
     const totalStars = 70; 
-
     for (let i = 0; i < totalStars; i++) {
       positions.push(generatePosition(positions));
     }
@@ -81,9 +79,9 @@ const MovingStars = () => {
               isLoaded ? 'start-animation' : ''
             }`}
             style={{
-              height: starConfig.trail.height,
-              width: starConfig.trail.width,
-              background: starConfig.trail.gradient,
+              height: config.star.trail.height,
+              width: config.star.trail.width,
+              background: config.star.trail.gradient,
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
               animationDelay: `${i * 0.5}s`, 
@@ -92,18 +90,18 @@ const MovingStars = () => {
             <div
               className="absolute"
               style={{
-                top: starConfig.position.top,
-                right: starConfig.position.right,
+                top: config.star.position.top,
+                right: config.star.position.right,
               }}
             >
               <Image
                 src="/star.png"
                 alt="star"
-                width={starConfig.size.width}
-                height={starConfig.size.height}
+                width={config.star.size.width}
+                height={config.star.size.height}
                 className="object-contain"
                 style={{
-                  filter: starConfig.effects.glow,
+                  filter: config.star.effects.glow,
                 }}
               />
             </div>

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Linkedin, Instagram } from 'lucide-react';
 import MenuButton from '@/components/common/buttons/MenuButton';
-import { mobileMenuVariants, menuItemVariants } from '@/lib/animations';
+import { config } from '@/config';
 
 const Navbar = () => {
+  const { site, theme, animations } = config;
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -14,7 +15,7 @@ const Navbar = () => {
   // Handle viewport size changes
   useEffect(() => {
     const updateLayout = () => {
-      setIsMobile(window.innerWidth < 640);
+      setIsMobile(window.innerWidth < 768); // Changed from 640 to 768 for better breakpoint
     };
     
     updateLayout();
@@ -26,20 +27,14 @@ const Navbar = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 50); // Adjust this value as needed
+      setIsScrolled(scrollPosition > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const menuItems = [
-    { title: 'Home', href: '#home' },
-    { title: 'Skills', href: '#skills' },
-    { title: 'Experience', href: '#experience' },
-    { title: 'Projects', href: '#projects' },
-  ];
-
+  const menuItems = site.navigation.links;
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const menuVariants: Variants = {
@@ -47,7 +42,7 @@ const Navbar = () => {
       x: 0,
       opacity: 1,
       transition: {
-        duration: 0.3,
+        ...animations.transitions.default,
         ease: "easeOut"
       }
     },
@@ -55,44 +50,35 @@ const Navbar = () => {
       x: 100,
       opacity: 0,
       transition: {
-        duration: 0.3,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  const hamburgerVariants: Variants = {
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut",
-      }
-    },
-    hidden: {
-      x: 100,
-      opacity: 0,
-      transition: {
-        duration: 0.2,
+        ...animations.transitions.fast,
         ease: "easeIn"
       }
     }
   };
 
-  // Only show hamburger menu when:
-  // 1. Not on mobile viewport
+  const mobileMenuVariants: Variants = animations.menu.mobile;
+  const menuItemVariants: Variants = animations.menu.item;
+
+  // Changed the logic for showing hamburger menu:
+  // Show hamburger menu when:
+  // 1. On mobile viewport OR
   // 2. Page has been scrolled down
-  const shouldShowHamburger = !isMobile && isScrolled;
+  const shouldShowFullMenu = !isMobile && !isScrolled;
+  const shouldShowHamburger = isMobile || isScrolled;
 
   return (
-    <motion.nav className="fixed w-full z-50 py-4 sm:py-6">
+    <motion.nav 
+      className="fixed w-full z-50 py-4 sm:py-6"
+      style={{
+        backgroundColor: isScrolled ? theme.colors.background.dark : 'transparent'
+      }}
+    >
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex justify-end items-center relative">
           <div className="flex items-center">
             {/* Full Menu */}
             <AnimatePresence mode="wait">
-              {(!shouldShowHamburger || isMobile) && (
+              {shouldShowFullMenu && (
                 <motion.div
                   key="full-menu"
                   variants={menuVariants}
@@ -112,10 +98,16 @@ const Navbar = () => {
                   ))}
                   
                   <div className="flex items-center space-x-6">
-                    <a href="#" className="text-gray-400 hover:text-yellow-400">
+                    <a 
+                      href={site.social.linkedin} 
+                      className="text-gray-400 hover:text-yellow-400 transition-colors"
+                    >
                       <Linkedin className="w-5 h-5 sm:w-6 sm:h-6" />
                     </a>
-                    <a href="#" className="text-gray-400 hover:text-yellow-400">
+                    <a 
+                      href={site.social.instagram} 
+                      className="text-gray-400 hover:text-yellow-400 transition-colors"
+                    >
                       <Instagram className="w-5 h-5 sm:w-6 sm:h-6" />
                     </a>
                   </div>
@@ -135,7 +127,7 @@ const Navbar = () => {
               {shouldShowHamburger && (
                 <motion.div
                   key="hamburger"
-                  variants={hamburgerVariants}
+                  variants={menuVariants}
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
@@ -144,7 +136,7 @@ const Navbar = () => {
                   <MenuButton 
                     isOpen={isOpen} 
                     toggle={toggleMenu}
-                    className="text-gray-200 hover:text-yellow-400"
+                    className="text-gray-200 hover:text-yellow-400 transition-colors"
                   />
                 </motion.div>
               )}
@@ -181,10 +173,16 @@ const Navbar = () => {
                   variants={menuItemVariants}
                   className="flex space-x-6 pt-2"
                 >
-                  <a href="#" className="text-gray-400 hover:text-yellow-400">
+                  <a 
+                    href={site.social.linkedin} 
+                    className="text-gray-400 hover:text-yellow-400 transition-colors"
+                  >
                     <Linkedin className="w-6 h-6" />
                   </a>
-                  <a href="#" className="text-gray-400 hover:text-yellow-400">
+                  <a 
+                    href={site.social.instagram}
+                    className="text-gray-400 hover:text-yellow-400 transition-colors"
+                  >
                     <Instagram className="w-6 h-6" />
                   </a>
                 </motion.div>

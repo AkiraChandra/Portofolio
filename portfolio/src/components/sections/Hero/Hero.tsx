@@ -7,16 +7,10 @@ import MovingStars from "@/components/ui/animations/Movingstars";
 import TypeWriter from "./components/TypeWritter";
 import { useAstronautSize } from "@/hooks/common/useMediaQuery";
 import ProfilePicture from "@/components/sections/Hero/components/ProfilePicture";
-import {
-  heroLeftContentVariants,
-  heroRightContentVariants,
-  heroChildVariants,
-  astronautFloatVariants,
-  scrollIndicatorVariants,
-  scrollArrowVariants
-} from "@/lib/animations";
+import { config } from "@/config";
 
 const Hero: React.FC = () => {
+  const { animations, theme } = config;
   const words = ["Web Developer", "UI/UX Designer", "Full Stack Developer"];
   const { width, height } = useAstronautSize();
 
@@ -28,58 +22,58 @@ const Hero: React.FC = () => {
       </div>
 
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a] z-1" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black z-1" />
 
       {/* Main Content */}
       <div className="container mx-auto px-12 relative z-10 md:mt-20 lg:mb-20 xl:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-4 lg:items-center">
           {/* Left Column - Text Content */}
           <motion.div
-        id="hero-content"
-        variants={heroLeftContentVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 lg:col-span-6 xl:col-span-6"
+            id="hero-content"
+            variants={animations.hero.leftContent}
+            initial="hidden"
+            animate="visible"
+            className="relative z-10 lg:col-span-6 xl:col-span-6"
           >
-        <div className="md:flex md:items-center">
-          {/* Profile Picture - Tablet */}
-          <div className="hidden md:block lg:hidden mr-4">
-            <ProfilePicture
-          src="/profile.png"
-          className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
-          fromLeft={false}
-            />
-          </div>
+            <div className="md:flex md:items-center">
+              {/* Profile Picture - Tablet */}
+              <div className="hidden md:block lg:hidden mr-4">
+                <ProfilePicture
+                  src="/profile.png"
+                  className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
+                  fromLeft={false}
+                />
+              </div>
 
-          {/* Profile Picture - Mobile */}
-          <div className="md:hidden mb-4 flex justify-center">
-            <ProfilePicture
-          src="/profile.png"
-          className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
-          fromLeft={true}
-            />
-          </div>
+              {/* Profile Picture - Mobile */}
+              <div className="md:hidden mb-4 flex justify-center">
+                <ProfilePicture
+                  src="/profile.png"
+                  className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
+                  fromLeft={true}
+                />
+              </div>
 
-          <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
-            {/* Welcome Text - Mobile & Tablet */}
-            <motion.div 
-          variants={heroChildVariants}
-          className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4"
-            >
-          Welcome to my Portfolio
-            </motion.div>
+              <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
+                {/* Welcome Text - Mobile & Tablet */}
+                <motion.div 
+                  variants={animations.hero.child}
+                  className="lg:hidden bg-purple-800/20 text-white px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4"
+                >
+                  Welcome to my Portfolio
+                </motion.div>
 
-            {/* Desktop Layout */}
-            <div className="hidden lg:block">
-          <div className="mb-6 ml-4">
-            <ProfilePicture
-              src="/profile.png"
-              className="w-[200px] h-[200px]"
-              fromLeft={true}
+                {/* Desktop Layout */}
+                <div className="hidden lg:block">
+                  <div className="mb-6 ml-4">
+                    <ProfilePicture
+                      src="/profile.png"
+                      className="w-[200px] h-[200px]"
+                      fromLeft={true}
                     />
                   </div>
                   <motion.div 
-                    variants={heroChildVariants}
+                    variants={animations.hero.child}
                     className="bg-purple-800/20 text-white px-6 py-2.5 rounded-lg inline-block mb-4 backdrop-blur-sm text-lg"
                   >
                     Welcome to my Portfolio
@@ -87,12 +81,12 @@ const Hero: React.FC = () => {
                 </div>
 
                 <motion.h1 
-                  variants={heroChildVariants}
+                  variants={animations.hero.child}
                   className="font-bold text-white mb-2"
                 >
-                  <div className="flex flex-wrap items-baseline text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem] mb-2">
+                  <div className="flex items-baseline space-x-2 whitespace-nowrap text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem] mb-2">
                     <span className="whitespace-nowrap">Hi! I'm&nbsp;</span>
-                    <span className="text-yellow-400 text-glow whitespace-nowrap">AkiraChandra</span>
+                    <span className="text-yellow-400 text-glow whitespace-nowrap">{config.site.author}</span>
                   </div>
                   <div className="min-h-[40px] sm:min-h-[45px] lg:min-h-[60px] overflow-visible text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem]">
                     <span className="whitespace-nowrap">I'm a </span>
@@ -101,17 +95,14 @@ const Hero: React.FC = () => {
                 </motion.h1>
 
                 <motion.p 
-                  variants={heroChildVariants}
+                  variants={animations.hero.child}
                   className="text-gray-400 mb-2 text-base sm:text-lg xl:text-[1.05rem] xl:leading-relaxed"
                 >
-                  Passionate about creating beautiful, functional, and
-                  user-centered digital experiences. Specializing in modern web
-                  technologies and creative solutions.
+                  {config.site.description}
                 </motion.p>
 
-                {/* Rest of the component remains the same */}
                 <motion.div 
-                  variants={heroChildVariants}
+                  variants={animations.hero.child}
                   className="flex flex-wrap gap-3 sm:gap-4"
                 >
                   <motion.button
@@ -151,7 +142,7 @@ const Hero: React.FC = () => {
           {/* Right Column - Astronaut */}
           <motion.div
             id="hero-content"
-            variants={heroRightContentVariants}
+            variants={animations.hero.rightContent}
             initial="hidden"
             animate="visible"
             className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6"
@@ -167,8 +158,8 @@ const Hero: React.FC = () => {
               
               {/* Floating Astronaut */}
               <motion.div
-                animate={astronautFloatVariants.animate}
-                transition={astronautFloatVariants.transition}
+                animate={animations.astronaut.float.animate}
+                transition={animations.astronaut.float.transition}
                 className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
               >
                 <Image
@@ -187,15 +178,15 @@ const Hero: React.FC = () => {
 
       {/* Scroll Indicator */}
       <motion.div
-        variants={scrollIndicatorVariants}
+        variants={animations.scroll.indicator}
         initial="initial"
         animate="animate"
         className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white/50"
       >
         <span className="text-xs sm:text-sm mb-2">Scroll to explore</span>
         <motion.div
-          animate={scrollArrowVariants.animate}
-          transition={scrollArrowVariants.transition}
+          animate={animations.scroll.arrow.animate}
+          transition={animations.scroll.arrow.transition}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
