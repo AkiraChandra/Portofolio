@@ -1,9 +1,8 @@
-// tailwind.config.js
+// tailwind.config.ts
+import type { Config } from 'tailwindcss'
+const { fontFamily } = require('tailwindcss/defaultTheme')
 
-const { fontFamily } = require('tailwindcss/defaultTheme');
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+const config: Config = {
   darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -23,8 +22,8 @@ module.exports = {
           'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         },
         backgroundColor: {
-          'glow-blue': 'rgba(96, 165, 250, 0.2)',   // Untuk glow biru
-          'glow-purple': 'rgba(147, 51, 234, 0.2)',  // Untuk glow ungu
+          'glow-blue': 'rgba(96, 165, 250, 0.2)',
+          'glow-purple': 'rgba(147, 51, 234, 0.2)',
         },
         background: {
           primary: {
@@ -82,6 +81,7 @@ module.exports = {
       fontFamily: {
         sans: ['var(--font-geist-sans)', ...fontFamily.sans],
         mono: ['var(--font-geist-mono)', ...fontFamily.mono],
+        poppins: ['Poppins', 'var(--font-poppins)', ...fontFamily.sans],
       },
       keyframes: {
         'fade-in': {
@@ -110,4 +110,6 @@ module.exports = {
     },
   },
   plugins: [],
-};
+}
+
+export default config

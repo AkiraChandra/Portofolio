@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useTheme } from '@/hooks/theme/useTheme';
+import React from "react";
+import { useEffect, useState } from "react";
+import { useTheme } from "@/hooks/theme/useTheme";
 
 interface TypeWriterProps {
   words: string[];
@@ -13,9 +13,9 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   const [subIndex, setSubIndex] = useState(0);
   const [reverse, setReverse] = useState(false);
   const [blink, setBlink] = useState(true);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const { theme } = useTheme();
-  
+
   useEffect(() => {
     const timeout2 = setTimeout(() => {
       setBlink((prev) => !prev);
@@ -48,9 +48,13 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   if (!words.length) return null;
 
   return (
-    <span className="text-primary dark:text-primary-dark text-glow-lg transition-colors duration-300">
+    <span className="text-text-primary dark:text-yellow-400 text-glow-lg transition-colors duration-300">
       {text}
-      <span className={`${blink ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100`}>
+      <span
+        className={`${
+          blink ? "opacity-100" : "opacity-0"
+        } transition-opacity duration-100`}
+      >
         |
       </span>
     </span>

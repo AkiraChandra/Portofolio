@@ -4,8 +4,8 @@ import { Variants } from 'framer-motion';
 export const config = {
   site: {
     title: 'My Portfolio',
-    description: 'Personal portfolio website',
-    author: 'AkiraChandra',
+    description: 'Passionate about creating beautiful, functional, and user-centered digital experiences. Specializing in modern web technologies and creative solutions.',
+    author: 'Akira Chandra',
     social: {
       github: 'https://github.com/akirachandra',
       linkedin: 'https://linkedin.com/in/akirachandra',
@@ -257,7 +257,7 @@ export const config = {
           },
           animate: {
             scale: [1, 1.3, 1.3],
-            opacity: [0.5, 0, 0],
+            opacity: [0.5, 0.1, 0],
           }
         },
         transition: (delay: number = 0) => ({
