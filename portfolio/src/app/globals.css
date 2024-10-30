@@ -28,13 +28,13 @@
   }
 
   .dark {
-    /* Dark theme colors */
-    --color-primary: 246 176 13;
+    /* Updated Dark theme colors to match the image exactly */
+    --color-primary: 246 176 13; /* Yellow accent */
     --color-primary-dark: 229 160 12;
     
-    --color-background-primary: 23 8 47;
-    --color-background-secondary: 11 11 31;
-    --color-background-tertiary: 31 31 61;
+    --color-background-primary: 11 11 31; /* Deep purple/blue - Main background */
+    --color-background-secondary: 17 8 47; /* Slightly lighter for cards */
+    --color-background-tertiary: 31 31 61; /* Accent background */
     
     --color-text-primary: 237 237 237;
     --color-text-secondary: 209 213 219;

@@ -22,9 +22,9 @@ export const themeConfig = {
           tertiary: '#F3F4F6'
         },
         dark: {
-          primary: '#17082F',
-          secondary: '#0B0B1F',
-          tertiary: '#1F1F3D'
+          primary: '#0B0B1F',    // Deep purple/blue - Main background
+          secondary: '#17082F',  // Slightly lighter for cards
+          tertiary: '#1F1F3D'    // Accent background
         }
       },
       
@@ -54,7 +54,7 @@ export const themeConfig = {
         }
       },
       
-      // Special Effects
+      // Glow Effects
       glow: {
         light: {
           primary: 'rgba(243, 235, 0, 0.7)',
@@ -79,7 +79,7 @@ export const themeConfig = {
       }
     },
     
-    // Typography
+    // Rest of the configuration remains the same
     typography: {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
@@ -97,7 +97,6 @@ export const themeConfig = {
       }
     },
     
-    // Spacing
     spacing: {
       container: {
         padding: {
@@ -110,7 +109,6 @@ export const themeConfig = {
       }
     },
     
-    // Transitions
     transitions: {
       duration: {
         fast: '150ms',
@@ -126,7 +124,6 @@ export const themeConfig = {
       }
     },
     
-    // Breakpoints
     breakpoints: {
       sm: '640px',
       md: '768px',

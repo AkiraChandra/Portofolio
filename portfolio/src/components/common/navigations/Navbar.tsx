@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Linkedin, Instagram } from 'lucide-react';
 import MenuButton from '@/components/common/buttons/MenuButton';
+import { ThemeToggle } from '@/features/theme/ThemeToggle';
 import { config } from '@/config';
 
 const Navbar = () => {
@@ -15,7 +16,7 @@ const Navbar = () => {
   // Handle viewport size changes
   useEffect(() => {
     const updateLayout = () => {
-      setIsMobile(window.innerWidth < 768); // Changed from 640 to 768 for better breakpoint
+      setIsMobile(window.innerWidth < 768);
     };
     
     updateLayout();
@@ -59,10 +60,6 @@ const Navbar = () => {
   const mobileMenuVariants: Variants = animations.menu.mobile;
   const menuItemVariants: Variants = animations.menu.item;
 
-  // Changed the logic for showing hamburger menu:
-  // Show hamburger menu when:
-  // 1. On mobile viewport OR
-  // 2. Page has been scrolled down
   const shouldShowFullMenu = !isMobile && !isScrolled;
   const shouldShowHamburger = isMobile || isScrolled;
 
@@ -74,7 +71,10 @@ const Navbar = () => {
       }}
     >
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex justify-end items-center relative">
+        <div className="flex justify-between items-center relative">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
           <div className="flex items-center">
             {/* Full Menu */}
             <AnimatePresence mode="wait">
@@ -153,7 +153,7 @@ const Navbar = () => {
             animate="open"
             exit="closed"
             variants={mobileMenuVariants}
-            className="bg-[#0B0B1F] border-t border-gray-800/50"
+            className="bg-background-secondary dark:bg-background-secondary-dark border-t border-gray-800/50"
           >
             <div className="container mx-auto px-4 py-4">
               <div className="flex flex-col items-end space-y-4">
@@ -162,7 +162,7 @@ const Navbar = () => {
                     key={item.title}
                     href={item.href}
                     variants={menuItemVariants}
-                    className="text-gray-300 hover:text-yellow-400 text-lg font-medium"
+                    className="text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark text-lg font-medium"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.title}
@@ -175,13 +175,13 @@ const Navbar = () => {
                 >
                   <a 
                     href={site.social.linkedin} 
-                    className="text-gray-400 hover:text-yellow-400 transition-colors"
+                    className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
                   >
                     <Linkedin className="w-6 h-6" />
                   </a>
                   <a 
                     href={site.social.instagram}
-                    className="text-gray-400 hover:text-yellow-400 transition-colors"
+                    className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
                   >
                     <Instagram className="w-6 h-6" />
                   </a>
@@ -190,7 +190,7 @@ const Navbar = () => {
                 <motion.button
                   variants={menuItemVariants}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 border-2 border-white text-gray-100 rounded-lg hover:bg-yellow-400 hover:text-black hover:border-yellow-400 transition-colors text-lg font-medium mt-2"
+                  className="px-8 py-3 bg-primary dark:bg-primary-dark text-background-primary dark:text-background-primary-dark rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-lg font-medium mt-2"
                 >
                   Let's Connect
                 </motion.button>

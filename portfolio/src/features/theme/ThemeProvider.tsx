@@ -1,20 +1,25 @@
-// src/features/theme/ThemeProvider.tsx
-
 'use client';
 
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { ThemeContext, useThemeSetup } from '@/hooks/theme/useTheme';
 
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export const ThemeProvider = ({ children }: ThemeProviderProps) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const themeContext = useThemeSetup();
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!themeContext.mounted) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={themeContext}>
-      {children}
+      <div className={`${themeContext.theme} transition-colors duration-300`}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 };
