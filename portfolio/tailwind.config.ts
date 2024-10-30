@@ -19,6 +19,13 @@ module.exports = {
           DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
           dark: 'rgb(var(--color-primary-dark) / <alpha-value>)',
         },
+        backgroundImage: {
+          'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        },
+        backgroundColor: {
+          'glow-blue': 'rgba(96, 165, 250, 0.2)',   // Untuk glow biru
+          'glow-purple': 'rgba(147, 51, 234, 0.2)',  // Untuk glow ungu
+        },
         background: {
           primary: {
             DEFAULT: 'rgb(var(--color-background-primary) / <alpha-value>)',

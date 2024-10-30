@@ -60,7 +60,7 @@ const Hero: React.FC = () => {
 
               <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
                 {/* Welcome Text - Mobile & Tablet */}
-                <motion.div 
+                <motion.div
                   variants={animations.hero.child}
                   className="lg:hidden bg-background-tertiary dark:bg-background-tertiary-dark text-text-primary dark:text-text-primary-dark px-4 py-1.5 sm:px-5 sm:py-2 rounded-lg inline-block mb-3 backdrop-blur-sm text-sm sm:text-base mt-4 transition-colors duration-300"
                 >
@@ -76,7 +76,7 @@ const Hero: React.FC = () => {
                       fromLeft={true}
                     />
                   </div>
-                  <motion.div 
+                  <motion.div
                     variants={animations.hero.child}
                     className="bg-background-tertiary dark:bg-background-tertiary-dark text-text-primary dark:text-text-primary-dark px-6 py-2.5 rounded-lg inline-block mb-4 backdrop-blur-sm text-lg transition-colors duration-300"
                   >
@@ -84,13 +84,12 @@ const Hero: React.FC = () => {
                   </motion.div>
                 </div>
 
-                <motion.h1 
-                  variants={animations.hero.child}
-                  className="mb-2"
-                >
+                <motion.h1 variants={animations.hero.child} className="mb-2">
                   <div className="flex items-baseline space-x-2 whitespace-nowrap text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem] mb-2 text-text-primary dark:text-text-primary-dark transition-colors duration-300">
                     <span className="whitespace-nowrap">Hi! I'm&nbsp;</span>
-                    <span className="text-primary dark:text-primary-dark text-glow whitespace-nowrap">{config.site.author}</span>
+                    <span className="text-primary dark:text-primary-dark text-glow-lg whitespace-nowrap">
+                      {config.site.author}
+                    </span>
                   </div>
                   <div className="min-h-[40px] sm:min-h-[45px] lg:min-h-[60px] overflow-visible text-3xl sm:text-4xl lg:text-5xl xl:text-[3.1rem] text-text-primary dark:text-text-primary-dark transition-colors duration-300">
                     <span className="whitespace-nowrap">I'm a </span>
@@ -98,14 +97,14 @@ const Hero: React.FC = () => {
                   </div>
                 </motion.h1>
 
-                <motion.p 
+                <motion.p
                   variants={animations.hero.child}
                   className="text-text-secondary dark:text-text-secondary-dark mb-2 text-base sm:text-lg xl:text-[1.05rem] xl:leading-relaxed transition-colors duration-300"
                 >
                   {config.site.description}
                 </motion.p>
 
-                <motion.div 
+                <motion.div
                   variants={animations.hero.child}
                   className="flex flex-wrap gap-3 sm:gap-4"
                 >
@@ -155,25 +154,32 @@ const Hero: React.FC = () => {
             <div className="relative flex items-center justify-center lg:translate-y-0">
               {/* Glowing Background */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="absolute w-full max-w-[600px] sm:max-w-[800px] aspect-square rounded-full bg-effects-outer dark:bg-effects-outer-dark blur-3xl scale-90 lg:scale-100 transition-colors duration-300" />
-                <div className="absolute w-full max-w-[400px] sm:max-w-[600px] aspect-square rounded-full bg-effects-middle dark:bg-effects-middle-dark blur-2xl scale-90 lg:scale-100 transition-colors duration-300" />
-                <div className="absolute w-full max-w-[300px] sm:max-w-[500px] aspect-square rounded-full bg-effects-inner dark:bg-effects-inner-dark blur-xl scale-90 lg:scale-100 transition-colors duration-300" />
+                <div className="absolute w-full max-w-[600px] sm:max-w-[800px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-90 lg:scale-100" />
+                <div className="absolute w-full max-w-[400px] sm:max-w-[600px] aspect-square rounded-full bg-[var(--glow-middle)] blur-2xl scale-90 lg:scale-100" />
+                <div className="absolute w-full max-w-[300px] sm:max-w-[500px] aspect-square rounded-full bg-[var(--glow-inner)] blur-xl scale-90 lg:scale-100" />
               </div>
-              
-              {/* Floating Astronaut */}
+
+              {/* Floating Astronaut with Moon */}
               <motion.div
                 animate={animations.astronaut.float.animate}
                 transition={animations.astronaut.float.transition}
                 className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
               >
-                <Image
-                  src="/astronaut.png"
-                  alt="Astronaut"
-                  width={width}
-                  height={height}
-                  className="w-full h-full object-contain"
-                  priority
-                />
+                <div className="relative">
+                  {/* Glow khusus untuk bulan */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-[80%] h-[80%] translate-x-[20%] translate-y-[-10%] bg-gradient-radial from-yellow-400/50 via-orange-400/30 to-transparent blur-[40px]" />
+                  </div>
+
+                  <Image
+                    src="/astronaut.png"
+                    alt="Astronaut"
+                    width={width}
+                    height={height}
+                    className="w-full h-full object-contain relative z-10"
+                    priority
+                  />
+                </div>
               </motion.div>
             </div>
           </motion.div>

@@ -1,5 +1,3 @@
-// src/config/theme.config.ts
-
 export const themeConfig = {
     colors: {
       // Base Colors
@@ -22,9 +20,9 @@ export const themeConfig = {
           tertiary: '#F3F4F6'
         },
         dark: {
-          primary: '#0B0B1F',    // Deep purple/blue - Main background
-          secondary: '#17082F',  // Slightly lighter for cards
-          tertiary: '#1F1F3D'    // Accent background
+          primary: '#17082f',    // Deep purple background
+          secondary: '#17082f',   // Same as primary for consistency
+          tertiary: '#1F1F3D'    // Slightly lighter for accents
         }
       },
       
@@ -78,8 +76,7 @@ export const themeConfig = {
         }
       }
     },
-    
-    // Rest of the configuration remains the same
+      
     typography: {
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
@@ -96,7 +93,7 @@ export const themeConfig = {
         '4xl': '2.25rem'
       }
     },
-    
+      
     spacing: {
       container: {
         padding: {
@@ -108,7 +105,7 @@ export const themeConfig = {
         maxWidth: '1280px'
       }
     },
-    
+      
     transitions: {
       duration: {
         fast: '150ms',
@@ -123,7 +120,7 @@ export const themeConfig = {
         'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)'
       }
     },
-    
+      
     breakpoints: {
       sm: '640px',
       md: '768px',

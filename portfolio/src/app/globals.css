@@ -22,19 +22,27 @@
     --color-glow-primary: 243 235 0;
     --color-glow-secondary: 147 51 234;
     
+    /* Glow Effects - Light Mode */
     --color-effects-outer: 2 50 126;
-    --color-effects-middle: 132 0 255;
+    --color-effects-middle: 59 130 246;
     --color-effects-inner: 96 165 250;
+    
+    --glow-outer: rgba(2, 50, 126, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+    
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.5;
   }
 
   .dark {
-    /* Updated Dark theme colors to match the image exactly */
-    --color-primary: 246 176 13; /* Yellow accent */
+    /* Dark theme colors */
+    --color-primary: 246 176 13;
     --color-primary-dark: 229 160 12;
     
-    --color-background-primary: 11 11 31; /* Deep purple/blue - Main background */
-    --color-background-secondary: 17 8 47; /* Slightly lighter for cards */
-    --color-background-tertiary: 31 31 61; /* Accent background */
+    --color-background-primary: 23 8 47;
+    --color-background-secondary: 23 8 47;
+    --color-background-tertiary: 31 31 61;
     
     --color-text-primary: 237 237 237;
     --color-text-secondary: 209 213 219;
@@ -46,9 +54,17 @@
     --color-glow-primary: 246 176 13;
     --color-glow-secondary: 124 58 237;
     
+    /* Glow Effects - Dark Mode */
     --color-effects-outer: 2 50 126;
-    --color-effects-middle: 132 0 255;
+    --color-effects-middle: 59 130 246;
     --color-effects-inner: 96 165 250;
+    
+    --glow-outer: rgba(2, 50, 126, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+    
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.8;
   }
 }
 
