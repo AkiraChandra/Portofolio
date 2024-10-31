@@ -1,3 +1,4 @@
+// src/types/projects.ts
 import { Transition } from 'framer-motion';
 
 export interface Project {
@@ -21,6 +22,13 @@ export interface Project {
   };
 }
 
+export interface ProjectPreviewProps {
+  project: Project;
+  isVisible: boolean;
+  containerWidth?: number;
+  onTransitionEnd?: () => void;
+}
+
 export interface PlanetProps {
   project: Project;
   isActive: boolean;
@@ -35,13 +43,6 @@ export interface ConnectingLineProps {
   progress: number;
   isActive: boolean;
   width?: number;
-}
-
-export interface ProjectPreviewProps {
-  project: Project;
-  isVisible: boolean;
-  containerWidth?: number;
-  onTransitionEnd?: () => void;
 }
 
 // Animation related types
@@ -60,3 +61,21 @@ export interface PlanetAnimationHook {
   rotateAnimation: AnimationConfig;
   scaleAnimation: PlanetAnimation;
 }
+
+export interface ProjectTransitionHook {
+  activeIndex: number;
+  progress: number;
+  direction: 'right' | 'left';
+  isLineAnimating: boolean;
+  isPaused: boolean;
+  jumpToProject: (index: number) => void;
+  pausePreview: () => void;
+  resumePreview: () => void;
+}
+
+export interface ProjectTransitionProps {
+  totalProjects: number;
+  previewDuration?: number;
+  lineDuration?: number;
+}
+

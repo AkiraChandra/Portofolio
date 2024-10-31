@@ -1,3 +1,4 @@
+// src/components/sections/Projects/components/Planet.tsx
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -18,7 +19,6 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   onHoverStart,
   onHoverEnd
 }) => {
-  // Animation variants
   const planetVariants = {
     initial: { scale: 0, opacity: 0 },
     animate: { 
@@ -37,17 +37,26 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
         duration: 0.3,
         ease: "easeOut"
       }
-    },
-    active: {
-      scale: 1.1,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
     }
   };
 
-  // Glow effect variants
+  const textVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        delay: index * 0.2 + 0.3,
+        duration: 0.5
+      }
+    },
+    hover: {
+      color: "rgb(246, 176, 13)",
+      scale: 1.05,
+      transition: { duration: 0.2 }
+    }
+  };
+
   const glowVariants = {
     initial: { opacity: 0, scale: 1.2 },
     animate: { 
@@ -58,93 +67,73 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
         repeat: Infinity,
         ease: "easeInOut"
       }
-    },
-    hover: {
-      opacity: 0.6,
-      scale: 1.3,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
-
-  const rotationVariants = {
-    initial: { rotate: 0 },
-    animate: {
-      rotate: 360,
-      transition: {
-        duration: 20,
-        repeat: Infinity,
-        ease: "linear"
-      }
     }
   };
 
   return (
-    <motion.div
-      className="relative"
-      initial="initial"
-      animate="animate"
-      whileHover="hover"
-      variants={planetVariants}
-      onHoverStart={onHoverStart}
-      onHoverEnd={onHoverEnd}
-    >
-      {/* Glow Effect */}
-      <motion.div
-        className="absolute inset-0 rounded-full bg-primary/20 dark:bg-primary-dark/20 
-                   filter blur-xl pointer-events-none"
-        variants={glowVariants}
-      />
-
-      {/* Planet Container */}
+    <div className="relative flex flex-col items-center">
       <motion.div
         className="relative"
-        variants={rotationVariants}
-        style={{
-          width: size,
-          height: size
-        }}
+        initial="initial"
+        animate="animate"
+        whileHover="hover"
+        variants={planetVariants}
+        onHoverStart={onHoverStart}
+        onHoverEnd={onHoverEnd}
       >
-        <Image
-          src={project.planetImage}
-          alt={project.name}
-          width={size}
-          height={size}
-          className="rounded-full object-cover"
-          priority
+        {/* Glow Effect */}
+        <motion.div
+          className="absolute inset-0 rounded-full bg-primary/20 dark:bg-primary-dark/20 
+                     filter blur-xl pointer-events-none"
+          variants={glowVariants}
         />
 
-        {/* Active Indicator Ring */}
-        {isActive && (
-          <motion.div
-            className="absolute inset-0 border-2 border-primary dark:border-primary-dark rounded-full"
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ 
-              scale: [1.1, 1.2, 1.1],
-              opacity: [0.2, 0.5, 0.2]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+        {/* Planet Image */}
+        <div className="relative" style={{ width: size, height: size }}>
+          <Image
+            src={project.planetImage}
+            alt={project.name}
+            width={size}
+            height={size}
+            className="rounded-full object-cover transform transition-transform duration-300"
+            priority
           />
-        )}
+
+          {/* Active Indicator Ring */}
+          {isActive && (
+            <motion.div
+              className="absolute inset-0 border-2 border-primary dark:border-primary-dark rounded-full"
+              initial={{ scale: 1.1, opacity: 0 }}
+              animate={{ 
+                scale: [1.1, 1.2, 1.1],
+                opacity: [0.2, 0.5, 0.2]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          )}
+        </div>
       </motion.div>
 
       {/* Planet Name */}
       <motion.div
-        className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 text-center"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.2 + 0.3 }}
+        className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-full text-center"
+        variants={textVariants}
+        initial="initial"
+        animate="animate"
+        whileHover="hover"
       >
-        <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark">
+        <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark
+                       transition-colors duration-300 whitespace-nowrap px-2 py-1
+                       bg-background-secondary/30 dark:bg-background-secondary-dark/30
+                       backdrop-blur-sm rounded-full">
           {project.name}
         </span>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

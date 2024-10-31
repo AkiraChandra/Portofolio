@@ -51,9 +51,24 @@ export const useProjectSizes = () => {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
   
-  return {
-    planetSize: isDesktop ? 200 : isTablet ? 160 : 120,
-    spacing: isDesktop ? 120 : isTablet ? 80 : 60,
-    previewWidth: isDesktop ? 400 : isTablet ? 320 : 280
-  };
+  // Adjusted sizes for better spacing
+  if (isDesktop) {
+    return {
+      planetSize: 240,    // Increased from 180
+      spacing: 360,      // Adjusted for larger planets
+      previewWidth: 500  // Increased from 400
+    };
+  } else if (isTablet) {
+    return {
+      planetSize: 200,
+      spacing: 280,
+      previewWidth: 440
+    };
+  } else {
+    return {
+      planetSize: 160,
+      spacing: 240,
+      previewWidth: 360
+    };
+  }
 };

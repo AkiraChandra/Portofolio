@@ -1,3 +1,4 @@
+//src/components/sections/Projects/components/ProjectPreview.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ProjectPreviewProps } from '@/types/projects';
@@ -6,40 +7,21 @@ import { ExternalLink, Github } from 'lucide-react';
 const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   project,
   isVisible,
-  containerWidth,
+  containerWidth = 400,
   onTransitionEnd
 }) => {
   return (
-    <motion.div
-      className="absolute bottom-full mb-20 left-1/2 transform -translate-x-1/2 w-[400px]"
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{
-        opacity: isVisible ? 1 : 0,
-        y: isVisible ? 0 : 20,
-        scale: isVisible ? 1 : 0.95,
-      }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{
-        duration: 0.3,
-        ease: "easeOut"
-      }}
-      onAnimationComplete={() => {
-        if (!isVisible) onTransitionEnd?.();
-      }}
-    >
-      <div className="bg-[#17082f]/60 backdrop-blur-sm rounded-lg border border-white/10 p-6">
-        {/* Title */}
-        <h3 className="text-2xl font-semibold text-white mb-2">
+    <div className="w-full" style={{ maxWidth: containerWidth }}>
+      <div className="bg-[#17082f]/80 backdrop-blur-md rounded-xl border border-white/10 p-6 shadow-xl">
+        <h3 className="text-2xl font-semibold text-white mb-3">
           {project.previewContent.title}
         </h3>
 
-        {/* Description */}
-        <p className="text-gray-300 text-base mb-6">
+        <p className="text-gray-300 text-base mb-4 line-clamp-2">
           {project.previewContent.description}
         </p>
 
-        {/* Tech Stack */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-4">
           {project.techStack.map((tech) => (
             <span
               key={tech}
@@ -51,7 +33,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
           ))}
         </div>
 
-        {/* Links */}
         <div className="flex items-center space-x-4">
           {project.demoLink && (
             <a
@@ -79,7 +60,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

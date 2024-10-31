@@ -1,103 +1,96 @@
+// src/hooks/projects/useProjectTransition.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseProjectTransitionProps {
   totalProjects: number;
-  autoPlayInterval?: number;
-  progressDuration?: number;
-}
-
-interface UseProjectTransitionReturn {
-  activeIndex: number;
-  progress: number;
-  isTransitioning: boolean;
-  isPaused: boolean;
-  setActiveIndex: (index: number) => void;
-  pauseAutoPlay: () => void;
-  resumeAutoPlay: () => void;
-  handleTransitionEnd: () => void;
+  previewDuration?: number;
+  lineDuration?: number;
 }
 
 export const useProjectTransition = ({
   totalProjects,
-  autoPlayInterval = 5000,
-  progressDuration = 5000
-}: UseProjectTransitionProps): UseProjectTransitionReturn => {
+  previewDuration = 6000,
+  lineDuration = 1000
+}: UseProjectTransitionProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLineAnimating, setIsLineAnimating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const autoPlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lineIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearTimers = useCallback(() => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
+    if (previewTimeoutRef.current) {
+      clearTimeout(previewTimeoutRef.current);
+      previewTimeoutRef.current = null;
     }
-    if (autoPlayTimeoutRef.current) {
-      clearTimeout(autoPlayTimeoutRef.current);
+    if (lineIntervalRef.current) {
+      clearInterval(lineIntervalRef.current);
+      lineIntervalRef.current = null;
     }
   }, []);
 
-  const startProgress = useCallback(() => {
+  const animateLine = useCallback(() => {
+    setIsLineAnimating(true);
     setProgress(0);
+
     const startTime = Date.now();
-    
-    progressIntervalRef.current = setInterval(() => {
+    lineIntervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTime;
-      const newProgress = (elapsedTime / progressDuration) * 100;
-      
+      const newProgress = (elapsedTime / lineDuration) * 100;
+
       if (newProgress >= 100) {
-        clearInterval(progressIntervalRef.current!);
+        clearInterval(lineIntervalRef.current!);
         setProgress(100);
-        setIsTransitioning(true);
+        setIsLineAnimating(false);
+        setActiveIndex((prev) => (prev + 1) % totalProjects);
       } else {
         setProgress(newProgress);
       }
-    }, 16); // ~60fps
-  }, [progressDuration]);
+    }, 16);
+  }, [lineDuration, totalProjects]);
 
-  const startAutoPlay = useCallback(() => {
-    if (isPaused) return;
-    
-    startProgress();
-    autoPlayTimeoutRef.current = setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % totalProjects);
-    }, autoPlayInterval);
-  }, [autoPlayInterval, isPaused, startProgress, totalProjects]);
+  const startPreviewTimer = useCallback(() => {
+    if (!isPaused) {
+      previewTimeoutRef.current = setTimeout(() => {
+        animateLine();
+      }, previewDuration);
+    }
+  }, [isPaused, previewDuration, animateLine]);
 
   useEffect(() => {
-    if (!isPaused) {
-      startAutoPlay();
-    }
-    return clearTimers;
-  }, [activeIndex, isPaused, startAutoPlay, clearTimers]);
+    clearTimers();
+    startPreviewTimer();
 
-  const pauseAutoPlay = useCallback(() => {
+    return clearTimers;
+  }, [activeIndex, isPaused, clearTimers, startPreviewTimer]);
+
+  const jumpToProject = useCallback((index: number) => {
+    if (index === activeIndex) return;
+    
+    clearTimers();
+    setProgress(0);
+    setIsLineAnimating(false);
+    setActiveIndex(index);
+  }, [activeIndex, clearTimers]);
+
+  const pausePreview = useCallback(() => {
     setIsPaused(true);
     clearTimers();
   }, [clearTimers]);
 
-  const resumeAutoPlay = useCallback(() => {
+  const resumePreview = useCallback(() => {
     setIsPaused(false);
-    startAutoPlay();
-  }, [startAutoPlay]);
-
-  const handleTransitionEnd = useCallback(() => {
-    setIsTransitioning(false);
-    if (!isPaused) {
-      startAutoPlay();
-    }
-  }, [isPaused, startAutoPlay]);
+  }, []);
 
   return {
     activeIndex,
     progress,
-    isTransitioning,
+    isLineAnimating,
     isPaused,
-    setActiveIndex,
-    pauseAutoPlay,
-    resumeAutoPlay,
-    handleTransitionEnd
+    jumpToProject,
+    pausePreview,
+    resumePreview
   };
 };
