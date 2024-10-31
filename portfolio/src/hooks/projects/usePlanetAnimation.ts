@@ -1,25 +1,26 @@
-// src/hooks/projects/usePlanetAnimation.ts
 import { useMemo } from 'react';
 import { AnimationConfig, PlanetAnimation, PlanetAnimationHook } from '@/types/projects';
 
-export function usePlanetAnimation(isActive: boolean): PlanetAnimationHook {
+export function usePlanetAnimation(isActive: boolean, isHovered: boolean): PlanetAnimationHook {
   const rotateAnimation = useMemo<AnimationConfig>(() => ({
-    rotate: isActive ? [0, 360] : 0,
+    rotate: (isActive || isHovered) ? [0, 360] : 0,
     transition: {
-      duration: isActive ? 20 : 0,
+      duration: 20,
       repeat: Infinity,
-      ease: "linear"
+      ease: "linear",
+      repeatType: "loop"
     }
-  }), [isActive]);
+  }), [isActive, isHovered]);
 
   const scaleAnimation = useMemo<PlanetAnimation>(() => ({
+    scale: isActive || isHovered ? 1.1 : 1,
     rotate: 0,
-    scale: isActive ? 1.25 : 1,
     transition: {
-      duration: 0.3,
-      ease: "easeOut"
+      type: "spring",
+      stiffness: 400,
+      damping: 25
     }
-  }), [isActive]);
+  }), [isActive, isHovered]);
 
   return {
     rotateAnimation,

@@ -14,6 +14,11 @@ export interface Project {
     image?: string;
     features?: string[];
   };
+  size?: {
+    desktop: number;
+    tablet: number;
+    mobile: number;
+  };
 }
 
 export interface PlanetProps {
@@ -21,19 +26,21 @@ export interface PlanetProps {
   isActive: boolean;
   index: number;
   totalPlanets: number;
-  onTransitionEnd?: () => void;
+  size?: number;
+  onHoverStart?: () => void;
+  onHoverEnd?: () => void;
 }
 
-export interface ProgressLineProps {
-  startIndex: number;
-  endIndex: number;
+export interface ConnectingLineProps {
   progress: number;
   isActive: boolean;
+  width?: number;
 }
 
 export interface ProjectPreviewProps {
   project: Project;
   isVisible: boolean;
+  containerWidth?: number;
   onTransitionEnd?: () => void;
 }
 

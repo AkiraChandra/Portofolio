@@ -6,68 +6,77 @@ import { ExternalLink, Github } from 'lucide-react';
 const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   project,
   isVisible,
+  containerWidth,
   onTransitionEnd
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-      exit={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.3 }}
+      className="absolute bottom-full mb-20 left-1/2 transform -translate-x-1/2 w-[400px]"
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        y: isVisible ? 0 : 20,
+        scale: isVisible ? 1 : 0.95,
+      }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{
+        duration: 0.3,
+        ease: "easeOut"
+      }}
       onAnimationComplete={() => {
         if (!isVisible) onTransitionEnd?.();
       }}
-      className="w-full"
     >
-      <div className="backdrop-blur-md bg-background-secondary/30 dark:bg-background-secondary-dark/30 
-                    rounded-lg p-3 shadow-lg border border-border-primary/10 dark:border-border-primary-dark/10">
-        <div className="space-y-2">
-          <h3 className="text-base font-semibold text-text-primary dark:text-text-primary-dark">
-            {project.previewContent.title}
-          </h3>
+      <div className="bg-[#17082f]/60 backdrop-blur-sm rounded-lg border border-white/10 p-6">
+        {/* Title */}
+        <h3 className="text-2xl font-semibold text-white mb-2">
+          {project.previewContent.title}
+        </h3>
 
-          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">
-            {project.previewContent.description}
-          </p>
+        {/* Description */}
+        <p className="text-gray-300 text-base mb-6">
+          {project.previewContent.description}
+        </p>
 
-          <div className="flex flex-wrap gap-1">
-            {project.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="px-1.5 py-0.5 text-[10px] rounded-full bg-primary/10 dark:bg-primary-dark/10 
-                         text-primary dark:text-primary-dark"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
+        {/* Tech Stack */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {project.techStack.map((tech) => (
+            <span
+              key={tech}
+              className="px-3 py-1 text-sm rounded-full bg-[#F6B00D]/10 text-[#F6B00D]
+                       border border-[#F6B00D]/20"
+            >
+              {tech}
+            </span>
+          ))}
+        </div>
 
-          <div className="flex space-x-3 pt-1">
-            {project.demoLink && (
-              <a
-                href={project.demoLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-xs text-text-primary dark:text-text-primary-dark 
-                         hover:text-primary dark:hover:text-primary-dark transition-colors"
-              >
-                <ExternalLink size={12} />
-                <span>Live Demo</span>
-              </a>
-            )}
-            {project.githubLink && (
-              <a
-                href={project.githubLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-xs text-text-primary dark:text-text-primary-dark 
-                         hover:text-primary dark:hover:text-primary-dark transition-colors"
-              >
-                <Github size={12} />
-                <span>View Code</span>
-              </a>
-            )}
-          </div>
+        {/* Links */}
+        <div className="flex items-center space-x-4">
+          {project.demoLink && (
+            <a
+              href={project.demoLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 text-white hover:text-[#F6B00D] 
+                     transition-colors duration-200"
+            >
+              <ExternalLink size={16} />
+              <span>Live Demo</span>
+            </a>
+          )}
+          {project.githubLink && (
+            <a
+              href={project.githubLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 text-white hover:text-[#F6B00D] 
+                     transition-colors duration-200"
+            >
+              <Github size={16} />
+              <span>View Code</span>
+            </a>
+          )}
         </div>
       </div>
     </motion.div>

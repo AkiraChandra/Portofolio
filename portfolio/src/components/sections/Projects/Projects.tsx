@@ -1,37 +1,95 @@
-// src/components/sections/Projects/Projects.tsx
-'use client';
-
 import React from 'react';
-import { motion } from 'framer-motion';
-import PlanetSystem from './components/PlanetSystem';
-import { useTheme } from '@/hooks/theme/useTheme';
+import { motion, AnimatePresence } from 'framer-motion';
+import Planet from './components/Planet';
+import ProjectPreview from './components/ProjectPreview';
+import ConnectingLine from './components/ConnectingLine';
+import MovingStars from '@/components/ui/animations/Movingstars';
+import { useProjectTransition } from '@/hooks/projects/useProjectTransition';
+import { useProjectSizes } from '@/hooks/common/useMediaQuery';
 import { projects } from '@/data/projects';
 
 const Projects: React.FC = () => {
-  const { theme } = useTheme();
+  const {
+    activeIndex,
+    progress,
+    isTransitioning,
+    isPaused,
+    setActiveIndex,
+    pauseAutoPlay,
+    resumeAutoPlay,
+    handleTransitionEnd
+  } = useProjectTransition({
+    totalProjects: projects.length,
+    autoPlayInterval: 5000,
+    progressDuration: 5000
+  });
+
+  const { planetSize, spacing, previewWidth } = useProjectSizes();
 
   return (
-    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-primary/50 to-background-primary dark:from-transparent dark:via-background-primary-dark/50 dark:to-background-primary-dark" />
-      
-      <div className="container mx-auto px-4 py-20">
-        <motion.div 
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* <h2 className="text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
-            My Projects
-          </h2>
-          <p className="text-text-secondary dark:text-text-secondary-dark text-lg">
-            Explore my journey through the digital universe
-          </p> */}
-        </motion.div>
+    <section className="relative min-h-screen w-full bg-background-primary dark:bg-[#1a0836] overflow-hidden">
+      {/* Background with Stars */}
+      <div className="absolute inset-0">
+        <MovingStars />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent 
+                      via-background-primary/50 to-background-primary 
+                      dark:via-[#1a0836]/50 dark:to-[#1a0836]" />
+      </div>
 
-        <div className="relative h-[800px] flex flex-col items-center justify-center">
-          <PlanetSystem projects={projects} />
+      {/* Main Content */}
+      <div className="relative w-full h-screen flex items-center justify-center">
+        <div className="w-full px-4 relative z-10">
+          {/* Projects Row */}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center space-x-32 lg:space-x-48">
+              {projects.map((project, index) => (
+                <div key={project.id} className="relative">
+                  {/* Preview Container */}
+                  <AnimatePresence mode="wait">
+                    {index === activeIndex && (
+                      <ProjectPreview
+                        project={project}
+                        isVisible={!isTransitioning}
+                        containerWidth={previewWidth}
+                        onTransitionEnd={handleTransitionEnd}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  {/* Planet */}
+                  <Planet
+                    project={project}
+                    isActive={index === activeIndex}
+                    index={index}
+                    totalPlanets={projects.length}
+                    size={planetSize}
+                    onHoverStart={() => {
+                      setActiveIndex(index);
+                      pauseAutoPlay();
+                    }}
+                    onHoverEnd={resumeAutoPlay}
+                  />
+
+                  {/* Project Name */}
+                  <div className="absolute top-full mt-4 left-1/2 transform -translate-x-1/2 text-center">
+                    <span className="text-lg font-medium text-white">
+                      {project.name}
+                    </span>
+                  </div>
+
+                  {/* Connecting Line */}
+                  {index < projects.length - 1 && (
+                    <div className="absolute top-1/2 left-full transform -translate-y-1/2">
+                      <ConnectingLine
+                        progress={index === activeIndex ? progress : index < activeIndex ? 100 : 0}
+                        isActive={index === activeIndex}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

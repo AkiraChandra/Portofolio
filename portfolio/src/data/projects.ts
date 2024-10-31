@@ -1,4 +1,3 @@
-// src/data/projects.ts
 import { Project } from '@/types/projects';
 
 export const projects: Project[] = [
@@ -6,7 +5,7 @@ export const projects: Project[] = [
     id: '1',
     name: 'Cosmic Chat',
     description: 'Real-time chat application with space theme',
-    planetImage: '/profile.png',
+    planetImage: '/planet1.png',
     demoLink: 'https://cosmic-chat.demo',
     githubLink: 'https://github.com/username/cosmic-chat',
     techStack: ['React', 'Node.js', 'Socket.io', 'TypeScript'],
@@ -20,13 +19,18 @@ export const projects: Project[] = [
         'User presence indicators',
         'Theme customization'
       ]
+    },
+    size: {
+      desktop: 200,
+      tablet: 160,
+      mobile: 120
     }
   },
   {
     id: '2',
     name: 'Orbit Analytics',
     description: 'Data visualization dashboard',
-    planetImage: '/planets/planet2.png',
+    planetImage: '/planet2.png',
     demoLink: 'https://orbit-analytics.demo',
     githubLink: 'https://github.com/username/orbit-analytics',
     techStack: ['Vue.js', 'D3.js', 'Python', 'Flask'],
@@ -40,13 +44,18 @@ export const projects: Project[] = [
         'Custom chart components',
         'Data export functionality'
       ]
+    },
+    size: {
+      desktop: 200,
+      tablet: 160,
+      mobile: 120
     }
   },
   {
     id: '3',
     name: 'Nebula Store',
     description: 'E-commerce platform',
-    planetImage: '/planets/planet3.png',
+    planetImage: '/planet3.png',
     demoLink: 'https://nebula-store.demo',
     githubLink: 'https://github.com/username/nebula-store',
     techStack: ['Next.js', 'Prisma', 'PostgreSQL', 'Stripe'],
@@ -60,7 +69,11 @@ export const projects: Project[] = [
         'Secure payment processing',
         'Order tracking system'
       ]
+    },
+    size: {
+      desktop: 200,
+      tablet: 160,
+      mobile: 120
     }
-  },
-  // Add more projects as needed
+  }
 ];
