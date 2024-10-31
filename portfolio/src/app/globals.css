@@ -114,3 +114,29 @@
     opacity: 0;
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply overflow-x-hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary dark:bg-primary-dark;
+}

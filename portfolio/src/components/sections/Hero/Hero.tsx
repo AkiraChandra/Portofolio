@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black z-1" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 relative z-10 md:mt-20 lg:mb-20 xl:px-6">
+      <div className="container mx-auto px-4 relative z-10 md:mt-20 md:mb-auto lg:mb-0 xl:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 lg:items-center">
           {/* Left Column - Text Content */}
           <motion.div
