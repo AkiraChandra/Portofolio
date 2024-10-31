@@ -1,13 +1,11 @@
-// src/components/sections/Projects/components/PlanetSystem.tsx
-'use client';
-
-import React, { useState, useEffect } from 'react';
+// PlanetSystem.tsx
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Planet from './Planet';
 import ProjectPreview from './ProjectPreview';
 import ProgressLine from './ProgressLine';
 import { Project } from '@/types/projects';
-import { useProjectTransition } from '../hooks/useProjectTransition';
+import { useProjectTransition } from '@/hooks/projects/useProjectTrnsition';
 
 interface PlanetSystemProps {
   projects: Project[];

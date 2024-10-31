@@ -1,9 +1,17 @@
 // src/hooks/projects/usePlanetAnimation.ts
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { Transition, TargetAndTransition } from 'framer-motion';
+
+interface PlanetAnimation {
+  rotate: number[] | number;
+  scale: number;
+  transition: Transition;
+}
 
 export const usePlanetAnimation = (isActive: boolean) => {
-  const rotateAnimation = useMemo(() => ({
+  const rotateAnimation = useMemo<PlanetAnimation>(() => ({
     rotate: isActive ? [0, 360] : 0,
+    scale: 1,
     transition: {
       duration: isActive ? 20 : 0,
       repeat: Infinity,
@@ -11,7 +19,8 @@ export const usePlanetAnimation = (isActive: boolean) => {
     }
   }), [isActive]);
 
-  const scaleAnimation = useMemo(() => ({
+  const scaleAnimation = useMemo<PlanetAnimation>(() => ({
+    rotate: 0,
     scale: isActive ? 1.1 : 1,
     transition: {
       duration: 0.3,
@@ -19,20 +28,8 @@ export const usePlanetAnimation = (isActive: boolean) => {
     }
   }), [isActive]);
 
-  const glowAnimation = useMemo(() => ({
-    opacity: isActive ? [0.2, 0.4] : 0,
-    scale: isActive ? [1, 1.1] : 1,
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      repeatType: "reverse",
-      ease: "easeInOut"
-    }
-  }), [isActive]);
-
   return {
     rotateAnimation,
-    scaleAnimation,
-    glowAnimation
+    scaleAnimation
   };
 };

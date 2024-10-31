@@ -134,3 +134,5 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
     </motion.div>
   );
 };
+
+export default ProjectPreview;
