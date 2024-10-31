@@ -1,4 +1,4 @@
-// PlanetSystem.tsx
+// src/components/sections/Projects/components/PlanetSystem.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Planet from './Planet';
@@ -20,9 +20,9 @@ const PlanetSystem: React.FC<PlanetSystemProps> = ({ projects }) => {
   } = useProjectTransition(projects.length);
 
   return (
-    <div className="relative w-full min-h-[600px] lg:min-h-[800px]">
-      {/* Preview Card Container */}
-      <div className="absolute top-0 left-0 w-full">
+    <div className="relative w-full max-w-5xl mx-auto">
+      {/* Preview Card Container - Positioned above planets */}
+      <div className="absolute top-0 left-0 right-0 mb-16">
         <AnimatePresence mode="wait">
           {projects.map((project, index) => (
             index === activeIndex && (
@@ -37,9 +37,9 @@ const PlanetSystem: React.FC<PlanetSystemProps> = ({ projects }) => {
         </AnimatePresence>
       </div>
 
-      {/* Planets Container */}
-      <div className="relative flex justify-center items-center mt-32 lg:mt-64">
-        <div className="flex space-x-8 lg:space-x-16">
+      {/* Planets Container - Centered horizontally */}
+      <div className="relative mt-[400px] flex justify-center items-center">
+        <div className="flex space-x-16 lg:space-x-24">
           {projects.map((project, index) => (
             <React.Fragment key={project.id}>
               <Planet
