@@ -54,9 +54,9 @@ export const useProjectSizes = () => {
   // Adjusted sizes for better spacing
   if (isDesktop) {
     return {
-      planetSize: 240,    // Increased from 180
-      spacing: 360,      // Adjusted for larger planets
-      previewWidth: 500  // Increased from 400
+      planetSize: 180,    // Increased from 180
+      spacing: 200,      // Adjusted for larger planets
+      previewWidth: 300  // Increased from 400
     };
   } else if (isTablet) {
     return {

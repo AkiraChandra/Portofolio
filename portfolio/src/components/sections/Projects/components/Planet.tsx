@@ -32,7 +32,7 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
       }
     },
     hover: {
-      scale: 1.1,
+      scale: 1.05,
       transition: {
         duration: 0.3,
         ease: "easeOut"
@@ -41,19 +41,14 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   };
 
   const textVariants = {
-    initial: { opacity: 0, y: 20 },
+    initial: { opacity: 0, y: 10 },
     animate: { 
       opacity: 1, 
       y: 0,
       transition: {
         delay: index * 0.2 + 0.3,
-        duration: 0.5
+        duration: 0.3
       }
-    },
-    hover: {
-      color: "rgb(246, 176, 13)",
-      scale: 1.05,
-      transition: { duration: 0.2 }
     }
   };
 
@@ -89,7 +84,7 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
         />
 
         {/* Planet Image */}
-        <div className="relative" style={{ width: size, height: size }}>
+        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
           <Image
             src={project.planetImage}
             alt={project.name}
@@ -102,11 +97,11 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
           {/* Active Indicator Ring */}
           {isActive && (
             <motion.div
-              className="absolute inset-0 border-2 border-primary dark:border-primary-dark rounded-full"
+              className="absolute inset-0 border border-primary dark:border-primary-dark rounded-full"
               initial={{ scale: 1.1, opacity: 0 }}
               animate={{ 
-                scale: [1.1, 1.2, 1.1],
-                opacity: [0.2, 0.5, 0.2]
+                scale: [1.1, 1.15, 1.1],
+                opacity: [0.2, 0.4, 0.2]
               }}
               transition={{
                 duration: 2,
@@ -118,18 +113,17 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
         </div>
       </motion.div>
 
-      {/* Planet Name */}
+      {/* Planet Name - Centered */}
       <motion.div
-        className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-full text-center"
+        className="absolute -bottom-6 text-center w-full"
         variants={textVariants}
         initial="initial"
         animate="animate"
-        whileHover="hover"
       >
-        <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark
-                       transition-colors duration-300 whitespace-nowrap px-2 py-1
-                       bg-background-secondary/30 dark:bg-background-secondary-dark/30
-                       backdrop-blur-sm rounded-full">
+        <span className="inline-block text-xs font-medium text-text-primary dark:text-text-primary-dark
+                     transition-colors duration-300 whitespace-nowrap px-2 py-1
+                     bg-background-secondary/30 dark:bg-background-secondary-dark/30
+                     backdrop-blur-sm rounded-full">
           {project.name}
         </span>
       </motion.div>
