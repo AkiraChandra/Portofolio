@@ -6,7 +6,7 @@ export const projects: Project[] = [
     id: '1',
     name: 'Cosmic Chat',
     description: 'Real-time chat application with space theme',
-    planetImage: '/planets/planet1.png',
+    planetImage: '/profile.png',
     demoLink: 'https://cosmic-chat.demo',
     githubLink: 'https://github.com/username/cosmic-chat',
     techStack: ['React', 'Node.js', 'Socket.io', 'TypeScript'],

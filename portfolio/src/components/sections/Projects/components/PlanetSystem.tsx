@@ -1,4 +1,3 @@
-// src/components/sections/Projects/components/PlanetSystem.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Planet from './Planet';
@@ -20,42 +19,58 @@ const PlanetSystem: React.FC<PlanetSystemProps> = ({ projects }) => {
   } = useProjectTransition(projects.length);
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto">
-      {/* Preview Card Container - Positioned above planets */}
-      <div className="absolute top-0 left-0 right-0 mb-16">
-        <AnimatePresence mode="wait">
-          {projects.map((project, index) => (
-            index === activeIndex && (
-              <ProjectPreview
-                key={project.id}
-                project={project}
-                isVisible={!isTransitioning}
-                onTransitionEnd={handleTransitionEnd}
-              />
-            )
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Planets Container - Centered horizontally */}
-      <div className="relative mt-[400px] flex justify-center items-center">
-        <div className="flex space-x-16 lg:space-x-24">
+    <div className="relative w-full max-w-6xl mx-auto h-[600px] flex flex-col items-center justify-center">
+      <div className="relative">
+        {/* Planets Container */}
+        <div className="flex items-center">
           {projects.map((project, index) => (
             <React.Fragment key={project.id}>
-              <Planet
-                project={project}
-                isActive={index === activeIndex}
-                index={index}
-                totalPlanets={projects.length}
-              />
-              {index < projects.length - 1 && (
-                <ProgressLine
-                  startIndex={index}
-                  endIndex={index + 1}
-                  progress={index === activeIndex ? progress : index < activeIndex ? 100 : 0}
-                  isActive={index === activeIndex}
-                />
-              )}
+              <div className="relative flex items-center">
+                <div className="relative flex flex-col items-center">
+                  {/* Preview Container */}
+                  <AnimatePresence mode="wait">
+                    {index === activeIndex && (
+                      <div className="absolute bottom-full mb-4 w-[300px] -translate-x-1/2 left-1/2">
+                        <ProjectPreview
+                          key={project.id}
+                          project={project}
+                          isVisible={!isTransitioning}
+                          onTransitionEnd={handleTransitionEnd}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Planet */}
+                  <div className="relative">
+                    <Planet
+                      project={project}
+                      isActive={index === activeIndex}
+                      index={index}
+                      totalPlanets={projects.length}
+                    />
+
+                    {/* Project Name */}
+                    <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 text-center">
+                      <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark">
+                        {project.name}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Line */}
+                {index < projects.length - 1 && (
+                  <div className="w-32 mx-16"> {/* Adjusted spacing */}
+                    <ProgressLine
+                      startIndex={index}
+                      endIndex={index + 1}
+                      progress={index === activeIndex ? progress : index < activeIndex ? 100 : 0}
+                      isActive={index === activeIndex}
+                    />
+                  </div>
+                )}
+              </div>
             </React.Fragment>
           ))}
         </div>

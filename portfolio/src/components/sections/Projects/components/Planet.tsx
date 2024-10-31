@@ -1,6 +1,3 @@
-// src/components/sections/Projects/components/Planet.tsx
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -11,8 +8,7 @@ const Planet: React.FC<PlanetProps> = ({
   project,
   isActive,
   index,
-  totalPlanets,
-  onTransitionEnd
+  totalPlanets
 }) => {
   const { rotateAnimation, scaleAnimation } = usePlanetAnimation(isActive);
 
@@ -22,7 +18,6 @@ const Planet: React.FC<PlanetProps> = ({
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.2, duration: 0.5 }}
-      onAnimationComplete={onTransitionEnd}
     >
       {/* Planet Container */}
       <motion.div
@@ -84,18 +79,6 @@ const Planet: React.FC<PlanetProps> = ({
           />
         )}
       </motion.div>
-
-      {/* Project Name */}
-      <motion.p
-        className={`mt-4 text-sm lg:text-base font-medium transition-colors duration-300 ${
-          isActive ? 'text-primary dark:text-primary-dark' : 'text-text-primary dark:text-text-primary-dark'
-        }`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: index * 0.2 + 0.3 }}
-      >
-        {project.name}
-      </motion.p>
     </motion.div>
   );
 };
