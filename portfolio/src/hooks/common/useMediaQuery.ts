@@ -48,27 +48,31 @@ export const useAstronautSize = () => {
 
 // Project size hook
 export const useProjectSizes = () => {
-  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1023px)');
+  const isMobile = useMediaQuery('(max-width: 767px)');
   
   // Adjusted sizes for better spacing
-  if (isDesktop) {
+  if (!isMobile && !isTablet) {
     return {
-      planetSize: 180,    // Increased from 180
-      spacing: 200,      // Adjusted for larger planets
-      previewWidth: 300  // Increased from 400
-    };
-  } else if (isTablet) {
-    return {
-      planetSize: 200,
-      spacing: 280,
-      previewWidth: 440
-    };
-  } else {
-    return {
-      planetSize: 160,
-      spacing: 240,
-      previewWidth: 360
+      planetSize: 180,
+      spacing: 200,
+      previewWidth: 500
     };
   }
+  
+  // Tablet adjustments
+  if (isTablet) {
+    return {
+      planetSize: 140,
+      spacing: 160,
+      previewWidth: 440
+    };
+  }
+  
+  // Mobile adjustments
+  return {
+    planetSize: 100,
+    spacing: 40,
+    previewWidth: 200
+  };
 };

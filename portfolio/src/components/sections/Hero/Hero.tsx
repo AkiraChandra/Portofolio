@@ -17,7 +17,7 @@ const Hero: React.FC = () => {
   const { width, height } = useAstronautSize();
 
   return (
-    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden pt-16 sm:pt-20 lg:pt-0">
+    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden">
       {/* Background Stars */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
@@ -27,8 +27,8 @@ const Hero: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black z-1" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 relative z-10 md:mt-20 md:mb-auto lg:mb-0 xl:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 lg:items-center">
+      <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10">
           {/* Left Column - Text Content */}
           <motion.div
             id="hero-content"
@@ -70,12 +70,12 @@ const Hero: React.FC = () => {
                   <div className="inline-flex flex-col items-center mb-4">
                     <ProfilePicture
                       src="/profile.png"
-                      className="w-[200px] h-[200px] lg:mb-8"
+                      className="w-[180px] h-[180px] lg:mb-8"
                       fromLeft={true}
                     />
                     <motion.div
                       variants={animations.hero.child}
-                      className="font-poppins bg-purple-800/20 text-text-primary dark:text-text-primary-dark px-6 py-2.5 rounded-lg inline-block backdrop-blur-sm text-lg"
+                      className="font-poppins bg-purple-800/20 text-text-primary dark:text-text-primary-dark px-6 py-2.5 rounded-lg inline-block backdrop-blur-sm text-[0.9rem]"
                     >
                       Welcome to my Portfolio
                     </motion.div>
@@ -97,7 +97,7 @@ const Hero: React.FC = () => {
 
                 <motion.p
                   variants={animations.hero.child}
-                  className="font-poppins text-[0.8rem] dark:text-text-secondary-dark mb-4 sm:text-lg xl:text-[1.05rem] xl:leading-relaxed"
+                  className="font-poppins text-[0.8rem] dark:text-text-secondary-dark mb-4 sm:text-[0.9rem] xl:text-[0.9rem] xl:leading-relaxed"
                 >
                   {config.site.description}
                 </motion.p>
@@ -140,6 +140,7 @@ const Hero: React.FC = () => {
             </div>
           </motion.div>
 
+          {/* Right Column - Astronaut */}
           <motion.div
             id="hero-content"
             variants={animations.hero.rightContent}
@@ -148,7 +149,7 @@ const Hero: React.FC = () => {
             className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6"
           >
             {/* Container for both glow and astronaut */}
-            <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10 ">
+            <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10">
               {/* Glowing Background */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="absolute w-full max-w-[600px] sm:max-w-[800px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-90 lg:scale-100" />
