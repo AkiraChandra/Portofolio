@@ -63,7 +63,7 @@ export const useProjectSizes = () => {
   // Tablet adjustments
   if (isTablet) {
     return {
-      planetSize: 140,
+      planetSize: 160,
       spacing: 160,
       previewWidth: 440
     };

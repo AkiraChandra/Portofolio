@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import Planet from './components/Planet';
-import ProjectPreview from './components/ProjectPreview';
-import ConnectingLine from './components/ConnectingLine';
-import MovingStars from '@/components/ui/animations/Movingstars';
-import { useProjectTransition } from '@/hooks/projects/useProjectTransition';
-import { useProjectSizes } from '@/hooks/common/useMediaQuery';
-import { projects } from '@/data/projects';
-import { useMediaQuery } from '@/hooks/common/useMediaQuery';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import Planet from "./components/Planet";
+import ProjectPreview from "./components/ProjectPreview";
+import ConnectingLine from "./components/ConnectingLine";
+import MovingStars from "@/components/ui/animations/Movingstars";
+import { useProjectTransition } from "@/hooks/projects/useProjectTransition";
+import { useProjectSizes } from "@/hooks/common/useMediaQuery";
+import { projects } from "@/data/projects";
+import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 
 const Projects = () => {
   const {
@@ -17,125 +17,207 @@ const Projects = () => {
     isPaused,
     jumpToProject,
     pausePreview,
-    resumePreview
+    resumePreview,
   } = useProjectTransition({
     totalProjects: projects.length,
     previewDuration: 6000,
-    lineDuration: 1000
+    lineDuration: 1000,
   });
 
   const { planetSize, spacing } = useProjectSizes();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const containerRef = useRef(null);
   const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleDragStart = (_: never, info: PanInfo) => {
+  // Enhanced drag handlers for planet navigation
+  const handleDragStart = () => {
     setIsDragging(true);
-    setDragStart(info.point.x);
   };
 
-  const handleDragEnd = (_: never, info: PanInfo) => {
+  const handleDragEnd = (event: any, info: PanInfo) => {
     setIsDragging(false);
-    const dragDistance = info.point.x - dragStart;
-    const dragThreshold = 50; // Minimum distance to trigger page change
 
-    if (Math.abs(dragDistance) > dragThreshold) {
-      if (dragDistance > 0 && activeIndex > 0) {
-        // Dragged right - go to previous
-        jumpToProject(activeIndex - 1);
-      } else if (dragDistance < 0 && activeIndex < projects.length - 1) {
-        // Dragged left - go to next
-        jumpToProject(activeIndex + 1);
+    if (isMobile) {
+      const swipe = info.offset.x;
+      const velocity = info.velocity.x;
+      const moveThreshold = 50;
+
+      if ((swipe < -moveThreshold && velocity < 0) || velocity < -500) {
+        if (activeIndex < projects.length - 1) {
+          jumpToProject(activeIndex + 1);
+        }
+      } else if ((swipe > moveThreshold && velocity > 0) || velocity > 500) {
+        if (activeIndex > 0) {
+          jumpToProject(activeIndex - 1);
+        }
       }
     }
   };
 
   return (
-    <section className="relative min-h-screen w-full bg-background-primary dark:bg-[#1a0836] overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
+    <section className="relative min-h-screen w-full bg-background-primary dark:bg-[#1a0836] overflow-x-hidden">
+      {/* Background with better overflow control */}
+      <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent 
-                      via-background-primary/50 to-background-primary 
-                      dark:via-[#1a0836]/50 dark:to-[#1a0836]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-primary/50 to-background-primary dark:via-[#1a0836]/50 dark:to-[#1a0836]" />
       </div>
 
-      {/* Content Container */}
-      <div className="relative w-full h-screen flex flex-col justify-between mt-20 sm:mt-0 sm:py-8 md:py-8 lg:py-10">
+      {/* Main content container with improved spacing */}
+      <div className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16">
+        {/* Header section */}
         <div className="w-full relative z-10">
-          {/* Section Title */}
-          <div className="text-center mb-8 sm:mb-12 px-4 sm:px-6 lg:px-0">
-            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark">
-              My <span className="text-primary dark:text-primary-dark">Projects</span>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16 px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark">
+              My{" "}
+              <span className="text-primary dark:text-primary-dark">
+                Projects
+              </span>
             </h2>
-            <p className="mt-2 sm:mt-4 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base lg:text-lg px-4 sm:px-0">
+            <p className="mt-2 sm:mt-3 md:mt-4 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
               Explore my latest projects and creative works
             </p>
           </div>
 
-          {/* Project Preview Section */}
-          <div className="w-full px-4 sm:px-6 lg:px-8 mb-12 sm:mb-16 lg:mb-20">
-            <motion.div 
+          {/* Project preview with improved responsive widths */}
+          <div className="w-full px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6">
+            <motion.div
               className="flex justify-center"
               drag={isMobile ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
-              dragElastic={0.2}
+              dragElastic={1.6}
             >
               <AnimatePresence mode="wait">
-                {projects.map((project, index) => (
-                  index === activeIndex && (
-                    <motion.div
-                      key={project.id}
-                      initial={{ opacity: 0, x: isDragging ? 0 : 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: isDragging ? 0 : -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="w-full max-w-[320px] sm:max-w-[440px] lg:max-w-[500px] mx-auto px-2 sm:px-4 lg:px-0"
-                    >
-                      <ProjectPreview
-                        project={project}
-                        isVisible={true}
-                        containerWidth={500}
-                      />
-                    </motion.div>
-                  )
-                ))}
+                {projects.map(
+                  (project, index) =>
+                    index === activeIndex && (
+                      <motion.div
+                        key={project.id}
+                        initial={{ opacity: 0, x: isDragging ? 0 : 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: isDragging ? 0 : -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 max-w-lg mx-auto px-2 sm:px-4"
+                      >
+                        <ProjectPreview
+                          project={project}
+                          isVisible={true}
+                          containerWidth={500}
+                        />
+                      </motion.div>
+                    )
+                )}
               </AnimatePresence>
             </motion.div>
           </div>
 
-          {/* Planets Navigation Section */}
-          <div className="mt-auto pb-12 sm:pb-16 lg:pb-0 overflow-visible">
-            <div 
+          {/* Navigation controls moved above planets */}
+          <div className="w-full flex justify-center mb-8 sm:mb-12">
+            <div className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5">
+              <button
+                onClick={() =>
+                  activeIndex > 0 && jumpToProject(activeIndex - 1)
+                }
+                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
+                  activeIndex === 0
+                    ? "opacity-30 cursor-not-allowed"
+                    : "opacity-100"
+                }`}
+                disabled={activeIndex === 0}
+                aria-label="Previous project"
+              >
+                ←
+              </button>
+
+              {/* Draggable dots navigation */}
+              <motion.div
+                className="flex-1 flex justify-center items-center cursor-grab active:cursor-grabbing"
+                drag="x"
+                dragConstraints={{
+                  left: -(projects.length * 4),
+                  right: 0,
+                }}
+                dragElastic={0.1}
+                dragMomentum={false}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="flex items-center gap-1.5">
+                  {projects.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => jumpToProject(index)}
+                      className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary/50 ${
+                        index === activeIndex
+                          ? "bg-primary dark:bg-primary-dark scale-110"
+                          : "bg-gray-400/20 hover:bg-gray-400/40"
+                      }`}
+                      aria-label={`Go to project ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+
+              <button
+                onClick={() =>
+                  activeIndex < projects.length - 1 &&
+                  jumpToProject(activeIndex + 1)
+                }
+                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
+                  activeIndex === projects.length - 1
+                    ? "opacity-30 cursor-not-allowed"
+                    : "opacity-100"
+                }`}
+                disabled={activeIndex === projects.length - 1}
+                aria-label="Next project"
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          {/* Planets navigation with drag for mobile/tablet */}
+          <div className="mt-auto pb-8 sm:pb-12 overflow-visible">
+            <div
               ref={containerRef}
-              className="relative mx-auto overflow-visible" 
-              style={{ width: `${planetSize * 3 + spacing * 2}px` }}
+              className="relative mx-auto overflow-visible flex justify-center touch-pan-x"
+              style={{
+                width: `${Math.min(
+                  planetSize * 3 + spacing * 2,
+                  window.innerWidth - 48
+                )}px`,
+              }}
             >
-              {/* Sliding Planets Container */}
-              <motion.div 
-                className="absolute flex items-center"
+              <motion.div
+                className="absolute flex items-center cursor-grab active:cursor-grabbing"
                 style={{ left: `${planetSize + spacing}px` }}
-                animate={{ 
+                drag={isMobile ? "x" : false}
+                dragConstraints={{
+                  left: -((projects.length - 1) * (planetSize + spacing)),
+                  right: 0,
+                }}
+                dragElastic={0.1}
+                dragMomentum={false}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                animate={{
                   x: -activeIndex * (planetSize + spacing),
                   transition: {
                     type: "spring",
                     stiffness: 150,
                     damping: 28,
-                    mass: 1.2
-                  }
+                    mass: 1.2,
+                  },
                 }}
               >
-                {/* Planet Items */}
                 {projects.map((project, index) => (
                   <div
                     key={project.id}
-                    className="relative flex items-center w-full sm:w-auto px-4 sm:px-0"
+                    className="relative flex items-center shrink-0"
                     style={{
                       width: planetSize,
-                      flexShrink: 0,
                       marginRight: index < projects.length - 1 ? spacing : 0,
                     }}
                   >
@@ -154,9 +236,8 @@ const Projects = () => {
                       onHoverEnd={resumePreview}
                     />
 
-                    {/* Connecting Lines - Now visible on mobile */}
                     {index < projects.length - 1 && (
-                      <div 
+                      <div
                         className="absolute left-full top-1/2 -translate-y-1/2 block"
                         style={{ width: spacing }}
                       >
@@ -176,50 +257,6 @@ const Projects = () => {
                   </div>
                 ))}
               </motion.div>
-            </div>
-          </div>
-
-          {/* Navigation Dots and Arrows */}
-          <div className="absolute bottom-4 left-0 right-0 px-4">
-            <div className="flex justify-between items-center max-w-[320px] sm:max-w-[440px] lg:max-w-[500px] mx-auto">
-              {/* Previous Arrow */}
-              <button
-                onClick={() => activeIndex > 0 && jumpToProject(activeIndex - 1)}
-                className={`p-2 text-primary dark:text-primary-dark transition-opacity ${
-                  activeIndex === 0 ? 'opacity-30' : 'opacity-100'
-                }`}
-                disabled={activeIndex === 0}
-              >
-                ←
-              </button>
-
-              {/* Dots */}
-              <div className="flex space-x-2">
-                {projects.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => jumpToProject(index)}
-                    className={`w-2 h-2 rounded-full transition-colors duration-200 
-                              ${index === activeIndex 
-                                ? 'bg-primary dark:bg-primary-dark' 
-                                : 'bg-gray-400/20'}`}
-                    aria-label={`Go to project ${index + 1}`}
-                  />
-                ))}
-              </div>
-
-              {/* Next Arrow */}
-              <button
-                onClick={() => 
-                  activeIndex < projects.length - 1 && jumpToProject(activeIndex + 1)
-                }
-                className={`p-2 text-primary dark:text-primary-dark transition-opacity ${
-                  activeIndex === projects.length - 1 ? 'opacity-30' : 'opacity-100'
-                }`}
-                disabled={activeIndex === projects.length - 1}
-              >
-                →
-              </button>
             </div>
           </div>
         </div>
