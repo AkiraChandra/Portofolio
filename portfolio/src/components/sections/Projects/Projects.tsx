@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Planet from "./components/Planet";
 import ProjectPreview from "./components/ProjectPreview";
@@ -6,10 +6,13 @@ import ConnectingLine from "./components/ConnectingLine";
 import MovingStars from "@/components/ui/animations/Movingstars";
 import { useProjectTransition } from "@/hooks/projects/useProjectTransition";
 import { useProjectSizes } from "@/hooks/common/useMediaQuery";
-import { projects } from "@/data/projects";
+import { useProjects } from '@/hooks/projects/useProjects';
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
+import { Loader } from 'lucide-react';
 
 const Projects = () => {
+  const { projects, loading, error, refetch } = useProjects();
+  
   const {
     activeIndex,
     progress,
@@ -19,7 +22,7 @@ const Projects = () => {
     pausePreview,
     resumePreview,
   } = useProjectTransition({
-    totalProjects: projects.length,
+    totalProjects: projects?.length || 0,
     previewDuration: 6000,
     lineDuration: 1000,
   });
@@ -30,7 +33,43 @@ const Projects = () => {
   const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Enhanced drag handlers for planet navigation
+  if (loading) {
+    return (
+      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader className="w-8 h-8 animate-spin text-primary dark:text-primary-dark" />
+          <p className="text-text-primary dark:text-text-primary-dark">Loading projects...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-red-500 dark:text-red-400">Failed to load projects</p>
+          <button 
+            onClick={refetch}
+            className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary"
+          >
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (!projects?.length) {
+    return (
+      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <p className="text-text-primary dark:text-text-primary-dark">
+          No projects available.
+        </p>
+      </section>
+    );
+  }
+
   const handleDragStart = () => {
     setIsDragging(true);
   };
@@ -45,7 +84,7 @@ const Projects = () => {
 
       if ((swipe < -moveThreshold && velocity < 0) || velocity < -500) {
         if (activeIndex < projects.length - 1) {
-          jumpToProject(activeIndex + 1);
+          jumpToProject(activeIndex + 1);  
         }
       } else if ((swipe > moveThreshold && velocity > 0) || velocity > 500) {
         if (activeIndex > 0) {
@@ -56,13 +95,18 @@ const Projects = () => {
   };
 
   return (
-    <section className="relative min-h-screen w-full bg-background-primary dark:bg-[#1a0836] overflow-x-hidden">
+    <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark overflow-x-hidden">
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
+      
       {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-primary/50 to-background-primary dark:via-[#1a0836]/50 dark:to-[#1a0836]" />
       </div>
-
+      
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
+      
       {/* Main content container with improved spacing */}
       <div className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16">
         {/* Header section */}
@@ -114,16 +158,12 @@ const Projects = () => {
           </div>
 
           {/* Navigation controls moved above planets */}
-          <div className="w-full flex justify-center mb-8 sm:mb-12">
+          <div className="w-full flex justify-center mb-8 sm:mb-12 lg:mb-6">
             <div className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5">
               <button
-                onClick={() =>
-                  activeIndex > 0 && jumpToProject(activeIndex - 1)
-                }
+                onClick={() => activeIndex > 0 && jumpToProject(activeIndex - 1)}
                 className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
-                  activeIndex === 0
-                    ? "opacity-30 cursor-not-allowed"
-                    : "opacity-100"
+                  activeIndex === 0 ? "opacity-30 cursor-not-allowed" : "opacity-100"
                 }`}
                 disabled={activeIndex === 0}
                 aria-label="Previous project"
@@ -162,8 +202,7 @@ const Projects = () => {
 
               <button
                 onClick={() =>
-                  activeIndex < projects.length - 1 &&
-                  jumpToProject(activeIndex + 1)
+                  activeIndex < projects.length - 1 && jumpToProject(activeIndex + 1)
                 }
                 className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
                   activeIndex === projects.length - 1

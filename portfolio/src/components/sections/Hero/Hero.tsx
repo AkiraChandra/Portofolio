@@ -17,25 +17,25 @@ const Hero: React.FC = () => {
   const { width, height } = useAstronautSize();
 
   return (
-    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden">
+    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden lg:px-24">
       {/* Background Stars */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
       </div>
 
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black z-1" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black z-1" />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10">
+      <div className="container mx-auto px-4 relative z-10 h-full min-h-screen flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10 lg:py-0 xl:py-0">
           {/* Left Column - Text Content */}
           <motion.div
             id="hero-content"
             variants={animations.hero.leftContent}
             initial="hidden"
             animate="visible"
-            className="relative z-10 lg:col-span-6 xl:col-span-6"
+            className="relative z-10 lg:col-span-6 xl:col-span-6 lg:flex lg:items-center xl:flex xl:items-center"
           >
             <div className="md:flex md:items-center">
               {/* Profile Picture - Tablet */}
@@ -70,7 +70,7 @@ const Hero: React.FC = () => {
                   <div className="inline-flex flex-col items-center mb-4">
                     <ProfilePicture
                       src="/profile.png"
-                      className="w-[180px] h-[180px] lg:mb-8"
+                      className="w-[220px] h-[220px] lg:mb-8"
                       fromLeft={true}
                     />
                     <motion.div
@@ -83,13 +83,13 @@ const Hero: React.FC = () => {
                 </div>
 
                 <motion.h1 variants={animations.hero.child} className="mb-3">
-                  <div className="flex items-baseline space-x-2 font-poppins font-bold text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-5xl text-text-primary dark:text-text-primary-dark lg:space-x-4 lg:mb-1">
+                  <div className="flex items-baseline space-x-2 font-poppins font-bold text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark lg:space-x-4 lg:mb-1">
                     <span className="whitespace-nowrap">Hi! I'm</span>
                     <span className="dark:text-yellow-400 text-glow whitespace-nowrap">
                       {config.site.author}
                     </span>
                   </div>
-                  <div className="max-w-60 sm:max-w-none lg:max-w-none xl:max-w-none overflow-visible space-x-1 lg:space-x-2 font-poppins font-bold leading-none sm:leading-none lg:leading-none text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-5xl text-text-primary dark:text-text-primary-dark">
+                  <div className="max-w-60 sm:max-w-none lg:max-w-none xl:max-w-none mb-2 overflow-visible space-x-1 lg:space-x-2 font-poppins font-bold leading-none sm:leading-none lg:leading-none text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark">
                     <span className="whitespace-nowrap">I'm a </span>
                     <TypeWriter words={words} />
                   </div>
@@ -97,7 +97,7 @@ const Hero: React.FC = () => {
 
                 <motion.p
                   variants={animations.hero.child}
-                  className="font-poppins text-[0.8rem] dark:text-text-secondary-dark mb-4 sm:text-[0.9rem] xl:text-[0.9rem] xl:leading-relaxed"
+                  className="font-poppins text-[0.8rem] dark:text-text-secondary-dark mb-4 sm:text-[1.1rem] xl:text-[1.1rem] lg:leading-6"
                 >
                   {config.site.description}
                 </motion.p>
@@ -146,7 +146,7 @@ const Hero: React.FC = () => {
             variants={animations.hero.rightContent}
             initial="hidden"
             animate="visible"
-            className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6"
+            className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6 lg:flex lg:items-center xl:flex xl:items-center"
           >
             {/* Container for both glow and astronaut */}
             <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10">

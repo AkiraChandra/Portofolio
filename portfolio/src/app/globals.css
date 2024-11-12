@@ -39,9 +39,8 @@
     /* Dark theme colors */
     --color-primary: 246 176 13;
     --color-primary-dark: 229 160 12;
-
     /* Dark theme colors - Deep Purple Cosmic Theme */
-    --color-background-primary: 39 8 50; /* Deep cosmic void with more purple */
+    --color-background-primary: 36 8 50; /* Deep cosmic void with more purple */
     --color-background-secondary: 25 12 61; /* Deep purple celestial backdrop */
     --color-background-tertiary: 35 18 82; /* Rich purple stellar accent */
 
