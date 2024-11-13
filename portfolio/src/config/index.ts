@@ -218,7 +218,45 @@ export const config = {
         },
       },
     },
-
+    // Add to existing animations object
+    timeline: {
+      point: {
+        initial: { scale: 1 },
+        hover: {
+          scale: 1.1,
+          transition: {
+            type: "spring",
+            stiffness: 400,
+            damping: 10,
+          },
+        },
+      },
+      info: {
+        initial: {
+          opacity: 0,
+          x: 20,
+          scale: 0.95,
+        },
+        animate: {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          transition: {
+            duration: 0.3,
+            ease: "easeOut",
+          },
+        },
+        exit: {
+          opacity: 0,
+          x: -20,
+          scale: 0.95,
+          transition: {
+            duration: 0.2,
+            ease: "easeIn",
+          },
+        },
+      },
+    },
     profile: {
       container: (fromLeft: boolean): Variants => ({
         initial: {

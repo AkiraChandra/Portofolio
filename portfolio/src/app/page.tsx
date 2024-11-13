@@ -5,6 +5,7 @@ import Navbar from '@/components/common/navigations/Navbar';
 import Hero from '@/components/sections/Hero/Hero';
 import Projects from '@/components/sections/Projects/Projects';
 import { useSmoothScroll } from '@/hooks/common/useSmoothScroll';
+import Experience from '@/components/sections/Experience';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
@@ -25,6 +26,15 @@ export default function Home() {
           viewport={{ once: true, margin: "-20%" }}
         >
           <Projects />
+        </motion.section>
+        <motion.section 
+          className="snap-start h-screen w-full"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <Experience />
         </motion.section>
       </div>
     </main>
