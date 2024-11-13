@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Planet from "./components/Planet";
 import ProjectPreview from "./components/ProjectPreview";
@@ -6,13 +8,13 @@ import ConnectingLine from "./components/ConnectingLine";
 import MovingStars from "@/components/ui/animations/Movingstars";
 import { useProjectTransition } from "@/hooks/projects/useProjectTransition";
 import { useProjectSizes } from "@/hooks/common/useMediaQuery";
-import { useProjects } from '@/hooks/projects/useProjects';
+import { useProjects } from "@/hooks/projects/useProjects";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
-import { Loader } from 'lucide-react';
+import { Loader } from "lucide-react";
 
 const Projects = () => {
   const { projects, loading, error, refetch } = useProjects();
-  
+
   const {
     activeIndex,
     progress,
@@ -33,6 +35,32 @@ const Projects = () => {
   const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Enhanced drag handlers for planet navigation
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = (event: any, info: PanInfo) => {
+    setIsDragging(false);
+
+    if (isMobile) {
+      const swipe = info.offset.x;
+      const velocity = info.velocity.x;
+      const moveThreshold = 50;
+
+      if ((swipe < -moveThreshold && velocity < 0) || velocity < -500) {
+        if (activeIndex < projects.length - 1) {
+          jumpToProject(activeIndex + 1);
+        }
+      } else if ((swipe > moveThreshold && velocity > 0) || velocity > 500) {
+        if (activeIndex > 0) {
+          jumpToProject(activeIndex - 1);
+        }
+      }
+    }
+  };
+
+  // Handle loading states
   if (loading) {
     return (
       <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
@@ -49,10 +77,7 @@ const Projects = () => {
       <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <p className="text-red-500 dark:text-red-400">Failed to load projects</p>
-          <button 
-            onClick={refetch}
-            className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary"
-          >
+          <button onClick={refetch} className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary">
             Try Again
           </button>
         </div>
@@ -70,55 +95,31 @@ const Projects = () => {
     );
   }
 
-  const handleDragStart = () => {
-    setIsDragging(true);
-  };
-
-  const handleDragEnd = (event: any, info: PanInfo) => {
-    setIsDragging(false);
-
-    if (isMobile) {
-      const swipe = info.offset.x;
-      const velocity = info.velocity.x;
-      const moveThreshold = 50;
-
-      if ((swipe < -moveThreshold && velocity < 0) || velocity < -500) {
-        if (activeIndex < projects.length - 1) {
-          jumpToProject(activeIndex + 1);  
-        }
-      } else if ((swipe > moveThreshold && velocity > 0) || velocity > 500) {
-        if (activeIndex > 0) {
-          jumpToProject(activeIndex - 1);
-        }
-      }
-    }
-  };
-
   return (
     <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark overflow-x-hidden">
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-      
+
       {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
       </div>
-      
+
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-      
+
       {/* Main content container with improved spacing */}
       <div className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16">
         {/* Header section */}
         <div className="w-full relative z-10">
-          <div className="text-center mb-8 sm:mb-12 md:mb-16 px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10 md:mb-6 2xl:mb-14 px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark">
               My{" "}
               <span className="text-primary dark:text-primary-dark">
                 Projects
               </span>
             </h2>
-            <p className="mt-2 sm:mt-3 md:mt-4 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
+            <p className="mt-2 sm:mt-3 md:mt-3 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
               Explore my latest projects and creative works
             </p>
           </div>
@@ -158,12 +159,16 @@ const Projects = () => {
           </div>
 
           {/* Navigation controls moved above planets */}
-          <div className="w-full flex justify-center mb-8 sm:mb-12 lg:mb-6">
+          <div className="w-full flex justify-center mb-12 sm:mb-6 2xl:mb-24">
             <div className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5">
               <button
-                onClick={() => activeIndex > 0 && jumpToProject(activeIndex - 1)}
+                onClick={() =>
+                  activeIndex > 0 && jumpToProject(activeIndex - 1)
+                }
                 className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
-                  activeIndex === 0 ? "opacity-30 cursor-not-allowed" : "opacity-100"
+                  activeIndex === 0
+                    ? "opacity-30 cursor-not-allowed"
+                    : "opacity-100"
                 }`}
                 disabled={activeIndex === 0}
                 aria-label="Previous project"
@@ -202,7 +207,8 @@ const Projects = () => {
 
               <button
                 onClick={() =>
-                  activeIndex < projects.length - 1 && jumpToProject(activeIndex + 1)
+                  activeIndex < projects.length - 1 &&
+                  jumpToProject(activeIndex + 1)
                 }
                 className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
                   activeIndex === projects.length - 1
