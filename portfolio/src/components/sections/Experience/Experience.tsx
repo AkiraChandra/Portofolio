@@ -11,7 +11,7 @@ const Experience: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const handleExperienceClick = (index: number) => {
-    setActiveIndex(prev => prev === index ? null : index);
+    setActiveIndex((prev) => (prev === index ? null : index));
   };
 
   return (
@@ -26,7 +26,8 @@ const Experience: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
-            My <span className="text-primary dark:text-primary-dark">Journey</span>
+            My{" "}
+            <span className="text-primary dark:text-primary-dark">Journey</span>
           </h2>
           <p className="text-text-secondary dark:text-text-secondary-dark">
             Explore my space mission throughout the years
@@ -34,30 +35,29 @@ const Experience: React.FC = () => {
         </div>
 
         {/* Timeline Container */}
-        <div className="flex min-h-[600px] gap-12">
+        <div className="flex gap-6 lg:gap-12">
           {/* Timeline Column */}
-          <div className="w-[280px] relative">
-            {/* Vertical Line */}
-            <div className="absolute left-[45px] top-[30px] bottom-6 w-0.5 bg-primary/30 dark:bg-primary-dark/30" />
-
-            {/* Timeline Items */}
-            <div className="space-y-32 relative">
-              {experiences.map((exp: ExperienceType, index: number) => (
-                <div key={exp.id} className="relative">
-                  <div className="flex items-start gap-3">
+          <div className="w-[280px] md:w-[320px] lg:w-[380px] relative">
+            {/* Scrollable Container */}
+            <div className="max-h-[600px] overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
+              {/* Timeline Items */}
+              <div className="space-y-[80px] relative pb-4">
+                {experiences.map((exp: ExperienceType, index: number) => (
+                  <div key={exp.id} className="relative">
                     <TimelinePoint
                       experience={exp}
                       isActive={index === activeIndex}
                       onClick={() => handleExperienceClick(index)}
+                      isLast={index === experiences.length - 1}
                     />
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Info Card Area */}
-          <div className="flex-1">
+          <div className="flex-1 hidden md:block">
             <AnimatePresence mode="wait">
               {activeIndex !== null && (
                 <motion.div

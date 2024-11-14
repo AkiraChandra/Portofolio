@@ -1,3 +1,5 @@
+// src/components/sections/Experience/components/TimeLineInfo.tsx
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TimelineInfoProps } from '@/types/experience';

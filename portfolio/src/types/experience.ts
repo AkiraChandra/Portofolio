@@ -1,4 +1,4 @@
-// File: /src/types/experience.ts
+// src/types/experience.ts
 
 export interface Experience {
   id: string;
@@ -6,7 +6,7 @@ export interface Experience {
   role: string;
   period: string;
   description: string;
-  icon: string;
+  icon: string; // URL to company logo
   achievements: string[];
   status: 'ongoing' | 'completed';
   location?: string;
@@ -16,6 +16,7 @@ export interface TimelineItemProps {
   experience: Experience;
   isActive: boolean;
   onClick: () => void;
+  isLast?: boolean; // Added isLast prop
 }
 
 export interface TimelineInfoProps {

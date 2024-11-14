@@ -139,3 +139,30 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary dark:bg-primary-dark;
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer dan Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari dan Opera */
+}
+
+/* Jangan hapus custom scrollbar yang sudah ada untuk komponen lain */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary dark:bg-primary-dark;
+}
