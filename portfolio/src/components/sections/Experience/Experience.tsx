@@ -1,78 +1,80 @@
-// src/components/sections/Experience/Experience.tsx
-
-import React from 'react';
-import { motion } from 'framer-motion';
+// File: /src/components/sections/Experience/Experience.tsx
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import TimelinePoint from './components/TimeLinePoint';
 import TimelineInfo from './components/TimeLineInfo';
 import MovingStars from '@/components/ui/animations/Movingstars';
 import { experiences } from '@/data/experience';
-import { Experience as ExperienceType } from '@/types/experience';
-import { useExperienceTransition } from '@/hooks/experience/useExperienceTransition';
-import { config } from '@/config';
+import type { Experience as ExperienceType } from '@/types/experience';
 
 const Experience: React.FC = () => {
-  const { activeIndex, setActiveIndex, isTransitioning } = useExperienceTransition();
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const handleExperienceClick = (index: number) => {
+    setActiveIndex(prev => prev === index ? null : index);
+  };
 
   return (
-    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark 
-                        transition-colors duration-300 overflow-hidden snap-start">
-      {/* Background */}
+    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 px-4">
+      {/* Background Stars */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20 lg:py-32">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-20"
-        >
-          <h2 className="text-3xl lg:text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
+      {/* Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto py-20">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
             My <span className="text-primary dark:text-primary-dark">Journey</span>
           </h2>
-          <p className="text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto">
+          <p className="text-text-secondary dark:text-text-secondary-dark">
             Explore my space mission throughout the years
           </p>
-        </motion.div>
+        </div>
 
-        <div className="flex justify-center">
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-transparent 
-                          via-primary/20 dark:via-primary-dark/20 to-transparent" />
+        {/* Timeline Container */}
+        <div className="flex min-h-[600px] gap-12">
+          {/* Timeline Column */}
+          <div className="w-[280px] relative">
+            {/* Vertical Line */}
+            <div className="absolute left-[45px] top-[30px] bottom-6 w-0.5 bg-primary/30 dark:bg-primary-dark/30" />
 
-            {/* Experience Points */}
-            <div className="relative">
-              {experiences.map((exp: ExperienceType, index) => (
-                <div
-                  key={exp.id}
-                  className="mb-32 relative"
-                  style={{ 
-                    opacity: isTransitioning ? 0.5 : 1,
-                    transition: 'opacity 0.3s'
-                  }}
-                >
-                  <div className="flex items-start">
+            {/* Timeline Items */}
+            <div className="space-y-32 relative">
+              {experiences.map((exp: ExperienceType, index: number) => (
+                <div key={exp.id} className="relative">
+                  <div className="flex items-start gap-3">
                     <TimelinePoint
                       experience={exp}
                       isActive={index === activeIndex}
-                      onHover={() => setActiveIndex(index)}
-                      onLeave={() => {}}
+                      onClick={() => handleExperienceClick(index)}
                     />
-                    
-                    <div className="ml-8">
-                      <TimelineInfo
-                        experience={exp}
-                        isVisible={index === activeIndex}
-                      />
-                    </div>
                   </div>
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Info Card Area */}
+          <div className="flex-1">
+            <AnimatePresence mode="wait">
+              {activeIndex !== null && (
+                <motion.div
+                  key={`info-${activeIndex}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="sticky top-20"
+                >
+                  <TimelineInfo
+                    experience={experiences[activeIndex]}
+                    isVisible={true}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
