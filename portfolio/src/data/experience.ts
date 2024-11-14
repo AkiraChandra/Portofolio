@@ -1,28 +1,65 @@
+// src/data/experience.ts
 import { Experience } from '@/types/experience';
 
 export const experiences: Experience[] = [
   {
     id: '1',
-    company: 'SpaceX',
-    role: 'Senior Software Engineer intern at BINUS IT DIVISION',
+    company: 'Bina Nusantara Computer Club',
+    role: 'Senior Software Engineer',
     period: '2023 - Present',
-    description: 'Leading the development of mission-critical software systems for spacecraft navigation and control.',
+    description: 'Leading the development of mission-critical software systems for spacecraft navigation and control. Working on cutting-edge technology for space exploration and satellite communications. Implementing real-time monitoring systems and improving mission success rates through innovative solutions.',
     icon: '/company-icons/spacex.svg',
     achievements: [
-      'Developed real-time telemetry system for Falcon 9 launches',
-      'Optimized launch sequence algorithms improving efficiency by 30%',
+      'Developed real-time telemetry system for Falcon 9 launches, improving data accuracy by 40%',
+      'Optimized launch sequence algorithms, reducing pre-launch preparation time by 30%',
       'Led team of 5 engineers in mission control software development',
-      'Implemented new safety protocols reducing system failures by 45%'
+      'Implemented new safety protocols reducing system failures by 45%',
+      'Designed and deployed containerized microservices architecture for mission control systems'
     ],
     status: 'ongoing',
-    location: 'Cape Canaveral, FL'
+    location: 'Cape Canaveral, FL',
+    technologies: [
+      'React',
+      'TypeScript',
+      'Node.js',
+      'Python',
+      'Docker',
+      'Kubernetes',
+      'AWS',
+      'GraphQL'
+    ],
+    projectImages: [
+      {
+        url: '/projects/spacex/mission-control.jpg',
+        caption: 'Mission Control Dashboard'
+      },
+      {
+        url: '/projects/spacex/telemetry.jpg',
+        caption: 'Telemetry System'
+      },
+      {
+        url: '/projects/spacex/launch-system.jpg',
+        caption: 'Launch Control Interface'
+      }
+    ],
+    certificateUrl: 'https://credentials.spacex.com/senior-engineer-2023',
+    links: [
+      {
+        label: 'Project Documentation',
+        url: 'https://docs.spacex.com/mission-control'
+      },
+      {
+        label: 'Team Portfolio',
+        url: 'https://spacex.com/engineering-team'
+      }
+    ]
   },
   {
     id: '2',
     company: 'NASA',
     role: 'Systems Analyst',
     period: '2022 - 2023',
-    description: 'Analyzed and optimized mission control systems for deep space exploration missions.',
+    description: 'Analyzed and optimized mission control systems for deep space exploration missions. Collaborated with international space agencies and implemented advanced data analysis algorithms for spacecraft trajectory optimization.',
     icon: '/company-icons/nasa.svg',
     achievements: [
       'Improved system efficiency by 40% through optimization',
@@ -31,14 +68,39 @@ export const experiences: Experience[] = [
       'Collaborated with international space agencies'
     ],
     status: 'completed',
-    location: 'Houston, TX'
+    location: 'Houston, TX',
+    technologies: [
+      'Python',
+      'TensorFlow',
+      'SQL',
+      'MATLAB',
+      'R',
+      'Hadoop'
+    ],
+    projectImages: [
+      {
+        url: '/projects/nasa/analysis-tool.jpg',
+        caption: 'Mission Analysis Tool'
+      },
+      {
+        url: '/projects/nasa/data-viz.jpg',
+        caption: 'Data Visualization System'
+      }
+    ],
+    // No certificate for this position
+    links: [
+      {
+        label: 'Research Paper',
+        url: 'https://nasa.gov/research/papers/2023'
+      }
+    ]
   },
   {
     id: '3',
     company: 'Blue Origin',
     role: 'Software Developer',
     period: '2021 - 2022',
-    description: 'Developed flight control systems for New Shepard spacecraft.',
+    description: 'Developed flight control systems for New Shepard spacecraft. Major focus on autonomous landing systems and safety mechanisms.',
     icon: '/company-icons/blue-origin.svg',
     achievements: [
       'Implemented autonomous landing system improvements',
@@ -47,14 +109,39 @@ export const experiences: Experience[] = [
       'Completed 12 successful launches'
     ],
     status: 'completed',
-    location: 'Kent, WA'
+    location: 'Kent, WA',
+    technologies: [
+      'C++',
+      'Python',
+      'ROS',
+      'CUDA',
+      'Linux',
+      'Git'
+    ],
+    projectImages: [
+      {
+        url: '/projects/blue-origin/control-system.jpg',
+        caption: 'Flight Control System'
+      },
+      {
+        url: '/projects/blue-origin/landing-system.jpg',
+        caption: 'Landing System UI'
+      }
+    ],
+    certificateUrl: 'https://certs.blueorigin.com/dev-2022',
+    links: [
+      {
+        label: 'System Overview',
+        url: 'https://blueorigin.com/flight-systems'
+      }
+    ]
   },
   {
     id: '4',
     company: 'Virgin Galactic',
     role: 'Frontend Engineer',
     period: '2020 - 2021',
-    description: 'Developed customer-facing applications for space tourism program.',
+    description: 'Developed customer-facing applications for space tourism program. Built interactive dashboards and booking systems.',
     icon: '/company-icons/virgin-galactic.svg',
     achievements: [
       'Built booking platform for space flights',
@@ -63,14 +150,25 @@ export const experiences: Experience[] = [
       'Developed virtual training modules'
     ],
     status: 'completed',
-    location: 'Las Cruces, NM'
+    location: 'Las Cruces, NM',
+    technologies: [
+      'React',
+      'Next.js',
+      'Three.js',
+      'WebGL',
+      'Tailwind CSS',
+      'TypeScript'
+    ],
+    // No project images for this role
+    certificateUrl: 'https://learn.virgingalactic.com/cert/fe-2021',
+    // No additional links
   },
   {
     id: '5',
     company: 'Rocket Lab',
     role: 'Full Stack Developer',
     period: '2019 - 2020',
-    description: 'Built mission planning and analysis tools for small satellite launches.',
+    description: 'Built mission planning and analysis tools for small satellite launches. Developed and maintained launch scheduling system.',
     icon: '/company-icons/rocket-lab.svg',
     achievements: [
       'Created mission planning dashboard',
@@ -79,118 +177,79 @@ export const experiences: Experience[] = [
       'Streamlined launch procedures'
     ],
     status: 'completed',
-    location: 'Long Beach, CA'
+    location: 'Long Beach, CA',
+    technologies: [
+      'Vue.js',
+      'Django',
+      'PostgreSQL',
+      'Redis',
+      'Docker',
+      'AWS'
+    ],
+    projectImages: [
+      {
+        url: '/projects/rocket-lab/mission-planner.jpg',
+        caption: 'Mission Planning Dashboard'
+      },
+      {
+        url: '/projects/rocket-lab/schedule.jpg',
+        caption: 'Launch Schedule Interface'
+      }
+    ],
+    certificateUrl: 'https://rocketlab.com/certifications/fullstack-2020',
+    links: [
+      {
+        label: 'Project Demo',
+        url: 'https://demo.rocketlab.com/mission-planner'
+      },
+      {
+        label: 'Case Study',
+        url: 'https://rocketlab.com/case-studies/2020'
+      }
+    ]
   },
   {
     id: '6',
-    company: 'Lockheed Martin',
-    role: 'Software Engineer',
-    period: '2018 - 2019',
-    description: 'Worked on satellite communications systems and ground control software.',
-    icon: '/company-icons/lockheed.svg',
-    achievements: [
-      'Enhanced satellite communication protocols',
-      'Reduced signal processing latency',
-      'Implemented security improvements',
-      'Developed ground station software'
-    ],
-    status: 'completed',
-    location: 'Denver, CO'
-  },
-  {
-    id: '7',
-    company: 'Boeing',
-    role: 'Junior Developer',
-    period: '2017 - 2018',
-    description: 'Contributed to avionics software development for commercial space programs.',
-    icon: '/company-icons/boeing.svg',
-    achievements: [
-      'Developed avionics test suites',
-      'Improved code coverage by 40%',
-      'Created documentation system',
-      'Implemented CI/CD pipelines'
-    ],
-    status: 'completed',
-    location: 'Seattle, WA'
-  },
-  {
-    id: '8',
-    company: 'Northrop Grumman',
-    role: 'Software Intern',
-    period: '2017',
-    description: 'Worked on space vehicle guidance systems and simulation software.',
-    icon: '/company-icons/northrop.svg',
-    achievements: [
-      'Developed simulation modules',
-      'Created testing frameworks',
-      'Improved system accuracy',
-      'Documented legacy systems'
-    ],
-    status: 'completed',
-    location: 'Redondo Beach, CA'
-  },
-  {
-    id: '9',
-    company: 'Space Systems Lab',
+    company: 'Space Dynamics Lab',
     role: 'Research Assistant',
-    period: '2016 - 2017',
-    description: 'Conducted research on autonomous spacecraft navigation systems.',
-    icon: '/company-icons/lab.svg',
+    period: '2018 - 2019',
+    description: 'Conducted research on autonomous spacecraft navigation systems. Published papers in peer-reviewed journals.',
+    icon: '/company-icons/sdl.svg',
     achievements: [
-      'Published research papers',
+      'Published 2 research papers',
       'Developed navigation algorithms',
       'Created simulation environment',
       'Presented at conferences'
     ],
     status: 'completed',
-    location: 'Cambridge, MA'
-  },
-  {
-    id: '10',
-    company: 'Aerospace Corp',
-    role: 'Technical Intern',
-    period: '2016',
-    description: 'Supported satellite operations and data analysis projects.',
-    icon: '/company-icons/aerospace.svg',
-    achievements: [
-      'Analyzed satellite telemetry',
-      'Developed data visualization tools',
-      'Improved data processing pipelines',
-      'Created analysis reports'
+    location: 'Logan, UT',
+    technologies: [
+      'Python',
+      'MATLAB',
+      'LaTeX',
+      'Git',
+      'TensorFlow'
     ],
-    status: 'completed',
-    location: 'El Segundo, CA'
-  },
-  {
-    id: '11',
-    company: 'Space Dynamics Lab',
-    role: 'Student Researcher',
-    period: '2015 - 2016',
-    description: 'Participated in small satellite development and testing programs.',
-    icon: '/company-icons/sdl.svg',
-    achievements: [
-      'Built CubeSat components',
-      'Tested satellite systems',
-      'Wrote technical documentation',
-      'Presented project results'
+    projectImages: [
+      {
+        url: '/projects/sdl/simulation.jpg',
+        caption: 'Navigation Simulation'
+      },
+      {
+        url: '/projects/sdl/presentation.jpg',
+        caption: 'Conference Presentation'
+      }
     ],
-    status: 'completed',
-    location: 'Logan, UT'
-  },
-  {
-    id: '12',
-    company: 'University Space Center',
-    role: 'Research Assistant',
-    period: '2015',
-    description: 'Assisted in space technology research and development projects.',
-    icon: '/company-icons/university.svg',
-    achievements: [
-      'Conducted experiments',
-      'Analyzed research data',
-      'Wrote research papers',
-      'Supported grant applications'
-    ],
-    status: 'completed',
-    location: 'College Station, TX'
+    certificateUrl: 'https://sdl.usu.edu/certificates/research-2019',
+    links: [
+      {
+        label: 'Research Publication',
+        url: 'https://doi.org/10.1234/space.2019'
+      },
+      {
+        label: 'Conference Paper',
+        url: 'https://conference.space/2019/paper'
+      }
+    ]
   }
 ];

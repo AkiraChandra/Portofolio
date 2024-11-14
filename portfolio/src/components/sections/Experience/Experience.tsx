@@ -24,7 +24,7 @@ const Experience: React.FC = () => {
       {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto py-20">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h2 className="text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
             My{" "}
             <span className="text-primary dark:text-primary-dark">Journey</span>
@@ -34,12 +34,11 @@ const Experience: React.FC = () => {
           </p>
         </div>
 
-        {/* Timeline Container */}
-        <div className="flex gap-6 lg:gap-12">
-          {/* Timeline Column */}
+        {/* Timeline Container with Fixed Height */}
+        <div className="flex gap-6 lg:gap-14">
+          {/* Timeline Column - Fixed Height */}
           <div className="w-[280px] md:w-[320px] lg:w-[380px] relative">
-            {/* Scrollable Container */}
-            <div className="max-h-[600px] overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
+            <div className="h-[700px] overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
               {/* Timeline Items */}
               <div className="space-y-[80px] relative pb-4">
                 {experiences.map((exp: ExperienceType, index: number) => (
@@ -56,8 +55,8 @@ const Experience: React.FC = () => {
             </div>
           </div>
 
-          {/* Info Card Area */}
-          <div className="flex-1 hidden md:block">
+          {/* Info Card Area - Fixed Height */}
+          <div className="flex-1 hidden md:block h-[600px]">
             <AnimatePresence mode="wait">
               {activeIndex !== null && (
                 <motion.div
@@ -66,7 +65,7 @@ const Experience: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="sticky top-20"
+                  className="h-full"
                 >
                   <TimelineInfo
                     experience={experiences[activeIndex]}
