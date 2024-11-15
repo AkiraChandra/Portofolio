@@ -6,6 +6,19 @@ export interface ExperienceLink {
   icon?: string;
 }
 
+export interface Skill {
+  name: string;
+  level: number;
+  color?: string;
+}
+
+export interface MediaItem {
+  type: 'image' | 'video';
+  url: string;
+  thumbnail?: string;
+  caption?: string;
+}
+
 export interface Experience {
   id: string;
   company: string;
@@ -17,12 +30,15 @@ export interface Experience {
   status: 'ongoing' | 'completed';
   location?: string;
   technologies?: string[];
-  projectImages?: {
-    url: string;
-    caption?: string;
-  }[];
+  projectImages?: MediaItem[];
   certificateUrl?: string;
   links?: ExperienceLink[];
+  skills?: Skill[];
+  resumeData?: {
+    responsibilities: string[];
+    toolsUsed: string[];
+    impact: string[];
+  };
 }
 
 export interface TimelineItemProps {
@@ -40,4 +56,14 @@ export interface TimelineInfoProps {
 export interface TimelineGlowProps {
   isActive: boolean;
   color?: string;
+}
+
+export interface ExportFormat {
+  type: 'pdf' | 'docx' | 'txt';
+  template?: string;
+}
+
+export interface ResumeExportProps {
+  onExport?: (format: ExportFormat) => void;
+  isExporting?: boolean;
 }

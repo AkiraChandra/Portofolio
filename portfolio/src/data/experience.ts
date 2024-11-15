@@ -40,6 +40,10 @@ export const experiences: Experience[] = [
       {
         url: '/projects/spacex/launch-system.jpg',
         caption: 'Launch Control Interface'
+      },
+      {
+        url: '/projects/spacex/launch-system.jpg',
+        caption: 'Launch Control Interface'
       }
     ],
     certificateUrl: 'https://credentials.spacex.com/senior-engineer-2023',

@@ -8,13 +8,14 @@ import { useSmoothScroll } from '@/hooks/common/useSmoothScroll';
 import Experience from '@/components/sections/Experience';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// src/app/page.tsx
 export default function Home() {
-  const isScrolling = useSmoothScroll(0.3); // Trigger at 30% scroll
+  const isScrolling = useSmoothScroll(0.3);
 
   return (
     <main className="min-h-screen overflow-x-hidden">
       <Navbar />
-      <div className="snap-y snap-mandatory h-screen overflow-y-auto">
+      <div className="h-screen overflow-y-auto snap-y snap-mandatory">
         <section className="snap-start h-screen w-full">
           <Hero />
         </section>
@@ -28,7 +29,8 @@ export default function Home() {
           <Projects />
         </motion.section>
         <motion.section 
-          className="snap-start h-screen w-full"
+          // Tambahkan snap-start tapi gunakan min-h-screen
+          className="snap-start min-h-screen w-full"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
