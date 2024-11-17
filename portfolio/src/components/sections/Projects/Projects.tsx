@@ -159,7 +159,7 @@ const Projects = () => {
           </div>
 
           {/* Navigation controls moved above planets */}
-          <div className="w-full flex justify-center mb-12 sm:mb-6 2xl:mb-24">
+          <div className="w-full flex justify-center mb-12 sm:mb-6 2xl:mb-8">
             <div className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5">
               <button
                 onClick={() =>

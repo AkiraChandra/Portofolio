@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/components/sections/Experience/Experience.tsx
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import TimelinePoint from "./components/TimeLinePoint";
@@ -11,8 +12,22 @@ import ResumeExport from "./components/ResumeExport";
 const Experience: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [showSkills, setShowSkills] = useState(false);
+  const infoRef = useRef<HTMLDivElement>(null);
 
-  // Compile all unique skills from experiences
+  useEffect(() => {
+    // Handle scrolling based on activeIndex changes
+    if (activeIndex !== null && infoRef.current) {
+      // Scroll down to info section when an item is selected
+      infoRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Scroll back to top when no item is selected
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [activeIndex]);
+
   const allSkills = experiences.reduce((skills, exp) => {
     exp.technologies?.forEach((tech) => {
       if (!skills.find((s) => s.name === tech)) {
@@ -34,32 +49,24 @@ const Experience: React.FC = () => {
 
   return (
     <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 px-4">
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-
-      {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
       </div>
-
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-
-      {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto min-h-screen overflow-y-auto">
-        {/* Content */}
-        <div className="py-20">
-          {/* Header Section */}
+        <div className="mt-20 mb-0">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-2 sm:mb-4">
               My{" "}
-              <span className="text-primary dark:text-primary-dark">Journey</span>
+              <span className="text-primary dark:text-primary-dark">
+                Journey
+              </span>
             </h2>
             <p className="text-sm sm:text-base text-text-secondary dark:text-text-secondary-dark">
               Explore my space mission throughout the years
             </p>
           </div>
-          {/* Skills Section with Dropdown */}
           <div className="mb-10">
             <motion.button
               className="w-full flex items-center justify-between p-4 bg-background-secondary/80 dark:bg-background-secondary-dark/80 
@@ -117,13 +124,10 @@ const Experience: React.FC = () => {
               )}
             </AnimatePresence>
           </div>
-          {/* Timeline Container */}
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-14">
-            {/* Timeline Column */}
+
+          <div className="flex flex-col lg:flex-row gap-">
             <div className="w-full lg:w-[380px] relative h-[calc(100vh-200px)]">
-              {/* Mobile Timeline Container */}
               <div className="h-full overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
-                {/* Timeline Items */}
                 <div className="space-y-6 sm:space-y-[80px] relative pb-4">
                   {experiences.map((exp: ExperienceType, index: number) => (
                     <div key={exp.id} className="relative">
@@ -133,7 +137,7 @@ const Experience: React.FC = () => {
                         onClick={() => handleExperienceClick(index)}
                         isLast={index === experiences.length - 1}
                       />
-                      {/* Mobile-only Info Card */}
+
                       <AnimatePresence>
                         {activeIndex === index && (
                           <div className="block lg:hidden mt-4">
@@ -147,24 +151,25 @@ const Experience: React.FC = () => {
                                        dark:border-border-primary-dark/50"
                             >
                               <div className="space-y-3">
-                                {/* Quick Info */}
                                 <div className="text-sm text-text-secondary dark:text-text-secondary-dark">
                                   <p className="mb-2">{exp.description}</p>
                                   <div className="flex flex-wrap gap-2 mt-3">
-                                    {exp.technologies?.slice(0, 4).map((tech) => (
-                                      <span
-                                        key={tech}
-                                        className="px-2 py-1 text-xs rounded-full
+                                    {exp.technologies
+                                      ?.slice(0, 4)
+                                      .map((tech) => (
+                                        <span
+                                          key={tech}
+                                          className="px-2 py-1 text-xs rounded-full
                                                  bg-primary/10 dark:bg-primary-dark/10
                                                  text-primary dark:text-primary-dark
                                                  border border-primary/20 dark:border-primary-dark/20"
-                                      >
-                                        {tech}
-                                      </span>
-                                    ))}
+                                        >
+                                          {tech}
+                                        </span>
+                                      ))}
                                   </div>
                                 </div>
-                                {/* Mobile Project Gallery Carousel */}
+
                                 {exp.projectImages &&
                                   exp.projectImages.length > 0 && (
                                     <motion.div
@@ -180,10 +185,8 @@ const Experience: React.FC = () => {
                                         </span>
                                       </h4>
 
-                                      {/* Carousel Container */}
                                       <div className="relative group">
                                         <div className="relative rounded-xl overflow-hidden">
-                                          {/* Main Carousel Container */}
                                           <div
                                             className="flex overflow-x-scroll hide-scrollbar snap-x snap-mandatory touch-pan-x"
                                             style={{
@@ -198,21 +201,21 @@ const Experience: React.FC = () => {
                                                   className="flex-none w-[calc(100vw-48px)] sm:w-[300px] px-1 first:pl-0 last:pr-0 snap-center"
                                                 >
                                                   <div className="relative aspect-video rounded-lg overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark">
-                                                    {/* Shimmer Loading Effect */}
                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
 
-                                                    {/* Project Image */}
                                                     <img
                                                       src={image.url}
                                                       alt={
                                                         image.caption ||
-                                                        `Project image ${idx + 1}`
+                                                        `Project image ${
+                                                          idx + 1
+                                                        }`
                                                       }
                                                       className="w-full h-full object-cover"
                                                       loading="lazy"
                                                       decoding="async"
                                                     />
-                                                    {/* Caption */}
+
                                                     <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                                       <p className="text-white text-sm font-medium line-clamp-2">
                                                         {image.caption ||
@@ -222,7 +225,6 @@ const Experience: React.FC = () => {
                                                       </p>
                                                     </div>
 
-                                                    {/* Image Counter Badge */}
                                                     <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
                                                       <p className="text-white text-xs font-medium">
                                                         {idx + 1}/
@@ -238,24 +240,24 @@ const Experience: React.FC = () => {
                                             )}
                                           </div>
 
-                                          {/* Scroll Indicators */}
                                           <div className="absolute bottom-3 left-0 right-0 z-10">
                                             <div className="flex justify-center items-center gap-1">
-                                              {exp.projectImages.map((_, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                                                    idx === 0
-                                                      ? "w-4 bg-white"
-                                                      : "w-1.5 bg-white/40"
-                                                  }`}
-                                                />
-                                              ))}
+                                              {exp.projectImages.map(
+                                                (_, idx) => (
+                                                  <div
+                                                    key={idx}
+                                                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                                                      idx === 0
+                                                        ? "w-4 bg-white"
+                                                        : "w-1.5 bg-white/40"
+                                                    }`}
+                                                  />
+                                                )
+                                              )}
                                             </div>
                                           </div>
                                         </div>
 
-                                        {/* Swipe Indicator */}
                                         <motion.div
                                           initial={{ opacity: 0 }}
                                           animate={{ opacity: [0, 1, 0] }}
@@ -274,7 +276,7 @@ const Experience: React.FC = () => {
                                       </div>
                                     </motion.div>
                                   )}
-                                {/* Key Achievements - Mobile View */}
+
                                 <div className="space-y-2">
                                   <h4 className="text-sm font-medium text-text-primary dark:text-text-primary-dark">
                                     Key Achievements
@@ -308,8 +310,8 @@ const Experience: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* Desktop Info Card Area */}
-            <div className="hidden lg:block flex-1">
+
+            <div className="hidden lg:block flex-1" ref={infoRef}>
               <AnimatePresence mode="wait">
                 {activeIndex !== null && (
                   <motion.div
@@ -332,7 +334,6 @@ const Experience: React.FC = () => {
         </div>
       </div>
 
-      {/* Export Resume Button */}
       <ResumeExport
         onExport={(format) => {
           console.log("Exporting in format:", format);
