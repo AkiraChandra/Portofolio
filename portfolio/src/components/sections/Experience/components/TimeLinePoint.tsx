@@ -11,10 +11,13 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
   onClick,
   isLast = false,
 }) => {
+  const handleClick = () => {
+    onClick();
+  };
   return (
     <motion.div 
       className="group cursor-pointer flex items-start relative"
-      onClick={onClick}
+      onClick={handleClick}
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
