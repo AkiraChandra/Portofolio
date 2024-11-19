@@ -14,7 +14,8 @@ import { Loader } from "lucide-react";
 
 const Projects = () => {
   const { projects, loading, error, refetch } = useProjects();
-
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
   const {
     activeIndex,
     progress,
@@ -34,7 +35,28 @@ const Projects = () => {
   const containerRef = useRef(null);
   const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-
+  const handlePlanetClick = (projectId: string) => {
+    setIsTransitioning(true);
+    setSelectedPlanetId(projectId);
+    setTimeout(() => {
+      window.location.href = `/project/${projectId}`;
+    }, 1000);
+  };
+  const fadeOutVariants = {
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.4 },
+    },
+  };
+  
+  const selectedPlanetVariants = {
+    initial: { scale: 1 },
+    exit: {
+      scale: 1.5,
+      y: -100,
+      transition: { duration: 0.6, ease: "easeInOut" },
+    },
+  };
   // Enhanced drag handlers for planet navigation
   const handleDragStart = () => {
     setIsDragging(true);
@@ -279,6 +301,9 @@ const Projects = () => {
                         }
                       }}
                       onHoverEnd={resumePreview}
+                      isTransitioning={isTransitioning}
+                      isSelected={project.id === selectedPlanetId}
+                      onPlanetClick={() => handlePlanetClick(project.id)}
                     />
 
                     {index < projects.length - 1 && (
