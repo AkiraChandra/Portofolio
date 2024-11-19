@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Planet from "./components/Planet";
 import ProjectPreview from "./components/ProjectPreview";
@@ -33,30 +33,21 @@ const Projects = () => {
   const { planetSize, spacing } = useProjectSizes();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const containerRef = useRef(null);
-  const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+
   const handlePlanetClick = (projectId: string) => {
+    if (isNavigating) return;
+    
+    setIsNavigating(true);
     setIsTransitioning(true);
     setSelectedPlanetId(projectId);
+
     setTimeout(() => {
       window.location.href = `/project/${projectId}`;
-    }, 1000);
+    }, 2000);
   };
-  const fadeOutVariants = {
-    exit: {
-      opacity: 0,
-      transition: { duration: 0.4 },
-    },
-  };
-  
-  const selectedPlanetVariants = {
-    initial: { scale: 1 },
-    exit: {
-      scale: 1.5,
-      y: -100,
-      transition: { duration: 0.6, ease: "easeInOut" },
-    },
-  };
+
   // Enhanced drag handlers for planet navigation
   const handleDragStart = () => {
     setIsDragging(true);
@@ -82,7 +73,7 @@ const Projects = () => {
     }
   };
 
-  // Handle loading states
+  // Loading state
   if (loading) {
     return (
       <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
@@ -94,12 +85,15 @@ const Projects = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <p className="text-red-500 dark:text-red-400">Failed to load projects</p>
-          <button onClick={refetch} className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary">
+          <button 
+            onClick={refetch} 
+            className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary">
             Try Again
           </button>
         </div>
@@ -107,6 +101,7 @@ const Projects = () => {
     );
   }
 
+  // No projects state
   if (!projects?.length) {
     return (
       <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
@@ -119,34 +114,40 @@ const Projects = () => {
 
   return (
     <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark overflow-x-hidden">
-      {/* Gradient Overlay */}
+      {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-
-      {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
       </div>
-
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-
-      {/* Main content container with improved spacing */}
+      <AnimatePresence mode="wait">
+      {/* Main Content */}
       <div className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16">
-        {/* Header section */}
+        {/* Header Section */}
         <div className="w-full relative z-10">
           <div className="text-center mb-8 sm:mb-10 md:mb-6 2xl:mb-14 px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark">
+            <motion.h2 
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               My{" "}
               <span className="text-primary dark:text-primary-dark">
                 Projects
               </span>
-            </h2>
-            <p className="mt-2 sm:mt-3 md:mt-3 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p 
+              className="mt-2 sm:mt-3 md:mt-3 text-text-secondary dark:text-text-secondary-dark text-sm sm:text-base md:text-lg max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               Explore my latest projects and creative works
-            </p>
+            </motion.p>
           </div>
 
-          {/* Project preview with improved responsive widths */}
+          {/* Project Preview */}
           <div className="w-full px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6">
             <motion.div
               className="flex justify-center"
@@ -180,25 +181,27 @@ const Projects = () => {
             </motion.div>
           </div>
 
-          {/* Navigation controls moved above planets */}
+          {/* Navigation Controls */}
           <div className="w-full flex justify-center mb-12 sm:mb-6 2xl:mb-8">
-            <div className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5">
+            <motion.div 
+              className="flex justify-between items-center w-[280px] sm:w-[320px] bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1.5"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               <button
-                onClick={() =>
-                  activeIndex > 0 && jumpToProject(activeIndex - 1)
-                }
-                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
-                  activeIndex === 0
-                    ? "opacity-30 cursor-not-allowed"
-                    : "opacity-100"
-                }`}
+                onClick={() => activeIndex > 0 && jumpToProject(activeIndex - 1)}
+                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark 
+                           transition-all hover:scale-110 focus:outline-none focus:ring-2 
+                           focus:ring-primary/50 rounded-full ${
+                             activeIndex === 0 ? "opacity-30 cursor-not-allowed" : "opacity-100"
+                           }`}
                 disabled={activeIndex === 0}
                 aria-label="Previous project"
               >
                 ←
               </button>
 
-              {/* Draggable dots navigation */}
               <motion.div
                 className="flex-1 flex justify-center items-center cursor-grab active:cursor-grabbing"
                 drag="x"
@@ -216,11 +219,12 @@ const Projects = () => {
                     <button
                       key={index}
                       onClick={() => jumpToProject(index)}
-                      className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary/50 ${
-                        index === activeIndex
-                          ? "bg-primary dark:bg-primary-dark scale-110"
-                          : "bg-gray-400/20 hover:bg-gray-400/40"
-                      }`}
+                      className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 
+                                hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary/50 
+                                ${index === activeIndex
+                                  ? "bg-primary dark:bg-primary-dark scale-110"
+                                  : "bg-gray-400/20 hover:bg-gray-400/40"
+                                }`}
                       aria-label={`Go to project ${index + 1}`}
                     />
                   ))}
@@ -229,108 +233,112 @@ const Projects = () => {
 
               <button
                 onClick={() =>
-                  activeIndex < projects.length - 1 &&
-                  jumpToProject(activeIndex + 1)
+                  activeIndex < projects.length - 1 && jumpToProject(activeIndex + 1)
                 }
-                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full ${
-                  activeIndex === projects.length - 1
-                    ? "opacity-30 cursor-not-allowed"
-                    : "opacity-100"
-                }`}
+                className={`p-1.5 sm:p-2 text-base sm:text-lg text-primary dark:text-primary-dark 
+                           transition-all hover:scale-110 focus:outline-none focus:ring-2 
+                           focus:ring-primary/50 rounded-full ${
+                             activeIndex === projects.length - 1
+                               ? "opacity-30 cursor-not-allowed"
+                               : "opacity-100"
+                           }`}
                 disabled={activeIndex === projects.length - 1}
                 aria-label="Next project"
               >
                 →
               </button>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Planets navigation with drag for mobile/tablet */}
-          <div className="mt-auto pb-8 sm:pb-12 overflow-visible">
-            <div
-              ref={containerRef}
-              className="relative mx-auto overflow-visible flex justify-center touch-pan-x"
-              style={{
-                width: `${Math.min(
-                  planetSize * 3 + spacing * 2,
-                  window.innerWidth - 48
-                )}px`,
-              }}
-            >
-              <motion.div
-                className="absolute flex items-center cursor-grab active:cursor-grabbing"
-                style={{ left: `${planetSize + spacing}px` }}
-                drag={isMobile ? "x" : false}
-                dragConstraints={{
-                  left: -((projects.length - 1) * (planetSize + spacing)),
-                  right: 0,
-                }}
-                dragElastic={0.1}
-                dragMomentum={false}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                animate={{
-                  x: -activeIndex * (planetSize + spacing),
-                  transition: {
-                    type: "spring",
-                    stiffness: 150,
-                    damping: 28,
-                    mass: 1.2,
-                  },
-                }}
-              >
-                {projects.map((project, index) => (
-                  <div
-                    key={project.id}
-                    className="relative flex items-center shrink-0"
-                    style={{
-                      width: planetSize,
-                      marginRight: index < projects.length - 1 ? spacing : 0,
+         {/* Planets Navigation */}
+      <div className="mt-auto pb-8 sm:pb-12 overflow-visible">
+        <div
+          ref={containerRef}
+          className="relative mx-auto overflow-visible flex justify-center touch-pan-x"
+          style={{
+            width: `${Math.min(
+              planetSize * 3 + spacing * 2,
+              window.innerWidth - 48
+            )}px`,
+          }}
+        >
+          <motion.div
+            className="absolute flex items-center"
+            style={{ left: `${planetSize + spacing}px` }}
+            animate={{
+              x: -activeIndex * (planetSize + spacing),
+              transition: {
+                type: "spring",
+                stiffness: 150,
+                damping: 28,
+                mass: 1.2,
+              },
+            }}
+          >
+            <AnimatePresence>
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  className="relative flex items-center shrink-0"
+                  style={{
+                    width: planetSize,
+                    marginRight: index < projects.length - 1 ? spacing : 0,
+                  }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: selectedPlanetId ? (project.id === selectedPlanetId ? 1 : 0) : 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Planet
+                    project={project}
+                    isActive={index === activeIndex}
+                    index={index}
+                    totalPlanets={projects.length}
+                    size={planetSize}
+                    onHoverStart={() => {
+                      if (!isTransitioning && index !== activeIndex) {
+                        pausePreview();
+                        jumpToProject(index);
+                      }
                     }}
-                  >
-                    <Planet
-                      project={project}
-                      isActive={index === activeIndex}
-                      index={index}
-                      totalPlanets={projects.length}
-                      size={planetSize}
-                      onHoverStart={() => {
-                        if (index !== activeIndex) {
-                          pausePreview();
-                          jumpToProject(index);
-                        }
-                      }}
-                      onHoverEnd={resumePreview}
-                      isTransitioning={isTransitioning}
-                      isSelected={project.id === selectedPlanetId}
-                      onPlanetClick={() => handlePlanetClick(project.id)}
-                    />
+                    onHoverEnd={() => !isTransitioning && resumePreview()}
+                    isTransitioning={isTransitioning}
+                    isSelected={project.id === selectedPlanetId}
+                    onPlanetClick={() => handlePlanetClick(project.id)}
+                  />
 
-                    {index < projects.length - 1 && (
-                      <div
-                        className="absolute left-full top-1/2 -translate-y-1/2 block"
-                        style={{ width: spacing }}
-                      >
-                        <ConnectingLine
-                          progress={
-                            index === activeIndex && isLineAnimating
-                              ? progress
-                              : index < activeIndex
-                              ? 100
-                              : 0
-                          }
-                          isActive={index === activeIndex && isLineAnimating}
-                          width={spacing}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-          </div>
+                  {/* Connecting Line yang akan hilang saat planet di-klik */}
+                  {index < projects.length - 1 && !selectedPlanetId && (
+                    <motion.div
+                      className="absolute left-full top-1/2 -translate-y-1/2 block"
+                      style={{ width: spacing }}
+                      initial={{ opacity: 1 }}
+                      animate={{ opacity: selectedPlanetId ? 0 : 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ConnectingLine
+                        progress={
+                          index === activeIndex && isLineAnimating
+                            ? progress
+                            : index < activeIndex
+                            ? 100
+                            : 0
+                        }
+                        isActive={index === activeIndex && isLineAnimating}
+                        width={spacing}
+                      />
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
+        </div>
+      </div>
+      </AnimatePresence>
     </section>
   );
 };
