@@ -84,7 +84,7 @@ const Experience: React.FC = () => {
       ref={experienceSectionRef} // Tambahkan ref untuk visibility tracking
       className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 px-4"
     >
-      <div ref={headerRef} className="mt-20 mb-0">
+      <div ref={headerRef} className="mb-0">
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />

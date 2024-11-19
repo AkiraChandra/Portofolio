@@ -247,18 +247,6 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
         {/* Energy particles */}
         <EnergyParticles />
 
-        {/* Orbit ring */}
-        <motion.div
-          className="absolute inset-0 border-2 border-primary/30 dark:border-primary-dark/30 rounded-full"
-          style={{ 
-            width: size * 1.2, 
-            height: size * 1.2, 
-            left: -size * 0.1,
-            top: -size * 0.1
-          }}
-          variants={ringVariants}
-        />
-
         {/* Glow effect */}
         <motion.div
           className="absolute inset-0 rounded-full bg-primary/20 dark:bg-primary-dark/20 
