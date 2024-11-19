@@ -3,6 +3,8 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { PlanetProps } from '@/types/projects';
+import { useRouter } from 'next/navigation';
+import { usePlanetTransition } from '@/hooks/projects/usePlanetTransition';
 
 interface EnhancedPlanetProps extends PlanetProps {
   size: number;
@@ -19,6 +21,19 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   onHoverStart,
   onHoverEnd
 }) => {
+  const router = useRouter();
+  const handleClick = () => {
+    // Animasi sebelum navigasi
+    const planetElement = document.getElementById(`planet-${project.id}`);
+    if (planetElement) {
+      planetElement.style.transition = 'all 0.6s ease-in-out';
+      planetElement.style.transform = 'scale(1.2) translateY(-100vh)';
+      
+      setTimeout(() => {
+        router.push(`/project/${project.id}`);
+      }, 500);
+    }
+  };
   const planetVariants = {
     initial: { scale: 0, opacity: 0 },
     animate: { 
@@ -68,13 +83,16 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   return (
     <div className="relative flex flex-col items-center">
       <motion.div
-        className="relative"
+      id={`planet-${project.id}`} // Tambahkan id untuk referensi
+      className="relative cursor-pointer" // Tambahkan cursor-pointer
+        // className="relative"
         initial="initial"
         animate="animate"
         whileHover="hover"
         variants={planetVariants}
         onHoverStart={onHoverStart}
         onHoverEnd={onHoverEnd}
+        onClick={handleClick}
       >
         {/* Glow Effect */}
         <motion.div

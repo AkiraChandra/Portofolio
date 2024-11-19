@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import "./globals.css";
-
+import { AnimationProvider } from "@/contexts/AnimationContext";
 // Initialize Poppins with subset latin and weights
 const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-poppins',
-  display: 'swap',
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${poppins.variable} font-poppins antialiased`}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <AnimationProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </AnimationProvider>
       </body>
     </html>
   );
