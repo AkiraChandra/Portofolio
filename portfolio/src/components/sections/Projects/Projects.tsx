@@ -11,6 +11,7 @@ import { useProjectSizes } from "@/hooks/common/useMediaQuery";
 import { useProjects } from "@/hooks/projects/useProjects";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 import { Loader } from "lucide-react";
+import { debounce } from "lodash";
 
 const Projects = () => {
   const { projects, loading, error, refetch } = useProjects();
@@ -36,6 +37,22 @@ const Projects = () => {
   const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [lastHoverTime, setLastHoverTime] = useState(0);
+
+  const handlePlanetHover = debounce((index) => {
+    const currentTime = Date.now();
+    const timeSinceLastHover = currentTime - lastHoverTime;
+    const minTimeBetweenHovers = 300; // Minimum time in milliseconds between hover transitions
+
+    if (timeSinceLastHover >= minTimeBetweenHovers) {
+      if (!isTransitioning && index !== activeIndex) {
+        setLastHoverTime(currentTime);
+        pausePreview();
+        jumpToProject(index);
+      }
+    }
+  }, 100); // Debounce delay in milliseconds
+
 
   const handlePlanetClick = (projectId: string) => {
     if (isNavigating) return;
@@ -176,7 +193,7 @@ const Projects = () => {
                           initial={{ opacity: 0, x: isDragging ? 0 : 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: isDragging ? 0 : -20 }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ duration: 0.25 }}
                           className="w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 max-w-lg mx-auto px-2 sm:px-4"
                         >
                           <ProjectPreview
@@ -314,12 +331,7 @@ const Projects = () => {
                           index={index}
                           totalPlanets={projects.length}
                           size={planetSize}
-                          onHoverStart={() => {
-                            if (!isTransitioning && index !== activeIndex) {
-                              pausePreview();
-                              jumpToProject(index);
-                            }
-                          }}
+                          onHoverStart={() => handlePlanetHover(index)}
                           onHoverEnd={() => !isTransitioning && resumePreview()}
                           isTransitioning={isTransitioning}
                           isSelected={project.id === selectedPlanetId}
