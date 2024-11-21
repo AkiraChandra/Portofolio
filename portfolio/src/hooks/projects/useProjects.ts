@@ -1,58 +1,18 @@
-// src/hooks/projects/useProjects.ts
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Project } from '@/types/projects';
-import { ProjectDB } from '@/types/database.types';
-
-const DEFAULT_SIZE = {
-  desktop: 200,
-  tablet: 160,
-  mobile: 120
-};
-
-const transformDatabaseProject = (dbProject: ProjectDB): Project => {
-  return {
-    id: dbProject.id,
-    name: dbProject.name,
-    description: dbProject.description || '',
-    planetImage: dbProject.planet_image || `/planets/planet${Math.floor(Math.random() * 15) + 1}.png`,
-    demoLink: dbProject.demo_link || undefined,
-    githubLink: dbProject.github_link || undefined,
-    techStack: dbProject.tech_stack || [],
-    previewContent: {
-      title: dbProject.preview_content?.title || dbProject.name,
-      description: dbProject.preview_content?.description || dbProject.description || '',
-      features: dbProject.preview_content?.features || []
-    },
-    size: dbProject.size || DEFAULT_SIZE
-  };
-};
+import { useState, useEffect, useCallback } from 'react';
+import { Project, ImageUploadOptions } from '@/types/projects';
+import { projectService } from '@/services/projects';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
-      
-      const { data, error: dbError } = await supabase
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dbError) throw dbError;
-
-      if (!data) {
-        setProjects([]);
-        return;
-      }
-
-      const transformedProjects = data.map(transformDatabaseProject);
-      setProjects(transformedProjects);
+      const loadedProjects = await projectService.getProjects();
+      setProjects(loadedProjects);
       setError(null);
-      
     } catch (err) {
       console.error('Error loading projects:', err);
       setError(err instanceof Error ? err.message : 'Failed to load projects');
@@ -60,24 +20,15 @@ export const useProjects = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [loadProjects]);
 
   const getFeaturedProjects = async (limit: number = 3) => {
     try {
-      const { data, error: dbError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('featured', true)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (dbError) throw dbError;
-
-      return data ? data.map(transformDatabaseProject) : [];
+      return await projectService.getFeaturedProjects(limit);
     } catch (err) {
       console.error('Error loading featured projects:', err);
       throw err;
@@ -86,17 +37,55 @@ export const useProjects = () => {
 
   const searchProjects = async (query: string) => {
     try {
-      const { data, error: dbError } = await supabase
-        .from('projects')
-        .select('*')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-        .order('created_at', { ascending: false });
-
-      if (dbError) throw dbError;
-
-      return data ? data.map(transformDatabaseProject) : [];
+      return await projectService.searchProjects(query);
     } catch (err) {
       console.error('Error searching projects:', err);
+      throw err;
+    }
+  };
+
+  const getProjectsByTech = async (tech: string) => {
+    try {
+      return await projectService.getProjectsByTech(tech);
+    } catch (err) {
+      console.error('Error getting projects by tech:', err);
+      throw err;
+    }
+  };
+
+  const uploadProjectImage = async (
+    projectId: string,
+    file: File,
+    options: ImageUploadOptions = {}
+  ) => {
+    try {
+      const result = await projectService.uploadProjectImage(projectId, file, options);
+      await loadProjects(); // Refresh projects after upload
+      return result;
+    } catch (err) {
+      console.error('Error uploading project image:', err);
+      throw err;
+    }
+  };
+
+  const deleteProjectImage = async (projectId: string, imageId: string) => {
+    try {
+      const result = await projectService.deleteProjectImage(projectId, imageId);
+      await loadProjects(); // Refresh projects after deletion
+      return result;
+    } catch (err) {
+      console.error('Error deleting project image:', err);
+      throw err;
+    }
+  };
+
+  const updateImageOrder = async (projectId: string, imageIds: string[]) => {
+    try {
+      const result = await projectService.updateImageOrder(projectId, imageIds);
+      await loadProjects(); // Refresh projects after reordering
+      return result;
+    } catch (err) {
+      console.error('Error updating image order:', err);
       throw err;
     }
   };
@@ -107,6 +96,10 @@ export const useProjects = () => {
     error,
     refetch: loadProjects,
     getFeaturedProjects,
-    searchProjects
+    searchProjects,
+    getProjectsByTech,
+    uploadProjectImage,
+    deleteProjectImage,
+    updateImageOrder
   };
 };

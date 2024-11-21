@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProjectPreviewProps } from '@/types/projects';
-import { ExternalLink, Github } from 'lucide-react';
+import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
   project,
@@ -10,6 +10,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
 }) => {
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef(true);
+  const [activeImageIndex, setActiveImageIndex] = React.useState(0);
 
   // Clear any pending transitions on unmount
   useEffect(() => {
@@ -19,6 +20,11 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
       }
     };
   }, []);
+
+  // Reset active image index when project changes
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [project.id]);
 
   // Handle visibility changes with debouncing
   useEffect(() => {
@@ -31,23 +37,106 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
       clearTimeout(transitionTimeoutRef.current);
     }
 
-    // Ensure smooth transition between states
     transitionTimeoutRef.current = setTimeout(() => {
       // Additional state updates if needed
-    }, 50); // Small buffer for state transitions
+    }, 50);
   }, [isVisible, project.id]);
+
+  const handlePrevImage = () => {
+    setActiveImageIndex((prev) => 
+      prev === 0 ? project.images.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setActiveImageIndex((prev) => 
+      prev === project.images.length - 1 ? 0 : prev + 1
+    );
+  };
 
   const memoizedContent = useMemo(() => (
     <div className="w-full" style={{ maxWidth: containerWidth }}>
       <div className="bg-[#17082f]/80 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-xl">
         <AnimatePresence mode="wait">
           <motion.div
-            key={project.id} // Important: Key helps React handle transitions
+            key={project.id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
+            {/* Project Images Carousel */}
+            {project.images && project.images.length > 0 && (
+              <div className="relative mb-4 rounded-lg overflow-hidden aspect-video">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative aspect-video"
+                  >
+                    <img
+                      src={project.images[activeImageIndex].url}
+                      alt={project.images[activeImageIndex].alt || project.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    {project.images[activeImageIndex].caption && (
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 backdrop-blur-sm">
+                        <p className="text-white text-sm text-center">
+                          {project.images[activeImageIndex].caption}
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Navigation Arrows */}
+                {project.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                               bg-black/30 hover:bg-black/50 backdrop-blur-sm 
+                               text-white transition-colors"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                               bg-black/30 hover:bg-black/50 backdrop-blur-sm 
+                               text-white transition-colors"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </>
+                )}
+
+                {/* Image Indicators */}
+                {project.images.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {project.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveImageIndex(index)}
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full transition-all",
+                          activeImageIndex === index 
+                            ? "bg-white scale-125" 
+                            : "bg-white/50 hover:bg-white/80"
+                        )}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <h3 className="text-xl font-semibold text-white mb-2">
               {project.previewContent.title}
             </h3>
@@ -99,7 +188,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
         </AnimatePresence>
       </div>
     </div>
-  ), [project, containerWidth]);
+  ), [project, containerWidth, activeImageIndex]);
 
   return (
     <motion.div
@@ -108,7 +197,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
       exit={{ opacity: 0, y: -20 }}
       transition={{ 
         duration: 0.2,
-        type: "tween", // Using tween instead of spring for more predictable animations
+        type: "tween",
         ease: "easeOut"
       }}
     >
@@ -116,15 +205,19 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = React.memo(({
     </motion.div>
   );
 }, (prevProps, nextProps) => {
-  // Enhanced comparison function with safety checks
   return (
     prevProps.project?.id === nextProps.project?.id &&
     prevProps.isVisible === nextProps.isVisible &&
     prevProps.containerWidth === nextProps.containerWidth &&
-    prevProps.project?.previewContent?.title === nextProps.project?.previewContent?.title
+    prevProps.project?.previewContent?.title === nextProps.project?.previewContent?.title &&
+    JSON.stringify(prevProps.project?.images) === JSON.stringify(nextProps.project?.images)
   );
 });
 
 ProjectPreview.displayName = 'ProjectPreview';
 
 export default ProjectPreview;
+
+function cn(arg0: string, arg1: string): string | undefined {
+  throw new Error('Function not implemented.');
+}
