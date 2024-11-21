@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Project } from '@/types/projects';
+import FileViewer from '@/utils/helpers/FileViewer'; // Import the FileViewer component
 
 interface ProjectPreviewProps {
   project: Project;
@@ -9,20 +10,9 @@ interface ProjectPreviewProps {
   containerWidth?: number;
 }
 
-interface ImageWithFallbackProps {
-  src: string;
-  alt: string;
-  className?: string;
-}
-
 const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, containerWidth = 400 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isImageLoading, setIsImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isInitialMount = useRef(true);
-
-  const fallbackImage = '/placeholder-project.png'; // Add a placeholder image in your public folder
 
   useEffect(() => {
     return () => {
@@ -36,47 +26,17 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
     setActiveImageIndex(0);
   }, [project.id]);
 
-  const handleImageLoad = () => {
-    setIsImageLoading(false);
-    setImageError(false);
-  };
-
-  const handleImageError = () => {
-    setIsImageLoading(false);
-    setImageError(true);
-  };
-
   const handlePrevImage = () => {
     setActiveImageIndex((prev) => 
       prev === 0 ? (project.images?.length ?? 1) - 1 : prev - 1
     );
-    setIsImageLoading(true);
   };
 
   const handleNextImage = () => {
     setActiveImageIndex((prev) => 
       prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
     );
-    setIsImageLoading(true);
   };
-
-  const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ src, alt, className }) => (
-    <div className="relative w-full h-full">
-      {isImageLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background-tertiary dark:bg-background-tertiary-dark">
-          <div className="w-8 h-8 border-4 border-primary dark:border-primary-dark rounded-full animate-spin border-t-transparent"></div>
-        </div>
-      )}
-      <img
-        src={imageError ? fallbackImage : src}
-        alt={alt}
-        className={className}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
-        style={{ opacity: isImageLoading ? 0 : 1 }}
-      />
-    </div>
-  );
 
   if (!project) {
     return null;
@@ -110,23 +70,17 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
                       transition={{ duration: 0.2 }}
                       className="relative aspect-video"
                     >
-                      <ImageWithFallback
-                        src={project.images[activeImageIndex].url}
+                      <FileViewer 
+                        url={project.images[activeImageIndex].url}
                         alt={project.images[activeImageIndex].alt || project.name}
-                        className="w-full h-full object-cover rounded-lg"
+                        caption={project.images[activeImageIndex].caption}
+                        className="w-full h-full"
+                        showDownload={true}
                       />
-                      
-                      {project.images[activeImageIndex].caption && !imageError && (
-                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 backdrop-blur-sm">
-                          <p className="text-white text-sm text-center">
-                            {project.images[activeImageIndex].caption}
-                          </p>
-                        </div>
-                      )}
                     </motion.div>
                   </AnimatePresence>
 
-                  {project.images.length > 1 && !imageError && (
+                  {project.images.length > 1 && (
                     <>
                       <button
                         onClick={handlePrevImage}
