@@ -59,28 +59,35 @@ const FileViewer = ({
         </div>
       )}
 
-      {fileType === 'pdf' && (
-        <div className="relative aspect-[3/4] bg-background-tertiary dark:bg-background-tertiary-dark rounded-lg overflow-hidden">
-          <iframe
-            src={`${url}#view=FitH`}
-            className="w-full h-full"
-            onLoad={() => setIsLoading(false)}
-            onError={() => setError(true)}
-          />
+      {fileType === 'other' && (
+        <div className="relative w-full h-full bg-white rounded-lg overflow-hidden">
+          <object
+            data={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
+            type="application/pdf"
+            className="w-full aspect-[4/3]"
+            style={{
+              height: '100%',
+              border: 'none',
+              background: 'white',
+            }}
+          >
+            <iframe
+              src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full aspect-[4/3]"
+              style={{
+                height: '100%',
+                border: 'none',
+                background: 'white',
+              }}
+              onLoad={() => setIsLoading(false)}
+              onError={() => setError(true)}
+            />
+          </object>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary dark:border-primary-dark rounded-full animate-spin border-t-transparent" />
             </div>
           )}
-        </div>
-      )}
-
-      {fileType === 'other' && (
-        <div className="flex flex-col items-center justify-center p-8 bg-background-tertiary dark:bg-background-tertiary-dark rounded-lg">
-          <FileText className="w-12 h-12 text-primary dark:text-primary-dark mb-2" />
-          <p className="text-sm text-text-primary dark:text-text-primary-dark mb-4">
-            {alt || 'Document'}
-          </p>
         </div>
       )}
 
