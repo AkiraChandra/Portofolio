@@ -38,7 +38,9 @@ export const useProject = (id: string) => {
               desktop: 200,
               tablet: 160,
               mobile: 120
-            }
+            },
+            featured: data.featured ?? false,
+            images: data.images ?? []
           });
         }
       } catch (err) {

@@ -41,7 +41,7 @@ const Hero: React.FC = () => {
               {/* Profile Picture - Tablet */}
               <div className="hidden md:block lg:hidden mr-4">
                 <ProfilePicture
-                  src="/profile.png"
+                  src="/profile.jpg"
                   className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
                   fromLeft={false}
                 />
@@ -50,7 +50,7 @@ const Hero: React.FC = () => {
               {/* Profile Picture - Mobile */}
               <div className="md:hidden mb-4 flex justify-center">
                 <ProfilePicture
-                  src="/profile.png"
+                  src="/profile.jpg"
                   className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
                   fromLeft={true}
                 />
@@ -69,7 +69,7 @@ const Hero: React.FC = () => {
                 <div className="hidden lg:block">
                   <div className="inline-flex flex-col items-center mb-4">
                     <ProfilePicture
-                      src="/profile.png"
+                      src="/profile.jpg"
                       className="w-[220px] h-[220px] lg:mb-8"
                       fromLeft={true}
                     />
