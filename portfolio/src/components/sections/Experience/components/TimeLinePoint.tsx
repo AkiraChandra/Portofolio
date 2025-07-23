@@ -14,6 +14,22 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
   const handleClick = () => {
     onClick();
   };
+
+  // Helper function to validate if URL is accessible
+  const getImageSrc = () => {
+    if (!experience.icon) {
+      return '/images/default-company.png'; // fallback image
+    }
+    
+    // If it's already a full URL (like Supabase bucket URL), use it directly
+    if (experience.icon.startsWith('http://') || experience.icon.startsWith('https://')) {
+      return experience.icon;
+    }
+    
+    // If it's a relative path, assume it's a local asset
+    return experience.icon;
+  };
+
   return (
     <motion.div 
       className="group cursor-pointer flex items-start relative"
@@ -28,11 +44,17 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
                        group-hover:border-primary dark:group-hover:border-primary-dark transition-colors duration-300 
                        z-20 bg-background-primary dark:bg-background-primary-dark">
           <Image
-            src={experience.icon}
+            src={getImageSrc()}
             alt={`${experience.company} logo`}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-full"
+            fill
+            sizes="48px"
+            className="object-cover rounded-full"
+            onError={(e) => {
+              // Fallback to default image if the URL fails to load
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/default-company.png';
+            }}
+            priority={isActive} // Load active item with priority
           />
         </div>
 
@@ -94,7 +116,7 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
         </div>
       </div>
     </motion.div>
-);
+  );
 };
 
 export default TimelinePoint;

@@ -14,6 +14,19 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
     color: `hsl(${index * (360 / (experience.technologies?.length || 1))}, 70%, 60%)`
   }));
 
+  // Helper function to get proper image source
+  const getImageSrc = (imageUrl?: string, fallback: string = '/images/default-company.png') => {
+    if (!imageUrl) return fallback;
+    
+    // If it's already a full URL (like Supabase bucket URL), use it directly
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's a relative path, assume it's a local asset
+    return imageUrl;
+  };
+
   const TabButton = ({ tab, label, icon: Icon }: { tab: typeof activeTab, label: string, icon: any }) => (
     <motion.button
       onClick={() => setActiveTab(tab)}
@@ -42,16 +55,22 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                      overflow-hidden"
         >
           {/* Header */}
-            <div className="relative px-6 py-4 bg-background-tertiary/0 dark:bg-background-tertiary-dark/0">
+          <div className="relative px-6 py-4 bg-background-tertiary/0 dark:bg-background-tertiary-dark/0">
             <div className="flex gap-4">
               {/* Company Logo */}
               <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/20 backdrop-blur-lg">
                 <Image
-                  src={experience.icon}
+                  src={getImageSrc(experience.icon)}
                   alt={`${experience.company} logo`}
-                  layout="fill"
-                  objectFit="contain"
-                  className="absolute inset-0"
+                  fill
+                  sizes="64px"
+                  className="object-contain"
+                  onError={(e) => {
+                    // Fallback to default image if the URL fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/default-company.png';
+                  }}
+                  priority
                 />
               </div>
               {/* Company Info */}
@@ -175,18 +194,31 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                           className="relative aspect-square rounded-lg overflow-hidden bg-background-tertiary/50 dark:bg-background-tertiary-dark/50"
                         >
                           <Image
-                            src={image.url}
+                            src={getImageSrc(image.url, '/images/placeholder-project.png')}
                             alt={image.caption || `Project image ${index + 1}`}
-                            layout="fill"
-                            objectFit="cover"
+                            fill
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/images/placeholder-project.png';
+                            }}
                           />
+                          {image.caption && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2">
+                              <p className="text-xs text-white truncate">{image.caption}</p>
+                            </div>
+                          )}
                         </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-text-tertiary dark:text-text-tertiary-dark text-center">
-                      No project images available
-                    </p>
+                    <div className="text-center py-8">
+                      <Camera size={48} className="mx-auto text-text-tertiary dark:text-text-tertiary-dark mb-4" />
+                      <p className="text-sm text-text-tertiary dark:text-text-tertiary-dark">
+                        No project images available
+                      </p>
+                    </div>
                   )}
                 </motion.div>
               )}
@@ -195,8 +227,8 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
 
           {/* Footer */}
           {(experience.certificateUrl || experience.links) && (
-            <div className="px-6 py-4 bg-background-tertiary/0 dark:bg-background-tertiary-dark/0">
-              <div className="flex flex-wrap gap-4">
+            <div className="px-6 py-4 bg-background-tertiary/0 dark:bg-background-tertiary-dark/0 border-t border-border-primary/20 dark:border-border-primary-dark/20">
+              <div className="flex flex-wrap gap-3">
                 {experience.certificateUrl && (
                   <motion.a
                     href={experience.certificateUrl}
