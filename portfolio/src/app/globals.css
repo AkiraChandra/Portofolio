@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --color-primary: 243 235 0;
+    --color-primary-dark: 246 176 13;
+
+    --color-background-primary: 255 255 255;
+    --color-background-secondary: 249 250 251;
+    --color-background-tertiary: 243 244 246;
+
+    --color-text-primary: 23 23 23;
+    --color-text-secondary: 55 65 81;
+    --color-text-tertiary: 107 114 128;
+
+    --color-border-primary: 229 231 235;
+    --color-border-secondary: 209 213 219;
+
+    --color-glow-primary: 243 235 0;
+    --color-glow-secondary: 147 51 234;
+
+    /* Glow Effects - Light Mode */
+    --color-effects-outer: 2 50 126;
+    --color-effects-middle: 59 130 246;
+    --color-effects-inner: 96 165 250;
+
+    --glow-outer: rgba(2, 50, 126, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.5;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --color-primary: 246 176 13;
+    --color-primary-dark: 229 160 12;
+    /* Dark theme colors - Deep Purple Cosmic Theme */
+    --color-background-primary: 36 8 50; /* Deep cosmic void with more purple */
+    --color-background-secondary: 25 12 61; /* Deep purple celestial backdrop */
+    --color-background-tertiary: 35 18 82; /* Rich purple stellar accent */
+
+    --color-text-primary: 237 237 237;
+    --color-text-secondary: 209 213 219;
+    --color-text-tertiary: 156 163 175;
+
+    --color-border-primary: 55 65 81;
+    --color-border-secondary: 75 85 99;
+
+    --color-glow-primary: 246 176 13;
+    --color-glow-secondary: 124 58 237;
+
+    /* Glow Effects - Dark Mode */
+    --color-effects-outer: 2 50 126;
+    --color-effects-middle: 59 130 246;
+    --color-effects-inner: 96 165 250;
+
+    --glow-outer: rgba(205, 4, 255, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.8;
+  }
+}
+
+@layer utilities {
+  .animate-star {
+    opacity: 0;
+    animation: none;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 3px rgb(var(--color-glow-primary) / 0.7),
+      0 0 4px rgb(var(--color-glow-primary) / 0.7),
+      0 0 15px rgb(var(--color-glow-primary) / 0.7);
+  }
+
+  .text-glow-sm {
+    text-shadow: 0 0 2px rgb(var(--color-glow-primary) / 0.7),
+      0 0 4px rgb(var(--color-glow-primary) / 0.7),
+      0 0 6px rgb(var(--color-glow-primary) / 0.7);
+  }
+
+  .text-glow-lg {
+    text-shadow: 0 0 5px rgb(var(--color-glow-primary) / 0.7),
+      0 0 20px rgb(var(--color-glow-primary) / 0.7),
+      0 0 25px rgb(var(--color-glow-primary) / 0.7);
+  }
+
+  .animate-star.start-animation {
+    animation: star 6s linear infinite;
+  }
+}
+
+@keyframes star {
+  0% {
+    transform: translateX(-100px) translateY(100px) rotate(-45deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(200px) translateY(-200px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply overflow-x-hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary dark:bg-primary-dark;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer dan Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari dan Opera */
+}
+
+/* Jangan hapus custom scrollbar yang sudah ada untuk komponen lain */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary dark:bg-primary-dark;
+}
