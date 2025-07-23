@@ -1,39 +1,72 @@
 // src/components/sections/Experience/components/TimeLineInfo.tsx
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
-import { Building2, MapPin, Calendar, ExternalLink, ChevronRight, Award, Code, Briefcase, PictureInPicture, Camera } from 'lucide-react';
-import { TimelineInfoProps } from '@/types/experience';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import {
+  Building2,
+  MapPin,
+  Calendar,
+  ExternalLink,
+  ChevronRight,
+  Award,
+  Code,
+  Briefcase,
+  PictureInPicture,
+  Camera,
+} from "lucide-react";
+import { TimelineInfoProps } from "@/types/experience";
+import SmartImage from "@/components/common/SmartImage";
+import PlaceholderImage from "@/components/common/PlaceholderImage";
 
-const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'photos'>('overview');
-  
+const TimelineInfo: React.FC<TimelineInfoProps> = ({
+  experience,
+  isVisible,
+}) => {
+  const [activeTab, setActiveTab] = useState<"overview" | "skills" | "photos">(
+    "overview"
+  );
+
   const skillLevels = experience.technologies?.map((tech, index) => ({
     name: tech,
     level: Math.floor(Math.random() * 30) + 70,
-    color: `hsl(${index * (360 / (experience.technologies?.length || 1))}, 70%, 60%)`
+    color: `hsl(${
+      index * (360 / (experience.technologies?.length || 1))
+    }, 70%, 60%)`,
   }));
 
   // Helper function to get proper image source
-  const getImageSrc = (imageUrl?: string, fallback: string = '/images/default-company.png') => {
+  const getImageSrc = (
+    imageUrl?: string,
+    fallback: string = "/images/default-company.png"
+  ) => {
     if (!imageUrl) return fallback;
-    
+
     // If it's already a full URL (like Supabase bucket URL), use it directly
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
       return imageUrl;
     }
-    
+
     // If it's a relative path, assume it's a local asset
     return imageUrl;
   };
 
-  const TabButton = ({ tab, label, icon: Icon }: { tab: typeof activeTab, label: string, icon: any }) => (
+  const TabButton = ({
+    tab,
+    label,
+    icon: Icon,
+  }: {
+    tab: typeof activeTab;
+    label: string;
+    icon: any;
+  }) => (
     <motion.button
       onClick={() => setActiveTab(tab)}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium 
-                ${activeTab === tab 
-                  ? 'bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark' 
-                  : 'text-text-secondary dark:text-text-secondary-dark hover:bg-background-tertiary/50 dark:hover:bg-background-tertiary-dark/50'}`}
+                ${
+                  activeTab === tab
+                    ? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark"
+                    : "text-text-secondary dark:text-text-secondary-dark hover:bg-background-tertiary/50 dark:hover:bg-background-tertiary-dark/50"
+                }`}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
@@ -59,23 +92,34 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
             <div className="flex gap-4">
               {/* Company Logo */}
               <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/20 backdrop-blur-lg">
-                <Image
-                  src={getImageSrc(experience.icon)}
-                  alt={`${experience.company} logo`}
-                  fill
-                  sizes="64px"
-                  className="object-contain"
-                  onError={(e) => {
-                    // Fallback to default image if the URL fails to load
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/images/default-company.png';
-                  }}
-                  priority
-                />
+                {experience.icon && experience.icon.trim() !== "" ? (
+                  <SmartImage
+                    src={experience.icon}
+                    alt={`${experience.company} logo`}
+                    fill
+                    sizes="64px"
+                    className="object-contain"
+                    priority
+                    onError={() => {
+                      console.warn(
+                        `Company logo failed: ${experience.company}`
+                      );
+                    }}
+                  />
+                ) : (
+                  <PlaceholderImage
+                    type="company"
+                    className="rounded-lg"
+                    width={64}
+                    height={64}
+                  />
+                )}
               </div>
               {/* Company Info */}
               <div>
-                <h3 className="text-xl font-bold text-primary dark:text-primary-dark">{experience.company}</h3>
+                <h3 className="text-xl font-bold text-primary dark:text-primary-dark">
+                  {experience.company}
+                </h3>
                 <p className="text-sm text-white/90">{experience.role}</p>
                 <div className="mt-1 text-xs text-white/60">
                   <span>{experience.period}</span>
@@ -100,7 +144,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
           {/* Content */}
           <div className="p-6">
             <AnimatePresence mode="wait">
-              {activeTab === 'overview' && (
+              {activeTab === "overview" && (
                 <motion.div
                   key="overview"
                   initial={{ opacity: 0, y: 20 }}
@@ -127,7 +171,10 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                           transition={{ delay: index * 0.1 }}
                           className="flex items-start gap-2 text-sm text-text-secondary dark:text-text-secondary-dark"
                         >
-                          <Award size={16} className="mt-0.5 flex-shrink-0 text-primary dark:text-primary-dark" />
+                          <Award
+                            size={16}
+                            className="mt-0.5 flex-shrink-0 text-primary dark:text-primary-dark"
+                          />
                           <span>{achievement}</span>
                         </motion.li>
                       ))}
@@ -136,7 +183,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                 </motion.div>
               )}
 
-              {activeTab === 'skills' && (
+              {activeTab === "skills" && (
                 <motion.div
                   key="skills"
                   initial={{ opacity: 0, y: 20 }}
@@ -175,7 +222,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                 </motion.div>
               )}
 
-              {activeTab === 'photos' && (
+              {activeTab === "photos" && (
                 <motion.div
                   key="photos"
                   initial={{ opacity: 0, y: 20 }}
@@ -183,38 +230,60 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({ experience, isVisible }) =>
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {experience.projectImages && experience.projectImages.length > 0 ? (
+                  {experience.projectImages &&
+                  experience.projectImages.length > 0 ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                      {experience.projectImages.map((image, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="relative aspect-square rounded-lg overflow-hidden bg-background-tertiary/50 dark:bg-background-tertiary-dark/50"
-                        >
-                          <Image
-                            src={getImageSrc(image.url, '/images/placeholder-project.png')}
-                            alt={image.caption || `Project image ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            className="object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/images/placeholder-project.png';
-                            }}
-                          />
-                          {image.caption && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2">
-                              <p className="text-xs text-white truncate">{image.caption}</p>
-                            </div>
-                          )}
-                        </motion.div>
-                      ))}
+                      {experience.projectImages.map((image, index) => {
+                        const hasValidImageUrl =
+                          image.url && image.url.trim() !== "";
+
+                        return (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="relative aspect-square rounded-lg overflow-hidden bg-background-tertiary/50 dark:bg-background-tertiary-dark/50"
+                          >
+                            {hasValidImageUrl ? (
+                              <SmartImage
+                                src={image.url}
+                                alt={
+                                  image.caption || `Project image ${index + 1}`
+                                }
+                                fill
+                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                className="object-cover"
+                                onError={() => {
+                                  console.warn(
+                                    `Project image failed: ${image.url}`
+                                  );
+                                }}
+                              />
+                            ) : (
+                              <PlaceholderImage
+                                type="project"
+                                className="rounded-lg"
+                              />
+                            )}
+
+                            {image.caption && (
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2">
+                                <p className="text-xs text-white truncate">
+                                  {image.caption}
+                                </p>
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Camera size={48} className="mx-auto text-text-tertiary dark:text-text-tertiary-dark mb-4" />
+                      <Camera
+                        size={48}
+                        className="mx-auto text-text-tertiary dark:text-text-tertiary-dark mb-4"
+                      />
                       <p className="text-sm text-text-tertiary dark:text-text-tertiary-dark">
                         No project images available
                       </p>

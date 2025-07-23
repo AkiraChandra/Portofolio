@@ -9,47 +9,45 @@ import type { Experience as ExperienceType } from "@/types/experience";
 import ResumeExport from "./components/ResumeExport";
 import { useExperienceVisibility } from "@/hooks/experience/useExperienceVisibility";
 import { useExperience } from "@/hooks/experience/useExperience";
+import SmartImage from '@/components/common/SmartImage';
+import PlaceholderImage from '@/components/common/PlaceholderImage';
 
 const Experience: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [showSkills, setShowSkills] = useState(false);
-  const { isExperienceVisible, experienceSectionRef } = useExperienceVisibility();
+  const { isExperienceVisible, experienceSectionRef } =
+    useExperienceVisibility();
   const headerRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
-  const [scrollTarget, setScrollTarget] = useState<'info' | 'top' | null>(null);
+  const [scrollTarget, setScrollTarget] = useState<"info" | "top" | null>(null);
 
   // Use the new hook instead of hardcoded data
-  const { 
-    experiences, 
-    loading, 
-    error, 
-    refetch 
-  } = useExperience();
+  const { experiences, loading, error, refetch } = useExperience();
 
   const scrollToInfo = () => {
     if (infoRef.current) {
-      infoRef.current.scrollIntoView({ 
-        behavior: "smooth", 
-        block: "start" 
+      infoRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
 
   const scrollToTop = () => {
     if (headerRef.current) {
-      headerRef.current.scrollIntoView({ 
+      headerRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "start"
+        block: "start",
       });
     }
   };
 
   useEffect(() => {
     if (shouldScroll) {
-      if (scrollTarget === 'info' && activeIndex !== null) {
+      if (scrollTarget === "info" && activeIndex !== null) {
         scrollToInfo();
-      } else if (scrollTarget === 'top') {
+      } else if (scrollTarget === "top") {
         scrollToTop();
       }
       setShouldScroll(false);
@@ -58,13 +56,13 @@ const Experience: React.FC = () => {
   }, [shouldScroll, scrollTarget, activeIndex]);
 
   const handleExperienceClick = (index: number) => {
-    setActiveIndex(prev => {
+    setActiveIndex((prev) => {
       const newIndex = prev === index ? null : index;
       setShouldScroll(true);
       if (newIndex !== null) {
-        setScrollTarget('info');
+        setScrollTarget("info");
       } else {
-        setScrollTarget('top');
+        setScrollTarget("top");
       }
       return newIndex;
     });
@@ -157,7 +155,6 @@ const Experience: React.FC = () => {
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
         <div className="relative z-10 max-w-7xl mx-auto min-h-screen overflow-y-auto">
-          
           <div className="mt-20 mb-0">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-2 sm:mb-4">
@@ -297,50 +294,72 @@ const Experience: React.FC = () => {
                                             <div
                                               className="flex overflow-x-scroll hide-scrollbar snap-x snap-mandatory touch-pan-x"
                                               style={{
-                                                WebkitOverflowScrolling: "touch",
+                                                WebkitOverflowScrolling:
+                                                  "touch",
                                                 scrollBehavior: "smooth",
                                               }}
                                             >
                                               {exp.projectImages.map(
-                                                (image, idx) => (
-                                                  <div
-                                                    key={idx}
-                                                    className="flex-none w-[calc(100vw-48px)] sm:w-[300px] px-1 first:pl-0 last:pr-0 snap-center"
-                                                  >
-                                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark">
-                                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                                                (image, idx) => {
+                                                  const hasValidImage =
+                                                    image.url &&
+                                                    image.url.trim() !== "";
 
-                                                      <img
-                                                        src={image.url}
-                                                        alt={
-                                                          image.caption ||
-                                                          `Project image ${
-                                                            idx + 1
-                                                          }`
-                                                        }
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                      />
+                                                  return (
+                                                    <div
+                                                      key={idx}
+                                                      className="flex-none w-[calc(100vw-48px)] sm:w-[300px] px-1 first:pl-0 last:pr-0 snap-center"
+                                                    >
+                                                      <div className="relative aspect-video rounded-lg overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark">
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
 
-                                                      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                                                        <p className="text-white text-sm font-medium line-clamp-2">
-                                                          {image.caption ||
-                                                            `Project Screenshot ${
-                                                              idx + 1
-                                                            }`}
-                                                        </p>
-                                                      </div>
+                                                        {hasValidImage ? (
+                                                          <SmartImage
+                                                            src={image.url}
+                                                            alt={
+                                                              image.caption ||
+                                                              `Project image ${
+                                                                idx + 1
+                                                              }`
+                                                            }
+                                                            fill
+                                                            sizes="(max-width: 640px) 100vw, 300px"
+                                                            className="object-cover"
+                                                            onError={() => {
+                                                              console.warn(
+                                                                `Mobile project image failed: ${image.url}`
+                                                              );
+                                                            }}
+                                                          />
+                                                        ) : (
+                                                          <PlaceholderImage
+                                                            type="project"
+                                                            className="rounded-lg"
+                                                          />
+                                                        )}
 
-                                                      <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
-                                                        <p className="text-white text-xs font-medium">
-                                                          {idx + 1}/
-                                                          {exp.projectImages?.length}
-                                                        </p>
+                                                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                                          <p className="text-white text-sm font-medium line-clamp-2">
+                                                            {image.caption ||
+                                                              `Project Screenshot ${
+                                                                idx + 1
+                                                              }`}
+                                                          </p>
+                                                        </div>
+
+                                                        <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
+                                                          <p className="text-white text-xs font-medium">
+                                                            {idx + 1}/
+                                                            {
+                                                              exp.projectImages
+                                                                ?.length
+                                                            }
+                                                          </p>
+                                                        </div>
                                                       </div>
                                                     </div>
-                                                  </div>
-                                                )
+                                                  );
+                                                }
                                               )}
                                             </div>
 
