@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Project } from '@/types/projects';
-import FileViewer from '@/utils/helpers/FileViewer'; // Import the FileViewer component
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ExternalLink, Github, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Project } from "@/types/projects";
+import FileViewer from "@/utils/helpers/FileViewer"; // Import the FileViewer component
 
 interface ProjectPreviewProps {
   project: Project;
@@ -10,7 +10,11 @@ interface ProjectPreviewProps {
   containerWidth?: number;
 }
 
-const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, containerWidth = 400 }) => {
+const ProjectPreview: React.FC<ProjectPreviewProps> = ({
+  project,
+  isVisible,
+  containerWidth = 400,
+}) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autoSlideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,7 +42,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
 
     const startAutoSlide = () => {
       autoSlideTimeoutRef.current = setTimeout(() => {
-        setActiveImageIndex((prev) => 
+        setActiveImageIndex((prev) =>
           prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
         );
       }, 4000); // Auto slide every 4 seconds
@@ -58,8 +62,8 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
     if (autoSlideTimeoutRef.current) {
       clearTimeout(autoSlideTimeoutRef.current);
     }
-    
-    setActiveImageIndex((prev) => 
+
+    setActiveImageIndex((prev) =>
       prev === 0 ? (project.images?.length ?? 1) - 1 : prev - 1
     );
   };
@@ -69,8 +73,8 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
     if (autoSlideTimeoutRef.current) {
       clearTimeout(autoSlideTimeoutRef.current);
     }
-    
-    setActiveImageIndex((prev) => 
+
+    setActiveImageIndex((prev) =>
       prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
     );
   };
@@ -80,7 +84,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
     if (autoSlideTimeoutRef.current) {
       clearTimeout(autoSlideTimeoutRef.current);
     }
-    
+
     setActiveImageIndex(index);
   };
 
@@ -96,7 +100,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
       transition={{ duration: 0.5 }}
       className="w-full flex justify-center"
     >
-              <div className="bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-md rounded-xl border border-border-primary/20 dark:border-border-primary-dark/20 p-4 md:p-6 shadow-xl w-full md:w-auto md:inline-flex md:min-w-fit md:max-w-none">
+      <div className="bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-md rounded-xl border border-border-primary/20 dark:border-border-primary-dark/20 p-4 md:p-6 shadow-xl w-full md:w-auto md:inline-flex md:min-w-fit md:max-w-none">
         <div style={{ opacity: 1 }}>
           {/* Mobile Layout - Vertical (unchanged from original) */}
           <div className="block md:hidden">
@@ -114,9 +118,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
                   >
                     <FileViewer
                       url={project.images[activeImageIndex].url}
-                      alt={
-                        project.images[activeImageIndex].alt || project.name
-                      }
+                      alt={project.images[activeImageIndex].alt || project.name}
                       caption={project.images[activeImageIndex].caption}
                       className="w-full h-full object-cover"
                     />
@@ -150,8 +152,8 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
                           key={index}
                           onClick={() => handleDotClick(index)}
                           className={`w-1.5 h-1.5 rounded-full transition-all ${
-                            activeImageIndex === index 
-                              ? "bg-white scale-125" 
+                            activeImageIndex === index
+                              ? "bg-white scale-125"
                               : "bg-white/50 hover:bg-white/80"
                           }`}
                           aria-label={`Go to image ${index + 1}`}
@@ -167,7 +169,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
             <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2">
               {project.previewContent.title}
             </h3>
-            
+
             <p className="text-text-secondary dark:text-text-secondary-dark text-sm mb-3 line-clamp-2">
               {project.previewContent.description}
             </p>
@@ -197,7 +199,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
                   <span>Live Demo</span>
                 </a>
               )}
-              
+
               {project.githubLink && (
                 <a
                   href={project.githubLink}
@@ -229,11 +231,12 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({ project, isVisible, con
                       className="w-full h-full"
                     >
                       <FileViewer
-url={project.images[activeImageIndex].url}
+                        url={project.images[activeImageIndex].url}
                         alt={
                           project.images[activeImageIndex].alt || project.name
                         }
-                        caption={project.images[activeImageIndex].caption}                        className="w-full h-full object-cover"
+                        caption={project.images[activeImageIndex].caption}
+                        className="w-full h-full object-cover"
                       />
                     </motion.div>
                   </AnimatePresence>
@@ -265,8 +268,8 @@ url={project.images[activeImageIndex].url}
                             key={index}
                             onClick={() => handleDotClick(index)}
                             className={`w-1.5 h-1.5 rounded-full transition-all ${
-                              activeImageIndex === index 
-                                ? "bg-white scale-125" 
+                              activeImageIndex === index
+                                ? "bg-white scale-125"
                                 : "bg-white/50 hover:bg-white/80"
                             }`}
                             aria-label={`Go to image ${index + 1}`}
@@ -285,7 +288,7 @@ url={project.images[activeImageIndex].url}
                 <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2 whitespace-nowrap">
                   {project.previewContent.title}
                 </h3>
-                
+
                 <div className="mb-3 overflow-hidden">
                   <p className="text-text-secondary dark:text-text-secondary-dark text-sm leading-relaxed h-12 overflow-hidden">
                     {project.previewContent.description}
@@ -318,7 +321,7 @@ url={project.images[activeImageIndex].url}
                     <span>Live Demo</span>
                   </a>
                 )}
-                
+
                 {project.githubLink && (
                   <a
                     href={project.githubLink}
