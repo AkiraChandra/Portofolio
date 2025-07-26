@@ -81,7 +81,10 @@ const Navbar = () => {
                   </a>
                 </div>
 
-                <motion.button
+                <motion.a
+                  href={site.social.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-3 lg:px-6 py-2 bg-primary dark:bg-primary-dark text-background-primary dark:text-background-primary-dark 
@@ -89,7 +92,7 @@ const Navbar = () => {
                            whitespace-nowrap min-w-[120px] lg:min-w-[140px]"
                 >
                   Let's Connect
-                </motion.button>
+                </motion.a>
               </div>
             )}
 
@@ -143,15 +146,6 @@ const Navbar = () => {
                     </a>
                   </div>
                   
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-2.5 bg-primary dark:bg-primary-dark text-background-primary dark:text-background-primary-dark 
-                             rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-base font-medium 
-                             whitespace-nowrap min-w-[120px]"
-                  >
-                    Let's Connect
-                  </motion.button>
                 </div>
               </div>
             </motion.div>

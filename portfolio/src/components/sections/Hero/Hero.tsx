@@ -106,7 +106,10 @@ const Hero: React.FC = () => {
                   variants={animations.hero.child}
                   className="flex flex-wrap gap-3 sm:gap-4"
                 >
-                  <motion.button
+                  <motion.a
+                    href={config.site.social.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="px-6 sm:px-8 py-2.5 sm:py-3 lg:px-8 xl:px-10 lg:py-3 xl:py-4 bg-yellow-500 text-black rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2 text-sm sm:text-base lg:text-lg"
@@ -126,7 +129,7 @@ const Hero: React.FC = () => {
                         d="M14 5l7 7m0 0l-7 7m7-7H3"
                       />
                     </svg>
-                  </motion.button>
+                  </motion.a>
 
                   <motion.button
                     whileHover={{ scale: 1.05 }}

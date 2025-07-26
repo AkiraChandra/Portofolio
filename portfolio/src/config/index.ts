@@ -10,7 +10,7 @@ export const config = {
     social: {
       github: "https://github.com/akirachandra",
       linkedin: "https://linkedin.com/in/akirachandra",
-      instagram: "https://instagram.com/akirachandra",
+      instagram: "https://www.instagram.com/akira_chd?igsh=MTB1aWdnYmljdWt3aw%3D%3D&utm_source=qr",
     },
     navigation: {
       links: [

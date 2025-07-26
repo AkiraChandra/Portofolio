@@ -98,12 +98,12 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.5 }}
-      className="w-full flex justify-center"
+      className="w-full flex justify-center items-center min-h-full"
     >
       <div className="bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-md rounded-xl border border-border-primary/20 dark:border-border-primary-dark/20 p-4 md:p-6 shadow-xl w-full md:w-auto md:inline-flex md:min-w-fit md:max-w-none">
         <div style={{ opacity: 1 }}>
-          {/* Mobile Layout - Vertical (unchanged from original) */}
-          <div className="block md:hidden">
+          {/* Mobile Layout - Vertical (centered vertically only) */}
+          <div className="flex flex-col justify-center md:hidden">
             {/* Image Section - Mobile */}
             {project.images && project.images.length > 0 && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden mb-4">
@@ -165,57 +165,59 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
               </div>
             )}
 
-            {/* Content Section - Mobile */}
-            <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2">
-              {project.previewContent.title}
-            </h3>
+            {/* Content Section - Mobile (left-aligned) */}
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2">
+                {project.previewContent.title}
+              </h3>
 
-            <p className="text-text-secondary dark:text-text-secondary-dark text-sm mb-3 line-clamp-2">
-              {project.previewContent.description}
-            </p>
+              <p className="text-text-secondary dark:text-text-secondary-dark text-sm mb-3 line-clamp-2">
+                {project.previewContent.description}
+              </p>
 
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {project.techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-2 py-0.5 text-xs rounded-full bg-primary/10 dark:bg-primary-dark/10 
-                           text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {project.techStack.map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-2 py-0.5 text-xs rounded-full bg-primary/10 dark:bg-primary-dark/10 
+                             text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
 
-            <div className="flex items-center space-x-4">
-              {project.demoLink && (
-                <a
-                  href={project.demoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
-                  tabIndex={0}
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Live Demo</span>
-                </a>
-              )}
+              <div className="flex items-center space-x-4">
+                {project.demoLink && (
+                  <a
+                    href={project.demoLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
+                    tabIndex={0}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Live Demo</span>
+                  </a>
+                )}
 
-              {project.githubLink && (
-                <a
-                  href={project.githubLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
-                  tabIndex={0}
-                >
-                  <Github className="w-4 h-4" />
-                  <span>View Code</span>
-                </a>
-              )}
+                {project.githubLink && (
+                  <a
+                    href={project.githubLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
+                    tabIndex={0}
+                  >
+                    <Github className="w-4 h-4" />
+                    <span>View Code</span>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Desktop Layout - Horizontal */}
+          {/* Desktop Layout - Horizontal (centered vertically only) */}
           <div className="hidden md:flex items-center gap-6 w-auto">
             {/* Image Section - Desktop */}
             {project.images && project.images.length > 0 && (
@@ -282,9 +284,9 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
               </div>
             )}
 
-            {/* Content Section - Desktop */}
-            <div className="flex flex-col justify-between h-56 w-auto min-w-0">
-              <div className="flex-1">
+            {/* Content Section - Desktop (centered vertically) */}
+            <div className="flex flex-col justify-center h-56 w-auto min-w-0">
+              <div className="flex-1 flex flex-col justify-center">
                 <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2 whitespace-nowrap">
                   {project.previewContent.title}
                 </h3>
