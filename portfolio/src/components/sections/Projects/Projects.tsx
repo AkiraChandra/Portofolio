@@ -38,7 +38,8 @@ const Projects = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [lastHoverTime, setLastHoverTime] = useState(0);
-
+  const size = useProjectSizes();
+  const is2xl = useMediaQuery("(min-width: 1536px)");
   const handlePlanetHover = debounce((index) => {
     const currentTime = Date.now();
     const timeSinceLastHover = currentTime - lastHoverTime;
@@ -52,7 +53,6 @@ const Projects = () => {
       }
     }
   }, 100); // Debounce delay in milliseconds
-
 
   const handlePlanetClick = (projectId: string) => {
     if (isNavigating) return;
@@ -149,10 +149,23 @@ const Projects = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
       <AnimatePresence mode="wait">
         {/* Main Content */}
-        <div className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16">
+        <div
+          className="relative w-full min-h-screen flex flex-col pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16"
+          style={{
+            ...(is2xl && { paddingTop: `${size.containerPaddingTop}px` }),
+          }}
+        >
           {/* Header Section */}
           <div className="w-full relative z-10">
-            <div className="text-center mb-8 sm:mb-10 md:mb-6 2xl:mb-14 px-4 sm:px-6 lg:px-8">
+            <div
+              className="text-center mb-8 sm:mb-10 md:mb-6 px-4 sm:px-6 lg:px-8"
+              style={{
+                ...(is2xl && {
+                  marginBottom: `${size.headerMarginBottom}px`,
+                }),
+              }}
+            >
+              {" "}
               <motion.h2
                 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-text-primary dark:text-text-primary-dark"
                 initial={{ opacity: 0, y: 20 }}
