@@ -12,12 +12,12 @@ export const config = {
       linkedin: "https://linkedin.com/in/akirachandra",
       instagram: "https://www.instagram.com/akira_chd?igsh=MTB1aWdnYmljdWt3aw%3D%3D&utm_source=qr",
     },
-    navigation: {
+      navigation: {
       links: [
-        { title: "Home", href: "#home" },
-        { title: "Skills", href: "#skills" },
-        { title: "Experience", href: "#experience" },
-        { title: "Projects", href: "#projects" },
+        { title: "Home", href: "#home", path: "/" },
+        { title: "Projects", href: "#projects", path: "/projects" },
+        { title: "Experience", href: "#experience", path: "/experience" },
+        { title: "Certifications", href: "#certifications", path: "/certifications" }, // Updated from "Skills"
       ],
     },
   },
