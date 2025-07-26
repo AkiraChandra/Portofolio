@@ -19,7 +19,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autoSlideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Get dynamic sizes based on screen dimensions
   const sizes = useProjectSizes();
 
@@ -104,7 +104,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
           <div className="flex flex-col justify-center md:hidden">
             {/* Image Section - Mobile with dynamic height */}
             {project.images && project.images.length > 0 && (
-              <div 
+              <div
                 className="relative w-full rounded-lg overflow-hidden mb-4"
                 style={{ height: `${sizes.mobilePreviewImageHeight}px` }}
               >
@@ -146,21 +146,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
-
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {project.images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleDotClick(index)}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${
-                            activeImageIndex === index
-                              ? "bg-white scale-125"
-                              : "bg-white/50 hover:bg-white/80"
-                          }`}
-                          aria-label={`Go to image ${index + 1}`}
-                        />
-                      ))}
-                    </div>
                   </>
                 )}
               </div>
@@ -222,11 +207,11 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
           <div className="hidden md:flex items-center gap-6 w-auto">
             {/* Image Section - Desktop with dynamic dimensions */}
             {project.images && project.images.length > 0 && (
-              <div 
+              <div
                 className="flex-shrink-0"
-                style={{ 
+                style={{
                   width: `${sizes.previewImageWidth}px`,
-                  height: `${sizes.previewImageHeight}px`
+                  height: `${sizes.previewImageHeight}px`,
                 }}
               >
                 <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -241,7 +226,9 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     >
                       <FileViewer
                         url={project.images[activeImageIndex].url}
-                        alt={project.images[activeImageIndex].alt || project.name}
+                        alt={
+                          project.images[activeImageIndex].alt || project.name
+                        }
                         caption={project.images[activeImageIndex].caption}
                         className="w-full h-full object-cover"
                       />
@@ -290,7 +277,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
             )}
 
             {/* Content Section - Desktop with dynamic height */}
-            <div 
+            <div
               className="flex flex-col justify-center w-auto min-w-0"
               style={{ height: `${sizes.previewContentHeight}px` }}
             >
