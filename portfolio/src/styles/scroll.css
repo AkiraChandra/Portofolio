@@ -1,0 +1,166 @@
+/* src/styles/scroll.css - Additional styles for smooth scrolling */
+
+/* Ensure smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize scroll performance */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Remove scroll behavior from elements that shouldn't have it */
+.no-smooth-scroll {
+  scroll-behavior: auto !important;
+}
+
+/* Snap scroll container optimization */
+.snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Intersection observer optimization */
+.section-observer {
+  position: relative;
+}
+
+/* Navbar scroll effects */
+.navbar-scrolled {
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--color-background-primary), 0.95);
+  border-bottom: 1px solid rgba(var(--color-border-primary), 0.1);
+}
+
+/* Navigation indicators */
+.scroll-indicator {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-indicator:hover {
+  transform: scale(1.2);
+}
+
+.scroll-indicator.active {
+  background-color: rgb(var(--color-primary));
+}
+
+.scroll-indicator.active.dark {
+  background-color: rgb(var(--color-primary-dark));
+}
+
+/* Loading states */
+.scroll-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--color-primary)),
+    transparent
+  );
+  animation: scrollProgress 1.2s infinite;
+}
+
+@keyframes scrollProgress {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Dark mode variations */
+.dark .scroll-loading::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--color-primary-dark)),
+    transparent
+  );
+}
+
+/* Mobile optimizations */
+@media (max-width: 1024px) {
+  /* Reduce snap scroll intensity on mobile */
+  .snap-container {
+    scroll-snap-type: y proximity;
+  }
+  
+  /* Hide scroll indicators on small screens */
+  .scroll-indicators {
+    display: none;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus states for keyboard navigation */
+.nav-link:focus,
+.scroll-indicator:focus {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
+
+.dark .nav-link:focus,
+.dark .scroll-indicator:focus {
+  outline-color: rgb(var(--color-primary-dark));
+}
+
+/* Smooth transitions for theme changes */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Performance optimizations */
+.scroll-container {
+  will-change: scroll-position;
+  -webkit-overflow-scrolling: touch;
+}
+
+.section-animate {
+  will-change: opacity, transform;
+}
+
+/* Section spacing and layout */
+.section-padding {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+/* Navbar height compensation */
+.section-offset {
+  scroll-margin-top: 5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-offset {
+    scroll-margin-top: 6rem;
+  }
+}

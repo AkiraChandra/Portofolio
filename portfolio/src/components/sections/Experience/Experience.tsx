@@ -1,47 +1,53 @@
 // src/components/sections/Experience/Experience.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader, AlertCircle, RefreshCw } from "lucide-react";
 import TimelinePoint from "./components/TimeLinePoint";
 import TimelineInfo from "./components/TimeLineInfo";
 import MovingStars from "@/components/ui/animations/Movingstars";
-import { experiences } from "@/data/experience";
 import type { Experience as ExperienceType } from "@/types/experience";
 import ResumeExport from "./components/ResumeExport";
 import { useExperienceVisibility } from "@/hooks/experience/useExperienceVisibility";
+import { useExperience } from "@/hooks/experience/useExperience";
+import SmartImage from '@/components/common/SmartImage';
+import PlaceholderImage from '@/components/common/PlaceholderImage';
 
 const Experience: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [showSkills, setShowSkills] = useState(false);
-  const { isExperienceVisible, experienceSectionRef } = useExperienceVisibility();
-  const headerRef = useRef<HTMLDivElement>(null); // Ref baru untuk header section
+  const { isExperienceVisible, experienceSectionRef } =
+    useExperienceVisibility();
+  const headerRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
-  const [scrollTarget, setScrollTarget] = useState<'info' | 'top' | null>(null);
+  const [scrollTarget, setScrollTarget] = useState<"info" | "top" | null>(null);
+
+  // Use the new hook instead of hardcoded data
+  const { experiences, loading, error, refetch } = useExperience();
 
   const scrollToInfo = () => {
     if (infoRef.current) {
-      infoRef.current.scrollIntoView({ 
-        behavior: "smooth", 
-        block: "start" 
+      infoRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
 
   const scrollToTop = () => {
     if (headerRef.current) {
-      headerRef.current.scrollIntoView({ 
+      headerRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "start"
+        block: "start",
       });
     }
   };
 
   useEffect(() => {
     if (shouldScroll) {
-      if (scrollTarget === 'info' && activeIndex !== null) {
+      if (scrollTarget === "info" && activeIndex !== null) {
         scrollToInfo();
-      } else if (scrollTarget === 'top') {
+      } else if (scrollTarget === "top") {
         scrollToTop();
       }
       setShouldScroll(false);
@@ -50,18 +56,19 @@ const Experience: React.FC = () => {
   }, [shouldScroll, scrollTarget, activeIndex]);
 
   const handleExperienceClick = (index: number) => {
-    setActiveIndex(prev => {
+    setActiveIndex((prev) => {
       const newIndex = prev === index ? null : index;
       setShouldScroll(true);
       if (newIndex !== null) {
-        setScrollTarget('info');
+        setScrollTarget("info");
       } else {
-        setScrollTarget('top');
+        setScrollTarget("top");
       }
       return newIndex;
     });
   };
 
+  // Generate skills from all experiences
   const allSkills = experiences.reduce((skills, exp) => {
     exp.technologies?.forEach((tech) => {
       if (!skills.find((s) => s.name === tech)) {
@@ -77,21 +84,77 @@ const Experience: React.FC = () => {
     return skills;
   }, [] as { name: string; level: number; color?: string }[]);
 
+  // Loading state
+  if (loading) {
+    return (
+      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <div className="absolute inset-0 overflow-hidden">
+          <MovingStars />
+        </div>
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <Loader className="w-8 h-8 animate-spin text-primary dark:text-primary-dark" />
+          <p className="text-text-primary dark:text-text-primary-dark">
+            Loading experiences...
+          </p>
+        </div>
+      </section>
+    );
+  }
 
+  // Error state
+  if (error) {
+    return (
+      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <div className="absolute inset-0 overflow-hidden">
+          <MovingStars />
+        </div>
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <AlertCircle className="w-12 h-12 text-red-500 dark:text-red-400" />
+          <p className="text-red-500 dark:text-red-400 text-center">
+            Failed to load experiences
+          </p>
+          <button
+            onClick={refetch}
+            className="flex items-center gap-2 px-4 py-2 bg-primary dark:bg-primary-dark 
+                     rounded-lg text-background-primary hover:bg-primary-dark 
+                     dark:hover:bg-primary transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // No experiences state
+  if (!experiences?.length) {
+    return (
+      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+        <div className="absolute inset-0 overflow-hidden">
+          <MovingStars />
+        </div>
+        <div className="relative z-10 text-center">
+          <p className="text-text-primary dark:text-text-primary-dark">
+            No experiences available.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
-      ref={experienceSectionRef} // Tambahkan ref untuk visibility tracking
+      ref={experienceSectionRef}
       className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 px-4"
     >
-      <div ref={headerRef} className="mt-20 mb-0">
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-      <div className="absolute inset-0 overflow-hidden">
-        <MovingStars />
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-      <div className="relative z-10 max-w-7xl mx-auto min-h-screen overflow-y-auto">
-        
+      <div ref={headerRef} className="mb-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
+        <div className="absolute inset-0 overflow-hidden">
+          <MovingStars />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
+        <div className="relative z-10 max-w-7xl mx-auto min-h-screen overflow-y-auto">
           <div className="mt-20 mb-0">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl font-bold text-text-primary dark:text-text-primary-dark mb-2 sm:mb-4">
@@ -104,6 +167,8 @@ const Experience: React.FC = () => {
                 Explore my space mission throughout the years
               </p>
             </div>
+
+            {/* Skills Section */}
             <div className="mb-10">
               <motion.button
                 className="w-full flex items-center justify-between p-4 bg-background-secondary/80 dark:bg-background-secondary-dark/80 
@@ -162,6 +227,7 @@ const Experience: React.FC = () => {
               </AnimatePresence>
             </div>
 
+            {/* Timeline Section */}
             <div className="flex flex-col lg:flex-row gap-">
               <div className="w-full lg:w-[380px] relative h-[calc(100vh-200px)]">
                 <div className="h-full overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
@@ -207,6 +273,7 @@ const Experience: React.FC = () => {
                                     </div>
                                   </div>
 
+                                  {/* Mobile Project Images Gallery */}
                                   {exp.projectImages &&
                                     exp.projectImages.length > 0 && (
                                       <motion.div
@@ -233,48 +300,66 @@ const Experience: React.FC = () => {
                                               }}
                                             >
                                               {exp.projectImages.map(
-                                                (image, idx) => (
-                                                  <div
-                                                    key={idx}
-                                                    className="flex-none w-[calc(100vw-48px)] sm:w-[300px] px-1 first:pl-0 last:pr-0 snap-center"
-                                                  >
-                                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark">
-                                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                                                (image, idx) => {
+                                                  const hasValidImage =
+                                                    image.url &&
+                                                    image.url.trim() !== "";
 
-                                                      <img
-                                                        src={image.url}
-                                                        alt={
-                                                          image.caption ||
-                                                          `Project image ${
-                                                            idx + 1
-                                                          }`
-                                                        }
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                      />
+                                                  return (
+                                                    <div
+                                                      key={idx}
+                                                      className="flex-none w-[calc(100vw-48px)] sm:w-[300px] px-1 first:pl-0 last:pr-0 snap-center"
+                                                    >
+                                                      <div className="relative aspect-video rounded-lg overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark">
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
 
-                                                      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                                                        <p className="text-white text-sm font-medium line-clamp-2">
-                                                          {image.caption ||
-                                                            `Project Screenshot ${
-                                                              idx + 1
-                                                            }`}
-                                                        </p>
-                                                      </div>
+                                                        {hasValidImage ? (
+                                                          <SmartImage
+                                                            src={image.url}
+                                                            alt={
+                                                              image.caption ||
+                                                              `Project image ${
+                                                                idx + 1
+                                                              }`
+                                                            }
+                                                            fill
+                                                            sizes="(max-width: 640px) 100vw, 300px"
+                                                            className="object-cover"
+                                                            onError={() => {
+                                                              console.warn(
+                                                                `Mobile project image failed: ${image.url}`
+                                                              );
+                                                            }}
+                                                          />
+                                                        ) : (
+                                                          <PlaceholderImage
+                                                            type="project"
+                                                            className="rounded-lg"
+                                                          />
+                                                        )}
 
-                                                      <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
-                                                        <p className="text-white text-xs font-medium">
-                                                          {idx + 1}/
-                                                          {
-                                                            exp.projectImages
-                                                              ?.length
-                                                          }
-                                                        </p>
+                                                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                                          <p className="text-white text-sm font-medium line-clamp-2">
+                                                            {image.caption ||
+                                                              `Project Screenshot ${
+                                                                idx + 1
+                                                              }`}
+                                                          </p>
+                                                        </div>
+
+                                                        <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full">
+                                                          <p className="text-white text-xs font-medium">
+                                                            {idx + 1}/
+                                                            {
+                                                              exp.projectImages
+                                                                ?.length
+                                                            }
+                                                          </p>
+                                                        </div>
                                                       </div>
                                                     </div>
-                                                  </div>
-                                                )
+                                                  );
+                                                }
                                               )}
                                             </div>
 
@@ -349,6 +434,7 @@ const Experience: React.FC = () => {
                 </div>
               </div>
 
+              {/* Desktop Experience Info */}
               <div className="hidden lg:block flex-1" ref={infoRef}>
                 <AnimatePresence mode="wait">
                   {activeIndex !== null && (

@@ -1,51 +1,104 @@
-// src/hooks/projects/usePlanetTransition.ts
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAnimation } from '@/contexts/AnimationContext';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import _ from 'lodash';
 
-interface PlanetTransitionOptions {
-  duration?: number;
-  delay?: number;
+interface UseProjectTransitionProps {
+  totalProjects: number;
+  previewDuration?: number;
+  lineDuration?: number;
 }
 
-export const usePlanetTransition = (options: PlanetTransitionOptions = {}) => {
-  const { duration = 800, delay = 100 } = options;
-  const router = useRouter();
-  const { setIsTransitioning } = useAnimation();
-  const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
+export const useProjectTransition = ({
+  totalProjects,
+  previewDuration = 6000,
+  lineDuration = 1000
+}: UseProjectTransitionProps) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isLineAnimating, setIsLineAnimating] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const transitionToPlanet = useCallback(async (planetId: string) => {
-    setIsTransitioning(true);
-    setSelectedPlanetId(planetId);
+  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lineIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Add transition class to all other planets
-    document.querySelectorAll('.planet').forEach(planet => {
-      if (planet.id !== `planet-${planetId}`) {
-        planet.classList.add('planet-fade-out');
-      }
-    });
-
-    // Add transition class to selected planet
-    const selectedPlanet = document.getElementById(`planet-${planetId}`);
-    if (selectedPlanet) {
-      selectedPlanet.classList.add('planet-transition');
+  const clearTimers = useCallback(() => {
+    if (previewTimeoutRef.current) {
+      clearTimeout(previewTimeoutRef.current);
+      previewTimeoutRef.current = null;
     }
+    if (lineIntervalRef.current) {
+      clearInterval(lineIntervalRef.current);
+      lineIntervalRef.current = null;
+    }
+  }, []);
 
-    // Wait for animations to complete
-    await new Promise(resolve => setTimeout(resolve, duration));
-    
-    // Navigate to project detail
-    router.push(`/project/${planetId}`);
-    
-    // Reset transition state after navigation
-    setTimeout(() => {
-      setIsTransitioning(false);
-      setSelectedPlanetId(null);
-    }, delay);
-  }, [router, duration, delay, setIsTransitioning]);
+  const animateLine = useCallback(() => {
+    setIsLineAnimating(true);
+    setProgress(0);
+
+    const startTime = Date.now();
+    lineIntervalRef.current = setInterval(() => {
+      const elapsedTime = Date.now() - startTime;
+      const newProgress = (elapsedTime / lineDuration) * 100;
+
+      if (newProgress >= 100) {
+        clearInterval(lineIntervalRef.current!);
+        setProgress(100);
+        setIsLineAnimating(false);
+        setActiveIndex((prev) => (prev + 1) % totalProjects);
+      } else {
+        setProgress(newProgress);
+      }
+    }, 16);
+  }, [lineDuration, totalProjects]);
+
+  const startPreviewTimer = useCallback(() => {
+    if (!isPaused) {
+      previewTimeoutRef.current = setTimeout(() => {
+        animateLine();
+      }, previewDuration);
+    }
+  }, [isPaused, previewDuration, animateLine]);
+
+  useEffect(() => {
+    clearTimers();
+    startPreviewTimer();
+
+    return clearTimers;
+  }, [activeIndex, isPaused, clearTimers, startPreviewTimer]);
+
+  // Debounced version of the core jump logic
+  const debouncedJumpCore = useCallback(
+    _.debounce((index: number) => {
+      clearTimers();
+      setProgress(0);
+      setIsLineAnimating(false);
+      setActiveIndex(index);
+    }, 150),
+    [clearTimers]
+  );
+
+  // Main jumpToProject function that validates input before calling debounced version
+  const jumpToProject = useCallback((index: number) => {
+    if (index === activeIndex || index < 0 || index >= totalProjects) return;
+    debouncedJumpCore(index);
+  }, [activeIndex, totalProjects, debouncedJumpCore]);
+
+  const pausePreview = useCallback(() => {
+    setIsPaused(true);
+    clearTimers();
+  }, [clearTimers]);
+
+  const resumePreview = useCallback(() => {
+    setIsPaused(false);
+  }, []);
 
   return {
-    selectedPlanetId,
-    transitionToPlanet
+    activeIndex,
+    progress,
+    isLineAnimating,
+    isPaused,
+    jumpToProject,
+    pausePreview,
+    resumePreview
   };
 };
