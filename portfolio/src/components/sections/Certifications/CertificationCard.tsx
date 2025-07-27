@@ -174,7 +174,7 @@ const CertificationCard: React.FC<CertificationCardProps> = ({
           )}
 
           {/* Credential ID */}
-          {/* {certification.credentialId && (
+          {certification.credentialId && (
             <div className="flex items-center gap-2 text-text-secondary dark:text-text-secondary-dark">
               <Award className="w-4 h-4" />
               <span className="text-xs text-text-tertiary dark:text-text-tertiary-dark">
@@ -187,7 +187,7 @@ const CertificationCard: React.FC<CertificationCardProps> = ({
                 {certification.credentialId}
               </code>
             </div>
-          )} */}
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
