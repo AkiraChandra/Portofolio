@@ -1,4 +1,4 @@
-// src/components/common/navigations/Navbar.tsx (Updated for Hybrid System)
+// src/components/common/navigations/Navbar.tsx (Updated - No Blur/Transparent)
 "use client";
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +17,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   
   useEffect(() => {
     const updateLayout = () => {
@@ -29,31 +29,21 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
-  // Listen to scroll on the container, not window
+  // Simple scroll detection for shadow effect
   useEffect(() => {
     const handleScroll = () => {
-      // Try to get scroll from the main container
       const scrollContainer = document.querySelector('.h-screen.overflow-y-auto') as HTMLElement;
       if (scrollContainer) {
-        const scrollPosition = scrollContainer.scrollTop;
-        const maxScroll = 100;
-        const progress = Math.min(scrollPosition / maxScroll, 1);
-        setScrollProgress(progress);
+        setIsScrolled(scrollContainer.scrollTop > 0);
       } else {
-        // Fallback to window scroll
-        const scrollPosition = window.scrollY;
-        const maxScroll = 100;
-        const progress = Math.min(scrollPosition / maxScroll, 1);
-        setScrollProgress(progress);
+        setIsScrolled(window.scrollY > 0);
       }
     };
 
-    // Try to attach to container first
     const scrollContainer = document.querySelector('.h-screen.overflow-y-auto');
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     } else {
-      // Fallback to window
       window.addEventListener('scroll', handleScroll, { passive: true });
     }
 
@@ -69,16 +59,13 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
   const menuItems = site.navigation.links;
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  // Updated navigation handler
   const handleNavClick = (item: typeof menuItems[0], e: React.MouseEvent) => {
     e.preventDefault();
     setIsOpen(false);
     
-    // Use custom navigation handler if provided (from FullPageLayout)
     if (onNavigate) {
       onNavigate(item.path);
     } else {
-      // Fallback: if no onNavigate handler, try to scroll to section
       const sectionId = item.href.replace('#', '');
       const section = document.getElementById(sectionId);
       
@@ -91,104 +78,107 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
     }
   };
 
-  const backgroundColor = `rgba(var(--color-background-primary), ${scrollProgress * 0.95})`;
-  const backdropBlur = `blur(${scrollProgress * 8}px)`;
-
   return (
     <motion.nav 
       className="fixed w-full z-50 py-4 lg:py-6"
       style={{
-        backgroundColor,
-        backdropFilter: backdropBlur,
-        borderBottom: scrollProgress > 0 ? 
+        backgroundColor: isScrolled 
+          ? 'rgba(var(--color-background-primary), 0.95)' 
+          : 'rgba(var(--color-background-primary), 0.0)',
+        borderBottom: isScrolled ? 
           '1px solid rgba(var(--color-border-primary), 0.1)' : 'none'
       }}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
     >
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex justify-between items-center relative">
           <ThemeToggle />
           
-          <div className="flex items-center">
-            {!isMobile && (
-              <div className="flex items-center space-x-6 lg:space-x-8">
-                {menuItems.map((item) => {
-                  // Use pathname to determine active state
-                  const isActive = pathname === item.path;
-                  
-                  return (
-                    <motion.button
-                      key={item.title}
-                      onClick={(e) => handleNavClick(item, e)}
-                      className={`
-                        relative text-sm lg:text-base font-medium transition-all duration-300 cursor-pointer
-                        ${isActive 
-                          ? 'text-primary dark:text-primary-dark' 
-                          : 'text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark'
-                        }
-                      `}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {item.title}
-                      
-                      {/* Active indicator */}
-                      {isActive && (
-                        <motion.div
-                          className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary dark:bg-primary-dark rounded-full"
-                          layoutId="navbar-indicator"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <div className="flex items-center space-x-6 lg:space-x-8">
+              {menuItems.map((item, index) => {
+                const isActive = pathname === item.path;
                 
-                <div className="flex items-center space-x-4 lg:space-x-6">
-                  <motion.a 
-                    href={site.social.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                return (
+                  <motion.button
+                    key={item.title}
+                    onClick={(e) => handleNavClick(item, e)}
+                    className={`
+                      relative text-sm lg:text-base font-medium transition-all duration-300 cursor-pointer
+                      ${isActive 
+                        ? 'text-primary dark:text-primary-dark' 
+                        : 'text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark'
+                      }
+                    `}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
                   >
-                    <Linkedin className="w-5 h-5" />
-                  </motion.a>
-                  <motion.a 
-                    href={site.social.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Instagram className="w-5 h-5" />
-                  </motion.a>
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-2.5 lg:px-8 lg:py-3 bg-primary dark:bg-primary-dark text-background-primary dark:text-background-primary-dark 
-                           rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-sm lg:text-base font-medium 
-                           whitespace-nowrap min-w-[120px]"
+                    {item.title}
+                    
+                    {/* Active indicator */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary dark:bg-primary-dark rounded-full"
+                        layoutId="navbar-indicator"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    )}
+                  </motion.button>
+                );
+              })}
+              
+              <div className="flex items-center space-x-4 lg:space-x-6">
+                <motion.a 
+                  href={site.social.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
-                  Let's Connect
-                </motion.button>
+                  <Linkedin className="w-5 h-5" />
+                </motion.a>
+                <motion.a 
+                  href={site.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Instagram className="w-5 h-5" />
+                </motion.a>
               </div>
-            )}
 
-            {isMobile && (
-              <MenuButton
-                isOpen={isOpen}
-                toggle={toggleMenu}
-                className="lg:hidden"
-              />
-            )}
-          </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-2.5 lg:px-8 lg:py-3 bg-primary dark:bg-primary-dark text-background-primary dark:text-background-primary-dark 
+                         rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-sm lg:text-base font-medium 
+                         whitespace-nowrap min-w-[120px]"
+              >
+                Let's Connect
+              </motion.button>
+            </div>
+          )}
+
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <MenuButton
+              isOpen={isOpen}
+              toggle={toggleMenu}
+              className="lg:hidden"
+            />
+          )}
         </div>
       </div>
 
@@ -203,7 +193,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-lg 
+              className="bg-background-primary/95 dark:bg-background-primary-dark/95 
                          border-t border-border-primary/10 dark:border-border-primary-dark/10"
               initial={{ y: -20 }}
               animate={{ y: 0 }}
@@ -211,8 +201,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
             >
               <div className="container mx-auto px-4 py-6">
                 <div className="flex flex-col space-y-4">
-                  {menuItems.map((item) => {
-                    // Use pathname to determine active state for mobile too
+                  {menuItems.map((item, index) => {
                     const isActive = pathname === item.path;
                     
                     return (
@@ -228,6 +217,9 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
                         `}
                         whileHover={{ x: 10 }}
                         whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
                       >
                         {item.title}
                         
@@ -281,7 +273,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
               </div>
               
               <div 
-                className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-background-primary/30 dark:to-background-primary-dark/30 backdrop-blur-sm"
+                className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-background-primary/30 dark:to-background-primary-dark/30"
               />
             </motion.div>
           </motion.div>
