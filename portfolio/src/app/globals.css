@@ -166,3 +166,22 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary dark:bg-primary-dark;
 }
+/* Enhanced snap scrolling for experience section */
+#experience {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: 0;
+}
+
+/* Better positioning for overflow sections */
+.experience-container {
+  position: relative;
+  min-height: 100vh;
+  scroll-snap-align: start;
+}
+
+/* Enhanced snap behavior */
+.snap-container .snap-start.min-h-screen {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

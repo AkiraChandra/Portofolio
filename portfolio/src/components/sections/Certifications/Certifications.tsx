@@ -15,17 +15,7 @@ const Certifications: React.FC = () => {
   const activeCerts = certifications.filter(cert => !cert.isExpired).length;
   const featuredCerts = certifications.filter(cert => cert.featured);
   const expiringSoon = certifications.filter(cert => cert.isExpiringSoon).length;
-  console.log('Total Certifications:', totalCerts);
-  console.log('Active Certifications:', activeCerts);
-  console.log('Featured Certifications:', featuredCerts.length);
-  console.log('Expiring Soon:', expiringSoon);
-  console.log('Certifications Data:', certifications);
-  console.log('Loading:', loading);
-  console.log('Error:', error);
-  const downloadSummary = () => {
-    console.log('Downloading certification summary...');
-  };
-
+  
   return (
     <section>
       {/* Main Container */}

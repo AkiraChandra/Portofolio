@@ -1,9 +1,8 @@
 // src/app/certifications/page.tsx
-
 'use client';
 
-import FullPageLayout from '@/components/layouts/FullPageLayout';
+import PageLayout from '@/components/layouts/PageLayout';
 
 export default function CertificationsPage() {
-  return <FullPageLayout />;
+  return <PageLayout defaultSection="certifications" />;
 }

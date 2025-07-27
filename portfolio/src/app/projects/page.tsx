@@ -1,9 +1,8 @@
 // src/app/projects/page.tsx
 'use client';
 
-import React from 'react';
-import FullPageLayout from '@/components/layouts/FullPageLayout';
+import PageLayout from '@/components/layouts/PageLayout';
 
 export default function ProjectsPage() {
-  return <FullPageLayout />;
+  return <PageLayout defaultSection="projects" />;
 }
