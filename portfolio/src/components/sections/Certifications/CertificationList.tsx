@@ -401,7 +401,6 @@ const CertificationsList: React.FC<CertificationsListProps> = ({
                 <CertificationCard
                   certification={certification}
                   onViewDetails={onCertificationSelect}
-                  onToggleFeatured={onToggleFeatured}
                   isAdmin={isAdmin}
                 />
               </motion.div>

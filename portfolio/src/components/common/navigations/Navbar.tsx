@@ -1,4 +1,4 @@
-// src/components/common/navigations/Navbar.tsx (Simplified)
+// src/components/common/navigations/Navbar.tsx (Updated for Hybrid System)
 "use client";
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,13 +8,16 @@ import MenuButton from '@/components/common/buttons/MenuButton';
 import { ThemeToggle } from '@/features/theme/ThemeToggle';
 import { config } from '@/config';
 
-const Navbar = () => {
+interface NavbarProps {
+  onNavigate?: (path: string) => void;
+}
+
+const Navbar = ({ onNavigate }: NavbarProps = {}) => {
   const { site } = config;
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeSection, setActiveSection] = useState('home');
   
   useEffect(() => {
     const updateLayout = () => {
@@ -26,75 +29,70 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
+  // Listen to scroll on the container, not window
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const maxScroll = 100;
-      const progress = Math.min(scrollPosition / maxScroll, 1);
-      setScrollProgress(progress);
+      // Try to get scroll from the main container
+      const scrollContainer = document.querySelector('.h-screen.overflow-y-auto') as HTMLElement;
+      if (scrollContainer) {
+        const scrollPosition = scrollContainer.scrollTop;
+        const maxScroll = 100;
+        const progress = Math.min(scrollPosition / maxScroll, 1);
+        setScrollProgress(progress);
+      } else {
+        // Fallback to window scroll
+        const scrollPosition = window.scrollY;
+        const maxScroll = 100;
+        const progress = Math.min(scrollPosition / maxScroll, 1);
+        setScrollProgress(progress);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Detect active section dengan better timing
-  useEffect(() => {
-    const sections = ['home', 'projects', 'experience', 'certifications'];
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        threshold: 0.5, // Lowered threshold
-        rootMargin: '-20% 0px -20% 0px',
-      }
-    );
-
-    // Add delay to ensure DOM is ready
-    setTimeout(() => {
-      sections.forEach(sectionId => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          observer.observe(element);
-        }
-      });
-    }, 100);
+    // Try to attach to container first
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-auto');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      // Fallback to window
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     return () => {
-      observer.disconnect();
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      } else {
+        window.removeEventListener('scroll', handleScroll);
+      }
     };
   }, []);
 
   const menuItems = site.navigation.links;
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  // Handle navigation - Allow di semua halaman
+  // Updated navigation handler
   const handleNavClick = (item: typeof menuItems[0], e: React.MouseEvent) => {
     e.preventDefault();
     setIsOpen(false);
     
-    const sectionId = item.href.replace('#', '');
-    const section = document.getElementById(sectionId);
-    
-    if (section) {
-      section.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+    // Use custom navigation handler if provided (from FullPageLayout)
+    if (onNavigate) {
+      onNavigate(item.path);
+    } else {
+      // Fallback: if no onNavigate handler, try to scroll to section
+      const sectionId = item.href.replace('#', '');
+      const section = document.getElementById(sectionId);
+      
+      if (section) {
+        section.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
     }
   };
 
   const backgroundColor = `rgba(var(--color-background-primary), ${scrollProgress * 0.95})`;
   const backdropBlur = `blur(${scrollProgress * 8}px)`;
-
-  // Determine if navbar should be interactive - Always interactive
-  const isHome = true; // Always allow interaction
 
   return (
     <motion.nav 
@@ -114,13 +112,12 @@ const Navbar = () => {
             {!isMobile && (
               <div className="flex items-center space-x-6 lg:space-x-8">
                 {menuItems.map((item) => {
-                  const sectionId = item.href.replace('#', '');
-                  const isActive = isHome && activeSection === sectionId;
+                  // Use pathname to determine active state
+                  const isActive = pathname === item.path;
                   
                   return (
-                    <motion.a
+                    <motion.button
                       key={item.title}
-                      href={item.href}
                       onClick={(e) => handleNavClick(item, e)}
                       className={`
                         relative text-sm lg:text-base font-medium transition-all duration-300 cursor-pointer
@@ -134,7 +131,7 @@ const Navbar = () => {
                     >
                       {item.title}
                       
-                      {/* Active indicator - selalu bisa tampil */}
+                      {/* Active indicator */}
                       {isActive && (
                         <motion.div
                           className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary dark:bg-primary-dark rounded-full"
@@ -145,7 +142,7 @@ const Navbar = () => {
                           transition={{ duration: 0.3 }}
                         />
                       )}
-                    </motion.a>
+                    </motion.button>
                   );
                 })}
                 
@@ -215,16 +212,15 @@ const Navbar = () => {
               <div className="container mx-auto px-4 py-6">
                 <div className="flex flex-col space-y-4">
                   {menuItems.map((item) => {
-                    const sectionId = item.href.replace('#', '');
-                    const isActive = isHome && activeSection === sectionId;
+                    // Use pathname to determine active state for mobile too
+                    const isActive = pathname === item.path;
                     
                     return (
-                      <motion.a
+                      <motion.button
                         key={item.title}
-                        href={item.href}
                         onClick={(e) => handleNavClick(item, e)}
                         className={`
-                          relative text-base font-medium py-2 transition-all duration-300 cursor-pointer
+                          relative text-base font-medium py-2 transition-all duration-300 cursor-pointer text-left
                           ${isActive 
                             ? 'text-primary dark:text-primary-dark' 
                             : 'text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark'
@@ -235,7 +231,7 @@ const Navbar = () => {
                       >
                         {item.title}
                         
-                        {/* Active indicator for mobile - selalu bisa tampil */}
+                        {/* Active indicator for mobile */}
                         {isActive && (
                           <motion.div
                             className="absolute left-0 top-0 bottom-0 w-1 bg-primary dark:bg-primary-dark rounded-r-full"
@@ -245,7 +241,7 @@ const Navbar = () => {
                             exit={{ opacity: 0 }}
                           />
                         )}
-                      </motion.a>
+                      </motion.button>
                     );
                   })}
                   

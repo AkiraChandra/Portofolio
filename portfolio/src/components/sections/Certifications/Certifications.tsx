@@ -126,7 +126,6 @@ const Certifications: React.FC = () => {
             <CertificationsList
               certifications={certifications}
               loading={loading}
-              error={error}
               showSearch={true}
               showFilters={true}
               showStats={false}
