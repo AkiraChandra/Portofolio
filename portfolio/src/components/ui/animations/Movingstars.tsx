@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { config } from '@/config';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/hooks/theme/useTheme';
 
@@ -9,47 +8,23 @@ const MovingStars = () => {
   const [starPositions, setStarPositions] = useState<Array<{
     bottom: number;
     left: number;
+    delay: number;
   }>>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { theme } = useTheme();
 
-  const generatePosition = (existingPositions: Array<{ bottom: number; left: number }>) => {
-    const minDistance = 20;
-    let attempts = 0;
-    const maxAttempts = 100;
+  useEffect(() => {
+    // ✅ PERFORMANCE FIX: Only 15 stars instead of 70 (75% reduction)
+    const totalStars = 15;
+    const positions = [];
 
-    while (attempts < maxAttempts) {
-      const newPosition = {
+    // ✅ PERFORMANCE FIX: Simple random positioning (no collision detection)
+    for (let i = 0; i < totalStars; i++) {
+      positions.push({
         bottom: -20 + Math.random() * 140,
         left: -20 + Math.random() * 140,
-      };
-
-      const isFarEnough = existingPositions.every((pos) => {
-        const distance = Math.sqrt(
-          Math.pow(pos.bottom - newPosition.bottom, 2) +
-          Math.pow(pos.left - newPosition.left, 2)
-        );
-        return distance >= minDistance;
+        delay: i * 0.3, // Stagger animation for nice effect
       });
-
-      if (isFarEnough || existingPositions.length === 0) {
-        return newPosition;
-      }
-
-      attempts++;
-    }
-
-    return {
-      bottom: -20 + Math.random() * 140,
-      left: -20 + Math.random() * 140,
-    };
-  };
-
-  useEffect(() => {
-    const positions: Array<{ bottom: number; left: number }> = [];
-    const totalStars = 70;
-    for (let i = 0; i < totalStars; i++) {
-      positions.push(generatePosition(positions));
     }
 
     setStarPositions(positions);
@@ -71,39 +46,46 @@ const MovingStars = () => {
         {starPositions.map((position, i) => (
           <div
             key={i}
-            className={`absolute animate-star transition-opacity duration-300 ${
-              isLoaded ? 'start-animation' : ''
+            className={`absolute transition-opacity duration-300 ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             style={{
-              height: '1px',
-              width: '50px',
-              background: 'linear-gradient(90deg, transparent, rgb(var(--color-text-primary)), transparent)',
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
-              animationDelay: `${i * 0.5}s`,
+              animationDelay: `${position.delay}s`,
+              // ✅ PERFORMANCE FIX: Use CSS animation instead of complex animations
+              animation: 'star-twinkle 3s infinite alternate',
             }}
           >
-            <div
-              className="absolute"
+            {/* ✅ PERFORMANCE FIX: Remove nested div wrapper */}
+            <Image
+              src="/star.png"
+              alt="star"
+              width={20}
+              height={20}
+              className="object-contain"
               style={{
-                top: '-8px',
-                right: '0',
+                // ✅ PERFORMANCE FIX: Lighter filter (remove expensive drop-shadow)
+                filter: 'brightness(1.2)',
               }}
-            >
-              <Image
-                src="/star.png"
-                alt="star"
-                width={20}
-                height={20}
-                className="object-contain"
-                style={{
-                  filter: 'drop-shadow(0 0 3px rgb(var(--color-text-primary)))',
-                }}
-              />
-            </div>
+            />
           </div>
         ))}
       </div>
+
+      {/* ✅ Add CSS animation definition */}
+      <style jsx>{`
+        @keyframes star-twinkle {
+          0%, 100% {
+            opacity: 0.4;
+            transform: scale(0.8);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+      `}</style>
     </div>
   );
 };
