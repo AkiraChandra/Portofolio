@@ -62,7 +62,6 @@ const transformDatabaseExperience = (dbExperience: any): Experience => {
   }
 };
 
-// ❌ REMOVED: uploadCompanyLogo, transformExperienceForInsert functions - NOT USED
 
 export const experienceService = {
   // ✅ OPTIMIZED: Single query with JOIN - fixes N+1 problem

@@ -1,3 +1,6 @@
+// src/components/sections/Experience/animation.ts
+// ✅ OPTIMIZED VERSION - Replace expensive springs with lightweight ease
+
 import { Variants } from 'framer-motion';
 
 export const timelineVariants = {
@@ -8,8 +11,9 @@ export const timelineVariants = {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3
+        // ✅ PERFORMANCE FIX: Reduce stagger for fewer calculations
+        staggerChildren: 0.1, // was 0.2
+        delayChildren: 0.1     // was 0.3
       }
     }
   },
@@ -23,9 +27,10 @@ export const timelineVariants = {
       scale: 1,
       opacity: 1,
       transition: {
-        type: 'spring',
-        stiffness: 260,
-        damping: 20
+        // ✅ PERFORMANCE FIX: Replace expensive spring with simple ease
+        duration: 0.3,
+        ease: 'easeOut'
+        // ❌ REMOVED: type: 'spring', stiffness: 260, damping: 20
       }
     }
   },
@@ -39,16 +44,18 @@ export const timelineVariants = {
       x: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 20
+        // ✅ PERFORMANCE FIX: Replace spring with lightweight ease
+        duration: 0.4,
+        ease: 'easeOut'
+        // ❌ REMOVED: type: 'spring', stiffness: 100, damping: 20
       }
     },
     exit: {
       x: -50,
       opacity: 0,
       transition: {
-        duration: 0.2
+        duration: 0.2,
+        ease: 'easeIn'
       }
     }
   },
@@ -62,7 +69,8 @@ export const timelineVariants = {
       scaleY: 1,
       opacity: 1,
       transition: {
-        duration: 0.8,
+        // ✅ PERFORMANCE FIX: Reduce duration for faster animation
+        duration: 0.5, // was 0.8
         ease: 'easeOut'
       }
     }
@@ -75,62 +83,43 @@ export const timelineVariants = {
     },
     visible: { 
       x: 0,
-      opacity: 1
-    }
-  },
-
-  glow: {
-    initial: { 
-      opacity: 0.3 
-    },
-    animate: {
-      opacity: [0.3, 0.6, 0.3],
-      scale: [1, 1.05, 1],
+      opacity: 1,
       transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: 'easeInOut'
+        // ✅ PERFORMANCE FIX: Add simple ease transition
+        duration: 0.3,
+        ease: 'easeOut'
       }
-    }
-  }
-} as const;
-
-export const pageTransition: Variants = {
-  initial: {
-    opacity: 0,
-    y: 20
-  },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: 'easeOut'
-    }
-  },
-  exit: {
-    opacity: 0,
-    y: -20,
-    transition: {
-      duration: 0.4,
-      ease: 'easeIn'
     }
   }
 };
 
-export const floatingAnimation = {
-  y: {
-    duration: 2.5,
-    repeat: Infinity,
-    ease: 'easeInOut',
-    repeatType: 'reverse' as const,
-    values: [0, -10, 0]
+// ✅ PERFORMANCE FIX: Add optimized hover animations
+export const timelineHoverVariants = {
+  point: {
+    initial: { scale: 1 },
+    hover: {
+      scale: 1.05, // was 1.1 - reduced for lighter animation
+      transition: {
+        duration: 0.2,
+        ease: 'easeOut'
+        // ❌ REMOVED: expensive spring with stiffness: 400
+      }
+    }
+  }
+};
+
+// ✅ PERFORMANCE FIX: Simplified skill animation
+export const skillVariants = {
+  hidden: {
+    opacity: 0,
+    y: 10
   },
-  rotate: {
-    duration: 3,
-    repeat: Infinity,
-    ease: 'easeInOut',
-    repeatType: 'reverse' as const,
-    values: [0, -3, 0, 3, 0]
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut'
+    }
   }
 };
