@@ -185,3 +185,312 @@ body {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+.gpu-accelerate-auto {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: auto;
+}
+
+/* Optimized animations dengan GPU acceleration */
+@keyframes star-optimized {
+  0% {
+    transform: translateX(-100px) translateZ(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw) translateZ(0);
+    opacity: 0;
+  }
+}
+
+@keyframes float-optimized {
+  0%, 100% {
+    transform: translateY(0px) translateZ(0);
+  }
+  50% {
+    transform: translateY(-10px) translateZ(0);
+  }
+}
+
+@keyframes spin-slow-optimized {
+  from {
+    transform: rotate(0deg) translateZ(0);
+  }
+  to {
+    transform: rotate(360deg) translateZ(0);
+  }
+}
+
+@keyframes pulse-optimized {
+  0%, 100% {
+    transform: scale(1) translateZ(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.05) translateZ(0);
+    opacity: 0.5;
+  }
+}
+
+/* Performance-optimized utility classes */
+.animate-star-optimized {
+  animation: star-optimized 10s linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.animate-float-optimized {
+  animation: float-optimized 6s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.animate-spin-slow-optimized {
+  animation: spin-slow-optimized 20s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.animate-pulse-optimized {
+  animation: pulse-optimized 3s ease-in-out infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .animate-star-optimized {
+    animation-duration: 12s;
+  }
+  
+  .animate-float-optimized {
+    animation-duration: 8s;
+    transform: translateZ(0) scale(0.9);
+  }
+  
+  .animate-spin-slow-optimized {
+    animation-duration: 25s;
+  }
+  
+  .animate-pulse-optimized {
+    animation-duration: 4s;
+  }
+}
+
+/* Low-end device optimizations */
+@media (max-width: 768px) and (max-resolution: 150dpi) {
+  .animate-star-optimized {
+    animation-duration: 15s;
+  }
+  
+  .animate-float-optimized {
+    animation-duration: 10s;
+  }
+  
+  .animate-spin-slow-optimized {
+    animation-duration: 30s;
+  }
+  
+  /* Reduce blur effects on low-end devices */
+  .backdrop-blur-sm {
+    backdrop-filter: blur(2px);
+  }
+  
+  .backdrop-blur-md {
+    backdrop-filter: blur(4px);
+  }
+  
+  .backdrop-blur-lg {
+    backdrop-filter: blur(6px);
+  }
+  
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-star-optimized,
+  .animate-float-optimized,
+  .animate-spin-slow-optimized,
+  .animate-pulse-optimized {
+    animation: none;
+  }
+  
+  /* Static fallbacks */
+  .animate-star-optimized {
+    opacity: 0.3;
+    transform: translateX(0) translateZ(0);
+  }
+  
+  .animate-float-optimized {
+    transform: translateY(0) translateZ(0);
+  }
+  
+  .animate-spin-slow-optimized {
+    transform: rotate(0deg) translateZ(0);
+  }
+  
+  .animate-pulse-optimized {
+    opacity: 0.4;
+    transform: scale(1) translateZ(0);
+  }
+  
+  /* Disable all transitions and animations */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Intersection-based animation pausing */
+.pause-animations {
+  animation-play-state: paused;
+}
+
+.resume-animations {
+  animation-play-state: running;
+}
+
+/* Optimized scrollbar untuk mobile */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Performance hints untuk browser */
+.performance-optimized {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Lazy loading placeholder */
+.lazy-placeholder {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.dark .lazy-placeholder {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+}
+
+/* Optimized glow effects */
+.glow-optimized {
+  filter: drop-shadow(0 0 10px currentColor);
+  will-change: filter;
+}
+
+@media (max-width: 768px) {
+  .glow-optimized {
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-optimized {
+    filter: none;
+  }
+}
+
+/* Memory optimization */
+.image-optimized {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  transform: translateZ(0);
+}
+
+/* Critical rendering path optimization */
+.above-fold {
+  content-visibility: visible;
+}
+
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
+
+/* Reduced complexity for low-end devices */
+@media (max-width: 768px) and (max-resolution: 150dpi) {
+  /* Disable expensive effects */
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    backdrop-filter: none;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Reduce gradient complexity */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background-image: none;
+    background-color: var(--fallback-color, #1a1a1a);
+  }
+  
+  /* Simplify shadows */
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Device-specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari optimizations */
+  .ios-optimized {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+  }
+}
+
+/* Chrome mobile optimizations */
+@media screen and (max-width: 768px) {
+  .chrome-mobile-optimized {
+    will-change: auto;
+    transform: translateZ(0);
+  }
+}
+
+/* Force repaint prevention */
+.prevent-repaint {
+  contain: strict;
+  content-visibility: auto;
+}
