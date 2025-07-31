@@ -1,4 +1,4 @@
-// src/components/layouts/PageLayout.tsx (ENHANCED VERSION)
+// src/components/layouts/PageLayout.tsx (FIXED VERSION)
 'use client';
 
 import React, { useEffect } from 'react';
@@ -19,7 +19,9 @@ const SECTIONS = [
   { id: 'projects', path: '/projects' },
   { id: 'experience', path: '/experience' },
   { id: 'certifications', path: '/certifications' },
-];
+] as const;
+
+type SectionId = typeof SECTIONS[number]['id'];
 
 export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps) {
   const isScrolling = useSmoothScroll(0.3);
@@ -68,39 +70,109 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
     }
   }, [defaultSection]);
 
-  // URL updates saat scroll
+  // FIXED: More robust URL updates with better viewport detection
   useEffect(() => {
+    let currentActiveSection: SectionId = defaultSection;
+    
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const sectionId = entry.target.id;
-            const section = SECTIONS.find(s => s.id === sectionId);
-            
-            if (section) {
-              window.history.replaceState(null, '', section.path);
-            }
+        // Sort entries by intersection ratio to get the most visible section
+        const visibleEntries = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+          
+        if (visibleEntries.length > 0) {
+          const mostVisibleEntry = visibleEntries[0];
+          const sectionId = mostVisibleEntry.target.id as SectionId;
+          const section = SECTIONS.find(s => s.id === sectionId);
+          
+          // Only update if it's actually a different section and has significant visibility
+          if (section && 
+              section.id !== currentActiveSection && 
+              mostVisibleEntry.intersectionRatio > 0.1) {
+            currentActiveSection = section.id;
+            window.history.replaceState(null, '', section.path);
           }
-        });
+        }
       },
       {
-        threshold: 0.3, // Reduced threshold for better detection of overflow sections
-        rootMargin: '-10% 0px -10% 0px', // Adjusted margin for better experience detection
+        // FIXED: Better threshold and margin settings
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0], // Multiple thresholds for better detection
+        rootMargin: '-20px 0px -20px 0px', // Smaller margin to avoid conflicts
       }
     );
 
-    setTimeout(() => {
+    // FIXED: Add a small delay to ensure DOM is ready
+    const initializeObserver = setTimeout(() => {
       SECTIONS.forEach(section => {
         const element = document.getElementById(section.id);
         if (element) {
           observer.observe(element);
         }
       });
-    }, 100);
+    }, 200); // Increased delay
 
     return () => {
+      clearTimeout(initializeObserver);
       observer.disconnect();
     };
+  }, [defaultSection]);
+
+  // FIXED: Additional viewport-based detection as fallback
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollContainer = document.querySelector('.h-screen.overflow-y-auto') as HTMLElement;
+      if (!scrollContainer) return;
+
+      const scrollTop = scrollContainer.scrollTop;
+      const windowHeight = scrollContainer.clientHeight;
+      
+      const sectionElements = SECTIONS.map(section => ({
+        ...section,
+        element: document.getElementById(section.id),
+      })).filter(s => s.element);
+
+      let mostVisibleSection = sectionElements[0];
+      let maxVisibleArea = 0;
+
+      sectionElements.forEach(section => {
+        if (!section.element) return;
+        
+        const rect = section.element.getBoundingClientRect();
+        const containerRect = scrollContainer.getBoundingClientRect();
+        
+        const top = Math.max(0, rect.top - containerRect.top);
+        const bottom = Math.min(windowHeight, rect.bottom - containerRect.top);
+        const visibleHeight = Math.max(0, bottom - top);
+        
+        if (visibleHeight > maxVisibleArea) {
+          maxVisibleArea = visibleHeight;
+          mostVisibleSection = section;
+        }
+      });
+
+      const currentPath = window.location.pathname;
+      if (mostVisibleSection.path !== currentPath && maxVisibleArea > windowHeight * 0.3) {
+        window.history.replaceState(null, '', mostVisibleSection.path);
+      }
+    };
+
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-auto');
+    if (scrollContainer) {
+      // Throttle scroll handler
+      let scrollTimeout: NodeJS.Timeout;
+      const throttledScrollHandler = () => {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(handleScroll, 100);
+      };
+      
+      scrollContainer.addEventListener('scroll', throttledScrollHandler, { passive: true });
+      
+      return () => {
+        scrollContainer.removeEventListener('scroll', throttledScrollHandler);
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+      };
+    }
   }, []);
 
   return (
