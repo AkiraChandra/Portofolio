@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PlanetProps } from '@/types/projects';
@@ -24,6 +24,20 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   isTransitioning,
   isSelected
 }) => {
+  useEffect(() => {
+    if (!isSelected && isTransitioning) {
+      const timer = setTimeout(() => {
+        const planetElement = document.querySelector(`[data-planet-id="${project.id}"]`);
+        if (planetElement) {
+          (planetElement as HTMLElement).style.transform = '';
+          (planetElement as HTMLElement).style.opacity = '';
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSelected, isTransitioning, project.id]);
+
   // Initial animation dan hover state
   const planetVariants = {
     initial: { 
@@ -58,6 +72,15 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
       transition: {
         duration: 1.8,
         times: [0, 0.2, 0.4, 0.6, 1],
+        ease: "easeOut"
+      }
+    },
+    reset: {
+      scale: 1,
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
         ease: "easeOut"
       }
     },
@@ -217,6 +240,13 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
     );
   };
 
+  // Determine current animation state
+  const getCurrentAnimationState = () => {
+    if (isSelected) return "selected";
+    if (!isSelected && isTransitioning) return "reset";
+    return "animate";
+  };
+
   return (
     <AnimatePresence mode="wait">
     <div className="relative flex flex-col items-center">
@@ -232,14 +262,16 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
       {/* Main planet container */}
       <motion.div
         className="relative cursor-pointer z-10"
+        data-planet-id={project.id}
         initial="initial"
-        animate={isSelected ? "selected" : "animate"}
+        animate={getCurrentAnimationState()}
         exit="exit"
         whileHover={isTransitioning ? undefined : "hover"}
         variants={planetVariants}
         onHoverStart={() => !isTransitioning && onHoverStart()}
         onHoverEnd={() => !isTransitioning && onHoverEnd()}
         onClick={() => !isTransitioning && onPlanetClick()}
+        key={`planet-${project.id}-${isSelected ? 'selected' : 'normal'}`} // Force re-render when state changes
       >
         {/* Pulse rings effect */}
         <PulseRings />

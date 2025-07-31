@@ -78,7 +78,8 @@ export const useProjectSizes = () => {
       previewImageWidth: 360,  // w-80 equivalent (320px)
       previewImageHeight: 224, // h-56 equivalent (224px)
       previewContentHeight: 224, // Match image height for alignment
-      // Mobile preview dimensions
+      // Mobile preview dimensions - REDUCED
+      mobilePreviewImageHeight: 140, // Reduced from 224 to 140
       containerPaddingTop: 112,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
       headerMarginBottom: 56,      // mb-14 equivalent (56px)
@@ -94,7 +95,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 256,  // w-64 equivalent (256px)
       previewImageHeight: 160, // h-40 equivalent (160px)
       previewContentHeight: 160,
-      mobilePreviewImageHeight: 160, // h-40 for mobile
+      mobilePreviewImageHeight: 120, // Reduced from 160 to 120
       containerPaddingTop: 80,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
       headerMarginBottom: 56, 
@@ -110,7 +111,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 320,  // w-80
       previewImageHeight: 200, // h-56
       previewContentHeight: 144, // h-36 as in original code
-      mobilePreviewImageHeight: 192, // h-48 for mobile
+      mobilePreviewImageHeight: 130, // Reduced from 192 to 130
       containerPaddingTop: 94,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
       headerMarginBottom: 26, 
@@ -126,7 +127,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72 (288px)
       previewImageHeight: 216, // h-54 (216px)
       previewContentHeight: 216,
-      mobilePreviewImageHeight: 224
+      mobilePreviewImageHeight: 140 // Reduced from 224 to 140
     };
   }
   
@@ -138,7 +139,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 256,  // w-64
       previewImageHeight: 144, // h-36
       previewContentHeight: 144,
-      mobilePreviewImageHeight: 144
+      mobilePreviewImageHeight: 120 // Reduced from 144 to 120
     };
   }
   
@@ -150,7 +151,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 256,  // w-64 as in original
       previewImageHeight: 176, // h-44 as in original
       previewContentHeight: 176,
-      mobilePreviewImageHeight: 192
+      mobilePreviewImageHeight: 130 // Reduced from 192 to 130
     };
   }
   
@@ -163,7 +164,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72 as in original LG
       previewImageHeight: 192, // h-48 as in original LG
       previewContentHeight: 192,
-      mobilePreviewImageHeight: 208
+      mobilePreviewImageHeight: 140 // Reduced from 208 to 140
     };
   }
   
@@ -175,7 +176,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 240,  // w-60
       previewImageHeight: 128, // h-32
       previewContentHeight: 128,
-      mobilePreviewImageHeight: 128
+      mobilePreviewImageHeight: 110 // Reduced from 128 to 110
     };
   }
   
@@ -187,7 +188,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72
       previewImageHeight: 192, // h-48
       previewContentHeight: 192,
-      mobilePreviewImageHeight: 192
+      mobilePreviewImageHeight: 130 // Reduced from 192 to 130
     };
   }
   
@@ -200,7 +201,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 280,
       previewImageHeight: 180,
       previewContentHeight: 180,
-      mobilePreviewImageHeight: 200
+      mobilePreviewImageHeight: 140 // Reduced from 200 to 140
     };
   }
   
@@ -212,7 +213,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 240,
       previewImageHeight: 120,
       previewContentHeight: 120,
-      mobilePreviewImageHeight: 120
+      mobilePreviewImageHeight: 110 // Reduced from 120 to 110
     };
   }
   
@@ -224,11 +225,11 @@ export const useProjectSizes = () => {
       previewImageWidth: 260,
       previewImageHeight: 160,
       previewContentHeight: 160,
-      mobilePreviewImageHeight: 160
+      mobilePreviewImageHeight: 130 // Reduced from 160 to 130
     };
   }
   
-  // Mobile with height variations
+  // Mobile with height variations - MAJOR REDUCTIONS HERE
   if (isMobileTall) {
     return {
       planetSize: 120,
@@ -237,7 +238,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 0, // Not used on mobile
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 224 // h-56 for tall mobile
+      mobilePreviewImageHeight: 140 // Reduced from 224 to 140
     };
   }
   
@@ -249,7 +250,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 0,
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 128 // h-32 for short mobile
+      mobilePreviewImageHeight: 80 // Reduced from 128 to 100
     };
   }
   
@@ -261,7 +262,7 @@ export const useProjectSizes = () => {
       previewImageWidth: 0,
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 192 // h-48 as in original mobile
+      mobilePreviewImageHeight: 100 // Reduced from 192 to 120
     };
   }
   
@@ -273,7 +274,7 @@ export const useProjectSizes = () => {
     previewImageWidth: 256,
     previewImageHeight: 176,
     previewContentHeight: 176,
-    mobilePreviewImageHeight: 192,
+    mobilePreviewImageHeight: 100, // Reduced from 192 to 120
     containerPaddingTop: 112,    // pt-28 equivalent (112px)
     containerPaddingBottom: 64,  // pb-16 equivalent (64px)
     headerMarginBottom: 56, 
