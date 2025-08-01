@@ -1,4 +1,4 @@
-// src/components/sections/Experience/Experience.tsx (Ultra Enhanced - Fixed Spacing)
+// src/components/sections/Experience/Experience.tsx (MOBILE OPTIMIZED)
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -29,16 +29,27 @@ import PlaceholderImage from "@/components/common/PlaceholderImage";
 
 const Experience: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const { isExperienceVisible, experienceSectionRef } =
-    useExperienceVisibility();
+  const { isExperienceVisible, experienceSectionRef } = useExperienceVisibility();
   const headerRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
   const [shouldScroll, setShouldScroll] = useState(false);
   const [scrollTarget, setScrollTarget] = useState<"info" | "top" | null>(null);
-  const [hoveredStat, setHoveredStat] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Use the new hook instead of hardcoded data
   const { experiences, loading, error, refetch } = useExperience();
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const scrollToInfo = () => {
     if (infoRef.current) {
@@ -58,17 +69,50 @@ const Experience: React.FC = () => {
     }
   };
 
+  // Enhanced mobile scroll to center active timeline item
+  const scrollToActiveTimelineItem = (index: number) => {
+    if (isMobile && timelineContainerRef.current) {
+      const container = timelineContainerRef.current;
+      const activeElement = container.querySelector(`[data-timeline-index="${index}"]`) as HTMLElement;
+      
+      if (activeElement) {
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = activeElement.getBoundingClientRect();
+        
+        // Calculate position to center the element
+        const containerCenter = containerRect.height / 2;
+        const elementCenter = elementRect.height / 2;
+        const currentScrollTop = container.scrollTop;
+        const elementTopRelativeToContainer = elementRect.top - containerRect.top;
+        
+        // Target scroll position to center the element
+        const targetScrollTop = currentScrollTop + elementTopRelativeToContainer - containerCenter + elementCenter;
+        
+        // Smooth scroll to center
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: 'smooth'
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     if (shouldScroll) {
       if (scrollTarget === "info" && activeIndex !== null) {
-        scrollToInfo();
+        if (isMobile) {
+          // On mobile, scroll to center the active timeline item
+          setTimeout(() => scrollToActiveTimelineItem(activeIndex), 100);
+        } else {
+          scrollToInfo();
+        }
       } else if (scrollTarget === "top") {
         scrollToTop();
       }
       setShouldScroll(false);
       setScrollTarget(null);
     }
-  }, [shouldScroll, scrollTarget, activeIndex]);
+  }, [shouldScroll, scrollTarget, activeIndex, isMobile]);
 
   const handleExperienceClick = (index: number) => {
     setActiveIndex((prev) => {
@@ -113,8 +157,8 @@ const Experience: React.FC = () => {
         </div>
       </div>
 
-      {/* Enhanced floating particles */}
-      {[...Array(12)].map((_, i) => (
+      {/* Enhanced floating particles - reduced for mobile performance */}
+      {[...Array(isMobile ? 6 : 12)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute"
@@ -142,8 +186,8 @@ const Experience: React.FC = () => {
         </motion.div>
       ))}
 
-      {/* Tech orbit animations */}
-      {[Code2, Briefcase, Trophy, Rocket, Zap].map((Icon, i) => (
+      {/* Tech orbit animations - reduced for mobile */}
+      {[Code2, Briefcase, Trophy, Rocket, Zap].slice(0, isMobile ? 3 : 5).map((Icon, i) => (
         <motion.div
           key={i}
           className="absolute text-primary/8 dark:text-primary-dark/12"
@@ -163,12 +207,12 @@ const Experience: React.FC = () => {
             top: `${20 + (i % 2) * 40}%`,
           }}
         >
-          <Icon size={32 + i * 4} />
+          <Icon size={isMobile ? 24 : 32 + i * 4} />
         </motion.div>
       ))}
 
-      {/* Pulsing energy rings */}
-      {[...Array(3)].map((_, i) => (
+      {/* Pulsing energy rings - reduced for mobile */}
+      {[...Array(isMobile ? 2 : 3)].map((_, i) => (
         <motion.div
           key={`ring-${i}`}
           className="absolute w-64 h-64 border border-primary/5 dark:border-primary-dark/10 rounded-full"
@@ -418,7 +462,10 @@ const Experience: React.FC = () => {
       ref={experienceSectionRef}
       className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 px-4"
     >
-      <div ref={headerRef} className="mb-0">
+      <div
+        ref={headerRef}
+        className={`mb-0 ${isMobile ? "pb-60" : "pb-0"}`}
+      >
         <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
         <div className="absolute inset-0 overflow-hidden">
           <MovingStars />
@@ -475,56 +522,68 @@ const Experience: React.FC = () => {
                   transition={{ duration: 0.6, delay: 0.6 }}
                   className="w-full lg:w-[400px] relative"
                 >
-                  {/* Enhanced Timeline Title Card */}
-                  <motion.div
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="bg-gradient-to-r from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 
-                              backdrop-blur-sm rounded-2xl p-6 mb-8 border border-primary/10 dark:border-primary-dark/10
-                              shadow-lg relative overflow-hidden"
-                  >
+                  {/* MOBILE: Remove Professional Timeline Card */}
+                  {!isMobile && (
                     <motion.div
-                      animate={{ x: ["-100%", "100%"] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatDelay: 2,
-                      }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                    />
-                    <div className="relative flex items-center gap-4">
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="bg-gradient-to-r from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 
+                                backdrop-blur-sm rounded-2xl p-6 mb-8 border border-primary/10 dark:border-primary-dark/10
+                                shadow-lg relative overflow-hidden"
+                    >
                       <motion.div
-                        className="w-12 h-12 bg-gradient-to-br from-primary to-yellow-400 dark:from-primary-dark dark:to-yellow-400 rounded-xl flex items-center justify-center shadow-lg"
-                        whileHover={{ rotate: 360, scale: 1.1 }}
-                        transition={{ duration: 0.6 }}
-                      >
-                        <Calendar className="w-6 h-6 text-white" />
-                      </motion.div>
-                      <div>
-                        <h3 className="text-lg font-bold text-text-primary dark:text-text-primary-dark">
-                          Professional Timeline
-                        </h3>
-                        <div className="text-sm text-text-secondary dark:text-text-secondary-dark flex items-center gap-1">
-                          <Target className="w-3 h-3" />
-                          Click any milestone to explore
+                        animate={{ x: ["-100%", "100%"] }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          repeatDelay: 2,
+                        }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                      />
+                      <div className="relative flex items-center gap-4">
+                        <motion.div
+                          className="w-12 h-12 bg-gradient-to-br from-primary to-yellow-400 dark:from-primary-dark dark:to-yellow-400 rounded-xl flex items-center justify-center shadow-lg"
+                          whileHover={{ rotate: 360, scale: 1.1 }}
+                          transition={{ duration: 0.6 }}
+                        >
+                          <Calendar className="w-6 h-6 text-white" />
+                        </motion.div>
+                        <div>
+                          <h3 className="text-lg font-bold text-text-primary dark:text-text-primary-dark">
+                            Professional Timeline
+                          </h3>
+                          <div className="text-sm text-text-secondary dark:text-text-secondary-dark flex items-center gap-1">
+                            <Target className="w-3 h-3" />
+                            Click any milestone to explore
+                          </div>
                         </div>
+                        <motion.div
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="ml-auto"
+                        >
+                          <ChevronRight className="w-5 h-5 text-primary/50 dark:text-primary-dark/50" />
+                        </motion.div>
                       </div>
-                      <motion.div
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="ml-auto"
-                      >
-                        <ChevronRight className="w-5 h-5 text-primary/50 dark:text-primary-dark/50" />
-                      </motion.div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  )}
 
-                  <div className="h-[calc(100vh-450px)] lg:h-[calc(100vh-250px)]">
-                    <div className="h-full overflow-y-auto hide-scrollbar pr-2 lg:pr-4">
-                      <div className="space-y-8 sm:space-y-[100px] relative pb-6 mb-20 lg:mb-0">
+                  {/* ENHANCED MOBILE: Centered Timeline Container */}
+                  <div className={`${isMobile ? 'h-[calc(100vh-320px)]' : 'h-[calc(100vh-450px)] lg:h-[calc(100vh-250px)]'}`}>
+                    <div 
+                      ref={timelineContainerRef}
+                      className="h-full overflow-y-auto hide-scrollbar pr-2 lg:pr-4 relative"
+                      style={{
+                        // Enhanced mobile scrolling
+                        scrollBehavior: 'smooth',
+                        scrollPaddingTop: isMobile ? '40%' : '0px'
+                      }}
+                    >
+                      <div className={`space-y-8 ${isMobile ? 'sm:space-y-[120px]' : 'sm:space-y-[100px]'} relative pb-6 mb-10 lg:mb-0`}>
                         {experiences.map(
                           (exp: ExperienceType, index: number) => (
                             <motion.div
                               key={exp.id}
+                              data-timeline-index={index}
                               initial={{ opacity: 0, x: -30 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{
@@ -559,7 +618,8 @@ const Experience: React.FC = () => {
                                       }}
                                       className="bg-background-secondary/90 dark:bg-background-secondary-dark/90 
                                              backdrop-blur-md rounded-2xl p-6 border border-border-primary/50 
-                                             dark:border-border-primary-dark/50 shadow-xl relative overflow-hidden"
+                                             dark:border-border-primary-dark/50 shadow-xl relative overflow-hidden
+                                             mx-auto max-w-sm" // Centered and constrained width
                                     >
                                       <motion.div
                                         animate={{
@@ -624,7 +684,7 @@ const Experience: React.FC = () => {
                                                       </motion.span>
                                                     ))}
                                                   {exp.technologies.length >
-                                                    10 && (
+                                                    5 && (
                                                     <motion.span
                                                       className="px-3 py-1.5 text-xs rounded-xl bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 text-text-tertiary dark:text-text-tertiary-dark border border-border-primary/20"
                                                       whileHover={{
@@ -681,7 +741,7 @@ const Experience: React.FC = () => {
                                                         return (
                                                           <div
                                                             key={idx}
-                                                            className="flex-none w-[calc(100vw-56px)] sm:w-[320px] px-1 first:pl-0 last:pr-0 snap-center"
+                                                            className="flex-none w-[calc(100vw-88px)] sm:w-[280px] px-1 first:pl-0 last:pr-0 snap-center"
                                                           >
                                                             <motion.div
                                                               className="relative aspect-video rounded-xl overflow-hidden bg-background-tertiary dark:bg-background-tertiary-dark shadow-md"
@@ -706,7 +766,7 @@ const Experience: React.FC = () => {
                                                                     }`
                                                                   }
                                                                   fill
-                                                                  sizes="(max-width: 640px) 100vw, 320px"
+                                                                  sizes="(max-width: 640px) 100vw, 280px"
                                                                   className="object-cover"
                                                                   onError={() => {
                                                                     console.warn(
