@@ -185,7 +185,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true }}
         >
           {/* Overflow isolation wrapper */}
-          <div className="absolute inset-0 overflow-hidden bg-background-primary dark:bg-background-primary-dark">
+          <div className="absolute inset-0 overflow-hidden">
             <div className="h-full w-full overflow-y-auto">
               <Experience />
             </div>
@@ -209,7 +209,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true }}
         >
           {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden bg-black">
+          <div className="absolute inset-0 overflow-hidden">
             <div className="h-full w-full overflow-y-auto">
               <Certifications />
             </div>
@@ -233,7 +233,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true }}
         >
           {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden bg-black">
+          <div className="absolute inset-0 overflow-hidden">
             <div className="h-full w-full overflow-y-auto">
               <Skills />
             </div>
