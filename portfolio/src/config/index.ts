@@ -22,7 +22,8 @@ export const config = {
           title: "Certifications",
           href: "#certifications",
           path: "/certifications",
-        }, // Updated from "Skills"
+        },
+        { title: "Skills", href: "#skills", path: "/skills" },
       ],
     },
   },

@@ -1,4 +1,4 @@
-// src/hooks/skills/useSkills.ts
+// src/hooks/skills/useSkills.ts - Fixed Version
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SkillsService } from '@/services/skills';
@@ -90,9 +90,9 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [offset, setOffset] = useState(0);
-  const LIMIT = 20;
+  const LIMIT = 100; // Increased from 20 to get more skills
 
-  // Fetch skills
+  // Fetch skills - Modified to get ALL skills
   const fetchSkills = useCallback(async (isLoadMore = false) => {
     try {
       if (!isLoadMore) {
@@ -100,13 +100,14 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
         setError(null);
       }
 
+      // First, try to get ALL skills without pagination
       const params: SkillSearchParams = {
         query: searchQuery || undefined,
         filters: Object.keys(filters).length > 0 ? filters : undefined,
-        sort_by: 'name',
-        sort_order: 'asc',
-        limit: LIMIT,
-        offset: isLoadMore ? offset : 0
+        sort_by: 'proficiency_level',
+        sort_order: 'desc',
+        limit: 1000, // Set high limit to get all skills
+        offset: 0
       };
 
       const result = await SkillsService.getSkills(params);
@@ -116,23 +117,28 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
         return;
       }
 
-      if (isLoadMore) {
-        setSkills(prev => [...prev, ...result.data]);
-        setOffset(prev => prev + LIMIT);
-      } else {
-        setSkills(result.data);
-        setOffset(LIMIT);
-      }
-
+      setSkills(result.data);
       setTotalCount(result.count);
-      setHasMore(result.data.length === LIMIT && skills.length + result.data.length < result.count);
+      setHasMore(false); // No pagination needed if we get all skills
+
+      console.log('Skills fetched:', {
+        count: result.data.length,
+        total: result.count,
+        sampleSkills: result.data.slice(0, 3).map(s => ({
+          name: s.name,
+          category: s.category_name,
+          categoryId: s.category_id
+        }))
+      });
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch skills';
       setError(errorMessage);
+      console.error('Fetch skills error:', err);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, filters, offset, skills.length]);
+  }, [searchQuery, filters]);
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -144,13 +150,16 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
 
       if (result.error) {
         setCategoriesError(result.error);
+        console.warn('Categories error:', result.error);
         return;
       }
 
       setCategories(result.data);
+      console.log('Categories fetched:', result.data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch categories';
       setCategoriesError(errorMessage);
+      console.error('Fetch categories error:', err);
     } finally {
       setCategoriesLoading(false);
     }
@@ -188,7 +197,7 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
     ]);
   }, [fetchSkills, fetchCategories, fetchSkillsByCategory]);
 
-  // Load more skills
+  // Load more skills (not needed anymore but kept for compatibility)
   const fetchMore = useCallback(async () => {
     if (!hasMore || loading) return;
     await fetchSkills(true);
@@ -221,13 +230,9 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
     }
   }, []);
 
-  useEffect(() => {
-    if (autoFetch) {
-      setOffset(0);
-      fetchSkills(false);
-    }
-  }, [searchQuery, filters]);
-
+  // Remove auto-refetch on search/filter change to prevent loops
+  // Instead, filtering will be done in the component
+  
   return {
     // Data
     skills,

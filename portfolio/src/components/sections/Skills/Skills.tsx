@@ -1,355 +1,752 @@
-// src/components/sections/Skills/Skills.tsx
+// src/components/sections/Skills/Skills.tsx - Simplified Compact Version
+'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   Filter, 
   Grid3X3, 
   List, 
-  Star, 
-  TrendingUp, 
-  Award,
+  Code2, 
+  Sparkles, 
+  Target,
+  BarChart3,
+  ChevronDown,
+  X,
+  Code,
+  Globe,
+  Smartphone,
+  Database,
+  Cloud,
+  Layers,
+  Settings,
   Users,
-  Loader,
-  AlertTriangle,
-  Sparkles
+  Award,
+  RefreshCw
 } from 'lucide-react';
-import MovingStars from '@/components/ui/animations/Movingstars';
+import { useSkills, useSkillsStats } from '@/hooks/skills/useSkills';
+import SkillCard from './components/SkillCard';
 import FeaturedSkillsCarousel from './components/FeaturedSkillsCarousel';
 import SkillPreviewCard from './components/SkillPreviewCard';
-import SkillCard from './components/SkillCard';
-import { useSkills, useFeaturedSkills, useSkillsStats } from '@/hooks/skills/useSkills';
-import { useMediaQuery } from '@/hooks/common/useMediaQuery';
+import MovingStars from '@/components/ui/animations/Movingstars';
 import type { SkillWithCategory, SkillFilters } from '@/types/skills';
 
-type ViewMode = 'list' | 'grid';
+type ViewMode = 'grid' | 'list';
+type SortBy = 'proficiency' | 'experience' | 'name' | 'category';
+
+// Icon mapping untuk categories
+const CATEGORY_ICONS = {
+  'Code': Code,
+  'Globe': Globe,
+  'Smartphone': Smartphone,
+  'Database': Database,
+  'Cloud': Cloud,
+  'Layers': Layers,
+  'Settings': Settings,
+  'Users': Users,
+  'Award': Award,
+} as const;
+
+// Function to map category names to icon names
+const getCategoryIconName = (categoryName: string): string => {
+  const lowerName = categoryName.toLowerCase();
+  if (lowerName.includes('programming') || lowerName.includes('language')) return 'Code';
+  if (lowerName.includes('web') || lowerName.includes('frontend') || lowerName.includes('backend')) return 'Globe';
+  if (lowerName.includes('mobile') || lowerName.includes('app')) return 'Smartphone';
+  if (lowerName.includes('database') || lowerName.includes('storage')) return 'Database';
+  if (lowerName.includes('cloud') || lowerName.includes('devops')) return 'Cloud';
+  if (lowerName.includes('framework') || lowerName.includes('library')) return 'Layers';
+  if (lowerName.includes('tool') || lowerName.includes('software')) return 'Settings';
+  if (lowerName.includes('soft') || lowerName.includes('management')) return 'Users';
+  if (lowerName.includes('certification') || lowerName.includes('certificate')) return 'Award';
+  return 'Code';
+};
+
+const getCategoryIcon = (iconName: string) => {
+  const IconComponent = CATEGORY_ICONS[iconName as keyof typeof CATEGORY_ICONS] || Code;
+  return <IconComponent className="w-full h-full" />;
+};
 
 const Skills: React.FC = () => {
-  const [selectedSkill, setSelectedSkill] = useState<SkillWithCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortBy>('proficiency');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSkill, setSelectedSkill] = useState<SkillWithCategory | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  
-  // Media queries
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Hooks
-  const { skills: featuredSkills, loading: featuredLoading } = useFeaturedSkills();
-  const { 
-    skills, 
-    categories, 
-    loading, 
-    error, 
-    searchQuery: currentSearchQuery,
-    setSearchQuery: updateSearchQuery,
-    filters,
-    setFilters,
-    clearFilters
+  // Get all skills
+  const {
+    skills,
+    categories,
+    loading,
+    error,
+    totalCount,
+    refetch
   } = useSkills({
-    initialFilters: activeCategory !== 'all' ? { category_id: activeCategory } : {},
-    initialSearchQuery: searchQuery
+    initialFilters: {},
+    initialSearchQuery: '',
+    autoFetch: true
   });
-  const { stats, loading: statsLoading } = useSkillsStats();
 
-  // Filter skills by category
-  const filteredSkills = useMemo(() => {
-    if (activeCategory === 'all') return skills;
-    return skills.filter(skill => skill.category_id === activeCategory);
-  }, [skills, activeCategory]);
+  // Create dynamic categories from actual skills data
+  const dynamicCategories = useMemo(() => {
+    if (skills.length === 0) return [];
 
-  // Handle search with debounce
+    const categoryMap = new Map();
+    
+    skills.forEach(skill => {
+      const categoryKey = skill.category_id || skill.category_name;
+      if (!categoryMap.has(categoryKey)) {
+        categoryMap.set(categoryKey, {
+          id: skill.category_id || skill.category_name.toLowerCase().replace(/\s+/g, '-'),
+          name: skill.category_name,
+          color: skill.category_color || '#6b7280',
+          icon: getCategoryIconName(skill.category_name),
+          count: 0
+        });
+      }
+      categoryMap.get(categoryKey).count++;
+    });
+
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [skills]);
+
+  const displayCategories = dynamicCategories.length > 0 ? dynamicCategories : categories;
+
+  // Initialize
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      updateSearchQuery(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, updateSearchQuery]);
-
-  // Handle category change
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
-    if (categoryId === 'all') {
-      setFilters({});
-    } else {
-      setFilters({ ...filters, category_id: categoryId });
+    if (!loading) {
+      setIsInitialized(true);
     }
-  };
+  }, [loading]);
 
-  // Auto-select first featured skill
-  useEffect(() => {
-    if (featuredSkills.length > 0 && !selectedSkill) {
-      setSelectedSkill(featuredSkills[0]);
+  // Get featured skills
+  const featuredSkills = useMemo(() => {
+    if (skills.length === 0) return [];
+    
+    let featured = skills.filter(skill => skill.is_featured === true);
+    
+    if (featured.length === 0) {
+      featured = skills
+        .filter(skill => skill.proficiency_level >= 4)
+        .sort((a, b) => b.proficiency_level - a.proficiency_level)
+        .slice(0, 8);
     }
-  }, [featuredSkills, selectedSkill]);
+    
+    if (featured.length === 0) {
+      featured = skills
+        .sort((a, b) => {
+          if (b.proficiency_level !== a.proficiency_level) {
+            return b.proficiency_level - a.proficiency_level;
+          }
+          return b.years_of_experience - a.years_of_experience;
+        })
+        .slice(0, 8);
+    }
+    
+    return featured;
+  }, [skills]);
+
+  // Filter and sort skills
+  const filteredAndSortedSkills = useMemo(() => {
+    let filtered = skills.filter(skill => {
+      const matchesSearch = searchQuery === '' || 
+        skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === '' || 
+        skill.category_id === selectedCategory ||
+        skill.category_name.toLowerCase().replace(/\s+/g, '-') === selectedCategory ||
+        skill.category_name === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'proficiency':
+          return b.proficiency_level - a.proficiency_level;
+        case 'experience':
+          return b.years_of_experience - a.years_of_experience;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'category':
+          return a.category_name.localeCompare(b.category_name);
+        default:
+          return 0;
+      }
+    });
+  }, [skills, searchQuery, selectedCategory, sortBy]);
+
+  const handleSkillSelect = useCallback((skill: SkillWithCategory) => {
+    setSelectedSkill(skill);
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setSortBy('proficiency');
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  // Show loading state
+  if (!isInitialized) {
+    return (
+      <section className="relative min-h-screen bg-black overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <MovingStars />
+        </div>
+        <div className="relative z-10 container mx-auto px-6 py-16">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-white text-xl mb-2">Loading Skills...</div>
+            <div className="text-gray-400 text-sm">Fetching skills from database</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error && skills.length === 0) {
+    return (
+      <section className="relative min-h-screen bg-black overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <MovingStars />
+        </div>
+        <div className="relative z-10 container mx-auto px-6 py-16">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-400" />
+            </div>
+            <div className="text-red-400 text-xl mb-2">Failed to Load Skills</div>
+            <div className="text-gray-400 text-sm mb-4">{error}</div>
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark overflow-hidden">
-      {/* Background */}
+    <section className="relative bg-black overflow-hidden py-24">
+      {/* Moving Stars Background */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
       </div>
-      
-      {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 py-8 sm:py-16">
+      {/* Main Container */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6">
         
-        {/* Header Section */}
-        <div className="text-center mb-8 sm:mb-12">
-          <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary dark:text-text-primary-dark mb-4"
+        {/* Compact Header */}
+        <div className="text-center">
+          <motion.h1 
+            className="text-3xl sm:text-4xl font-bold text-white mb-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            My Professional{' '}
-            <span className="text-primary dark:text-primary-dark">Skills</span>
+            My <span className="text-primary">Skills</span>
           </motion.h1>
-          
-          <motion.p
-            className="text-base sm:text-lg md:text-xl text-text-secondary dark:text-text-secondary-dark max-w-3xl mx-auto mb-6"
+          <motion.p 
+            className="text-gray-300 max-w-2xl mx-auto mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            Technical expertise across {displayCategories.length} categories
+          </motion.p>
+
+          {/* Compact Stats */}
+          <motion.div 
+            className="flex items-center justify-center gap-6 text-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Showcasing my technical expertise, professional competencies, and continuous learning journey
-          </motion.p>
-
-          {/* Quick Stats */}
-          {stats && !statsLoading && (
-            <motion.div
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-primary dark:text-primary-dark">
-                  {stats.totalSkills}
-                </div>
-                <div className="text-xs sm:text-sm text-text-secondary dark:text-text-secondary-dark">
-                  Total Skills
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-yellow-500">
-                  {stats.featuredSkills}
-                </div>
-                <div className="text-xs sm:text-sm text-text-secondary dark:text-text-secondary-dark">
-                  Featured
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-green-500">
-                  {stats.avgProficiency}
-                </div>
-                <div className="text-xs sm:text-sm text-text-secondary dark:text-text-secondary-dark">
-                  Avg Level
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-500">
-                  {stats.withCertifications}
-                </div>
-                <div className="text-xs sm:text-sm text-text-secondary dark:text-text-secondary-dark">
-                  Certified
-                </div>
-              </div>
-            </motion.div>
-          )}
+            <div className="flex items-center gap-2">
+              <Code2 className="w-4 h-4 text-primary" />
+              <span className="text-primary font-semibold">{skills.length}</span>
+              <span className="text-gray-400">Skills</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" />
+              <span className="text-primary font-semibold">{displayCategories.length}</span>
+              <span className="text-gray-400">Categories</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-primary font-semibold">{featuredSkills.length}</span>
+              <span className="text-gray-400">Featured</span>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Featured Skills Section */}
-        <motion.div
-          className="mb-12 sm:mb-16"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-        >
-          {featuredLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader className="w-8 h-8 animate-spin text-primary dark:text-primary-dark" />
+        {/* Featured Skills - Auto-Scrolling Marquee */}
+        {featuredSkills.length > 0 && (
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Featured Skills
+              </h2>
             </div>
-          ) : featuredSkills.length > 0 ? (
-            <>
-              <FeaturedSkillsCarousel
-                skills={featuredSkills}
-                onSkillSelect={setSelectedSkill}
-                autoPlay={true}
-                autoPlayInterval={5000}
-              />
-              
-              {/* Skill Preview */}
-              <div className="mt-8">
-                <SkillPreviewCard
-                  skill={selectedSkill}
-                  isVisible={!!selectedSkill}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <Sparkles className="w-16 h-16 text-text-tertiary dark:text-text-tertiary-dark mx-auto mb-4" />
-              <p className="text-text-secondary dark:text-text-secondary-dark">
-                No featured skills found
-              </p>
-            </div>
-          )}
-        </motion.div>
-
-        {/* All Skills Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        >
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary dark:text-text-primary-dark">
-              All <span className="text-primary dark:text-primary-dark">Skills</span>
-            </h2>
             
-            {/* Desktop Controls */}
-            {!isMobile && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list'
-                      ? 'bg-primary dark:bg-primary-dark text-white'
-                      : 'bg-background-secondary dark:bg-background-secondary-dark text-text-secondary dark:text-text-secondary-dark'
-                  }`}
+            {/* Auto-Scrolling Marquee Container */}
+            <div 
+              className="relative overflow-hidden rounded-lg group"
+              onMouseEnter={(e) => {
+                const animations = e.currentTarget.querySelectorAll('[data-marquee]');
+                animations.forEach(el => {
+                  (el as HTMLElement).style.animationPlayState = 'paused';
+                });
+              }}
+              onMouseLeave={(e) => {
+                const animations = e.currentTarget.querySelectorAll('[data-marquee]');
+                animations.forEach(el => {
+                  (el as HTMLElement).style.animationPlayState = 'running';
+                });
+              }}
+            >
+              {/* Gradient overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black via-black/80 to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black via-black/80 to-transparent z-10 pointer-events-none" />
+              
+              {/* Scrolling container */}
+              <div className="flex">
+                {/* First set of skills */}
+                <motion.div
+                  data-marquee
+                  className="flex gap-4 flex-shrink-0"
+                  animate={{ x: [`0%`, `-100%`] }}
+                  transition={{
+                    duration: featuredSkills.length * 3,
+                    ease: "linear",
+                    repeat: Infinity,
+                  }}
                 >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid'
-                      ? 'bg-primary dark:bg-primary-dark text-white'
-                      : 'bg-background-secondary dark:bg-background-secondary-dark text-text-secondary dark:text-text-secondary-dark'
-                  }`}
+                  {featuredSkills.map((skill, index) => (
+                    <div
+                      key={skill.id}
+                      className="flex-none w-56"
+                    >
+                      <div 
+                        className="bg-gradient-to-br from-background-secondary/40 to-background-tertiary/20 
+                                  dark:from-background-secondary-dark/40 dark:to-background-tertiary-dark/20 
+                                  backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 
+                                  rounded-lg p-4 h-32 cursor-pointer hover:border-primary/50 dark:hover:border-primary-dark/50 
+                                  hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
+                                  transition-all duration-300 group hover:scale-105"
+                        onClick={() => handleSkillSelect(skill)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div 
+                            className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
+                            style={{ backgroundColor: `${skill.category_color}20` }}
+                          >
+                            <div className="w-4 h-4" style={{ color: skill.category_color }}>
+                              {getCategoryIcon(getCategoryIconName(skill.category_name))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <motion.div 
+                              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
+                              animate={{ scale: [1, 1.5, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
+                            <span className="text-xs text-primary dark:text-primary-dark font-medium">
+                              {skill.proficiency_level}/5
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-text-primary dark:text-text-primary-dark font-medium text-sm mb-1 line-clamp-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
+                          {skill.name}
+                        </h3>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-text-secondary dark:text-text-secondary-dark">
+                            {skill.years_of_experience}y exp
+                          </span>
+                          <span 
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ 
+                              backgroundColor: `${skill.category_color}15`,
+                              color: skill.category_color 
+                            }}
+                          >
+                            {skill.category_name.split(' ')[0]}
+                          </span>
+                        </div>
+                        
+                        {/* Animated progress bar */}
+                        <div className="h-1 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full relative"
+                            style={{ backgroundColor: skill.category_color }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
+                            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
+                          >
+                            {/* Shimmer effect */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                              animate={{ x: ['-100%', '100%'] }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                repeatDelay: 3,
+                                ease: "easeInOut"
+                              }}
+                            />
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+                
+                {/* Duplicate set for seamless loop */}
+                <motion.div
+                  data-marquee
+                  className="flex gap-4 flex-shrink-0"
+                  animate={{ x: [`0%`, `-100%`] }}
+                  transition={{
+                    duration: featuredSkills.length * 3,
+                    ease: "linear",
+                    repeat: Infinity,
+                  }}
                 >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
+                  {featuredSkills.map((skill, index) => (
+                    <div
+                      key={`duplicate-${skill.id}`}
+                      className="flex-none w-56"
+                    >
+                      <div 
+                        className="bg-gradient-to-br from-background-secondary/40 to-background-tertiary/20 
+                                  dark:from-background-secondary-dark/40 dark:to-background-tertiary-dark/20 
+                                  backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 
+                                  rounded-lg p-4 h-32 cursor-pointer hover:border-primary/50 dark:hover:border-primary-dark/50 
+                                  hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
+                                  transition-all duration-300 group hover:scale-105"
+                        onClick={() => handleSkillSelect(skill)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div 
+                            className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
+                            style={{ backgroundColor: `${skill.category_color}20` }}
+                          >
+                            <div className="w-4 h-4" style={{ color: skill.category_color }}>
+                              {getCategoryIcon(getCategoryIconName(skill.category_name))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <motion.div 
+                              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
+                              animate={{ scale: [1, 1.5, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
+                            <span className="text-xs text-primary dark:text-primary-dark font-medium">
+                              {skill.proficiency_level}/5
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-text-primary dark:text-text-primary-dark font-medium text-sm mb-1 line-clamp-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
+                          {skill.name}
+                        </h3>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-text-secondary dark:text-text-secondary-dark">
+                            {skill.years_of_experience}y exp
+                          </span>
+                          <span 
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ 
+                              backgroundColor: `${skill.category_color}15`,
+                              color: skill.category_color 
+                            }}
+                          >
+                            {skill.category_name.split(' ')[0]}
+                          </span>
+                        </div>
+                        
+                        {/* Animated progress bar */}
+                        <div className="h-1 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full relative"
+                            style={{ backgroundColor: skill.category_color }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
+                            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
+                          >
+                            {/* Shimmer effect */}
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                              animate={{ x: ['-100%', '100%'] }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                repeatDelay: 3,
+                                ease: "easeInOut"
+                              }}
+                            />
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
               </div>
-            )}
-          </div>
+            </div>
+          </motion.div>
+        )}
 
-          {/* Search and Filters */}
-          <div className="mb-8 space-y-4">
-            {/* Search Bar */}
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary dark:text-text-tertiary-dark" />
+        {/* Compact Controls */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          {/* Single Row Controls */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {/* Search */}
+            <div className="relative flex-1 min-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search skills..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-background-secondary/50 dark:bg-background-secondary-dark/50 
-                         border border-border-primary/20 dark:border-border-primary-dark/20 rounded-xl
-                         text-text-primary dark:text-text-primary-dark placeholder-text-tertiary dark:placeholder-text-tertiary-dark
-                         focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50
-                         backdrop-blur-sm transition-all duration-200"
+                className="w-full pl-10 pr-4 py-2 bg-background-secondary/50 dark:bg-background-secondary-dark/50 
+                         border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg
+                         text-text-primary dark:text-text-primary-dark placeholder-text-tertiary dark:placeholder-text-tertiary-dark text-sm
+                         focus:outline-none focus:ring-1 focus:ring-primary/50 dark:focus:ring-primary-dark/50 focus:border-primary/50 dark:focus:border-primary-dark/50
+                         transition-all duration-200"
               />
             </div>
 
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-2">
+            {/* View Mode */}
+            <div className="flex bg-background-secondary/50 dark:bg-background-secondary-dark/50 
+                          border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg p-0.5">
               <button
-                onClick={() => handleCategoryChange('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeCategory === 'all'
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1.5 rounded-md transition-all duration-200 text-sm ${
+                  viewMode === 'grid'
                     ? 'bg-primary dark:bg-primary-dark text-white'
-                    : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-secondary dark:text-text-secondary-dark hover:bg-background-secondary dark:hover:bg-background-secondary-dark'
+                    : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
+                }`}
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded-md transition-all duration-200 text-sm ${
+                  viewMode === 'list'
+                    ? 'bg-primary dark:bg-primary-dark text-white'
+                    : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Filters */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-3 py-2 bg-background-secondary/50 dark:bg-background-secondary-dark/50 
+                       border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg
+                       text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+
+          {/* Category Pills - Desktop Only */}
+          {displayCategories.length > 0 && (
+            <div className="hidden md:flex flex-wrap gap-2 mb-4">
+              <button
+                onClick={() => setSelectedCategory('')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                  selectedCategory === ''
+                    ? 'bg-primary dark:bg-primary-dark text-white'
+                    : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark border border-border-primary/20 dark:border-border-primary-dark/20'
                 }`}
               >
                 All ({skills.length})
               </button>
               
-              {categories.map((category) => {
-                const categorySkillCount = skills.filter(skill => skill.category_id === category.id).length;
+              {displayCategories.map((category) => {
+                const isSelected = selectedCategory === category.id || selectedCategory === category.name;
+                const categorySkillCount = skills.filter(skill => 
+                  skill.category_id === category.id || 
+                  skill.category_name === category.name ||
+                  skill.category_name.toLowerCase().replace(/\s+/g, '-') === category.id
+                ).length;
+                
                 return (
                   <button
                     key={category.id}
-                    onClick={() => handleCategoryChange(category.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      activeCategory === category.id
-                        ? 'text-white'
-                        : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-secondary dark:text-text-secondary-dark hover:bg-background-secondary dark:hover:bg-background-secondary-dark'
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                      isSelected
+                        ? 'text-white shadow-md'
+                        : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark border border-border-primary/20 dark:border-border-primary-dark/20'
                     }`}
-                    style={{
-                      backgroundColor: activeCategory === category.id ? category.color : undefined,
-                      borderColor: activeCategory === category.id ? category.color : undefined
-                    }}
+                    style={isSelected ? { backgroundColor: category.color } : {}}
                   >
+                    <div className="w-3 h-3">
+                      {getCategoryIcon(category.icon)}
+                    </div>
                     {category.name} ({categorySkillCount})
                   </button>
                 );
               })}
             </div>
-          </div>
+          )}
 
-          {/* Skills Grid/List */}
-          <div className="relative">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex flex-col items-center gap-4">
-                  <Loader className="w-8 h-8 animate-spin text-primary dark:text-primary-dark" />
-                  <p className="text-text-secondary dark:text-text-secondary-dark">
-                    Loading skills...
-                  </p>
-                </div>
-              </div>
-            ) : error ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400" />
-                  <div>
-                    <p className="text-red-500 dark:text-red-400 font-medium mb-2">
-                      Failed to load skills
-                    </p>
-                    <p className="text-text-secondary dark:text-text-secondary-dark text-sm">
-                      {error}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : filteredSkills.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 
-                                rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-text-tertiary dark:text-text-tertiary-dark" />
-                  </div>
-                  <p className="text-text-primary dark:text-text-primary-dark font-medium mb-2">
-                    No skills found
-                  </p>
-                  <p className="text-text-secondary dark:text-text-secondary-dark text-sm">
-                    Try adjusting your search or filters
-                  </p>
-                </div>
-              </div>
-            ) : (
+          {/* Advanced Filters - Enhanced for Mobile */}
+          <AnimatePresence>
+            {showFilters && (
               <motion.div
-                className={`
-                  ${viewMode === 'grid' 
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-                    : 'space-y-4'
-                  }
-                `}
-                layout
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-background-secondary/30 dark:bg-background-secondary-dark/30 
+                         border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg p-4 mt-4"
               >
+                <div className="space-y-4">
+                  {/* Mobile Category Filter */}
+                  <div className="md:hidden">
+                    <label className="block text-xs text-text-secondary dark:text-text-secondary-dark mb-2">
+                      <Target className="w-3 h-3 inline mr-1" />
+                      Category
+                    </label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full px-3 py-2 bg-background-primary dark:bg-background-primary-dark 
+                               border border-border-primary/20 dark:border-border-primary-dark/20 rounded-md
+                               text-text-primary dark:text-text-primary-dark text-sm
+                               focus:outline-none focus:ring-1 focus:ring-primary/50 dark:focus:ring-primary-dark/50"
+                    >
+                      <option value="">All Categories ({skills.length})</option>
+                      {displayCategories.map(category => {
+                        const categorySkillCount = skills.filter(skill => 
+                          skill.category_id === category.id || 
+                          skill.category_name === category.name ||
+                          skill.category_name.toLowerCase().replace(/\s+/g, '-') === category.id
+                        ).length;
+                        
+                        return (
+                          <option key={category.id} value={category.id}>
+                            {category.name} ({categorySkillCount})
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  
+                  {/* Sort By */}
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs text-text-secondary dark:text-text-secondary-dark mb-2">
+                        <BarChart3 className="w-3 h-3 inline mr-1" />
+                        Sort By
+                      </label>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as SortBy)}
+                        className="w-full px-3 py-2 bg-background-primary dark:bg-background-primary-dark 
+                                 border border-border-primary/20 dark:border-border-primary-dark/20 rounded-md
+                                 text-text-primary dark:text-text-primary-dark text-sm
+                                 focus:outline-none focus:ring-1 focus:ring-primary/50 dark:focus:ring-primary-dark/50"
+                      >
+                        <option value="proficiency">Proficiency Level</option>
+                        <option value="experience">Years of Experience</option>
+                        <option value="name">Name (A-Z)</option>
+                        <option value="category">Category</option>
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-end">
+                      <button
+                        onClick={clearFilters}
+                        className="flex items-center gap-1 px-3 py-2 text-text-secondary dark:text-text-secondary-dark 
+                                 hover:text-text-primary dark:hover:text-text-primary-dark transition-colors duration-200 text-sm"
+                      >
+                        <X className="w-3 h-3" />
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Results Summary - Compact */}
+          <div className="flex items-center justify-between mt-4 text-sm">
+            <div className="text-text-secondary dark:text-text-secondary-dark">
+              {filteredAndSortedSkills.length} of {skills.length} skills
+            </div>
+            {selectedCategory && (
+              <div className="flex items-center gap-2">
+                <span className="text-text-secondary dark:text-text-secondary-dark">Filter:</span>
+                <span 
+                  className="px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1"
+                  style={{ 
+                    backgroundColor: `${displayCategories.find(cat => cat.id === selectedCategory)?.color}20`,
+                    color: displayCategories.find(cat => cat.id === selectedCategory)?.color
+                  }}
+                >
+                  {displayCategories.find(cat => cat.id === selectedCategory)?.name}
+                </span>
+                <button
+                  onClick={() => setSelectedCategory('')}
+                  className="text-text-tertiary dark:text-text-tertiary-dark hover:text-text-primary dark:hover:text-text-primary-dark"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Mobile-Optimized Skills Grid */}
+        {skills.length > 0 && (
+          <motion.div
+            className="mb-40 mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            {viewMode === 'grid' ? (
+              /* Grid View */
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <AnimatePresence>
-                  {filteredSkills.map((skill, index) => (
+                  {filteredAndSortedSkills.map((skill, index) => (
                     <motion.div
                       key={skill.id}
                       layout
@@ -358,25 +755,161 @@ const Skills: React.FC = () => {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ 
                         duration: 0.3, 
-                        delay: index * 0.05,
+                        delay: index * 0.03,
                         layout: { duration: 0.3 }
                       }}
-                      className={viewMode === 'grid' ? 'h-64' : ''}
+                      className="h-40"
                     >
                       <SkillCard
                         skill={skill}
-                        compact={viewMode === 'grid'}
+                        compact={true}
                         className="w-full h-full"
-                        onClick={() => setSelectedSkill(skill)}
+                        onClick={() => handleSkillSelect(skill)}
                       />
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </motion.div>
+              </div>
+            ) : (
+              /* List View - Mobile Optimized */
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {filteredAndSortedSkills.map((skill, index) => (
+                    <motion.div
+                      key={skill.id}
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ 
+                        duration: 0.3, 
+                        delay: index * 0.02,
+                        layout: { duration: 0.3 }
+                      }}
+                      className="h-20"
+                    >
+                      <SkillCard
+                        skill={skill}
+                        compact={false}
+                        className="w-full h-full"
+                        onClick={() => handleSkillSelect(skill)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
+
+        {/* No Skills Message */}
+        {skills.length === 0 && !loading && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Code2 className="w-6 h-6 text-gray-500" />
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">No Skills Data</h3>
+            <p className="text-gray-400 text-sm mb-4">Skills data is not available</p>
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Reload Data
+            </button>
+          </motion.div>
+        )}
+
+        {/* No Results Message */}
+        {skills.length > 0 && filteredAndSortedSkills.length === 0 && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Search className="w-6 h-6 text-gray-500" />
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">No skills found</h3>
+            <p className="text-gray-400 text-sm mb-4">Try adjusting your search or filters</p>
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 text-sm"
+            >
+              <X className="w-4 h-4" />
+              Clear Filters
+            </button>
+          </motion.div>
+        )}
       </div>
+
+      {/* Enhanced Skill Detail Modal */}
+      <AnimatePresence>
+        {selectedSkill && (
+          <motion.div
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedSkill(null)}
+          >
+            <motion.div
+              className="bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-lg rounded-xl 
+                       border border-border-primary/30 dark:border-border-primary-dark/30
+                       max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: -20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${selectedSkill.category_color}20` }}
+                    >
+                      <div className="w-5 h-5" style={{ color: selectedSkill.category_color }}>
+                        {getCategoryIcon(getCategoryIconName(selectedSkill.category_name))}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-text-primary dark:text-text-primary-dark">
+                        {selectedSkill.name}
+                      </h3>
+                      <p className="text-text-secondary dark:text-text-secondary-dark text-sm">
+                        {selectedSkill.category_name}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedSkill(null)}
+                    className="p-2 rounded-lg hover:bg-background-secondary dark:hover:bg-background-secondary-dark
+                             text-text-tertiary dark:text-text-tertiary-dark hover:text-text-primary dark:hover:text-text-primary-dark
+                             transition-colors duration-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <SkillPreviewCard
+                  skill={selectedSkill}
+                  isVisible={true}
+                  className="w-full"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </section>
   );
 };

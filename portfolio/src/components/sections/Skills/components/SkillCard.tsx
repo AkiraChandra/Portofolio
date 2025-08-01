@@ -1,8 +1,10 @@
-// src/components/sections/Skills/components/SkillCard.tsx
+// src/components/sections/Skills/components/SkillCard.tsx - Improved Version
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
+  Award, 
+  Calendar, 
   Code, 
   Globe, 
   Smartphone, 
@@ -10,10 +12,12 @@ import {
   Cloud, 
   Layers, 
   Settings, 
-  Users, 
-  Award,
+  Users,
   Star,
-  Calendar
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import type { SkillWithCategory } from '@/types/skills';
 import { getProficiencyInfo, formatYearsOfExperience } from '@/utils/skills/skillsUtils';
@@ -31,251 +35,356 @@ const CATEGORY_ICONS = {
   'Certifications': Award,
 } as const;
 
+// Function to map category names to icon names
+const getCategoryIconName = (categoryName: string): string => {
+  const lowerName = categoryName.toLowerCase();
+  if (lowerName.includes('programming') || lowerName.includes('language')) return 'Programming Languages';
+  if (lowerName.includes('web') || lowerName.includes('frontend') || lowerName.includes('backend')) return 'Web Technologies';
+  if (lowerName.includes('mobile') || lowerName.includes('app')) return 'Mobile Development';
+  if (lowerName.includes('database') || lowerName.includes('storage')) return 'Database & Storage';
+  if (lowerName.includes('cloud') || lowerName.includes('devops')) return 'Cloud & DevOps';
+  if (lowerName.includes('framework') || lowerName.includes('library')) return 'Frameworks & Libraries';
+  if (lowerName.includes('tool') || lowerName.includes('software')) return 'Tools & Software';
+  if (lowerName.includes('soft') || lowerName.includes('management')) return 'Soft Skills';
+  if (lowerName.includes('certification') || lowerName.includes('certificate')) return 'Certifications';
+  return 'Programming Languages';
+};
+
 interface SkillCardProps {
   skill: SkillWithCategory;
+  compact?: boolean;
   isActive?: boolean;
   isFeatured?: boolean;
-  compact?: boolean;
-  onClick?: () => void;
-  style?: React.CSSProperties;
   className?: string;
+  onClick?: () => void;
 }
 
 const SkillCard: React.FC<SkillCardProps> = ({
   skill,
+  compact = false,
   isActive = false,
   isFeatured = false,
-  compact = false,
-  onClick,
-  style,
-  className = ''
+  className = '',
+  onClick
 }) => {
   const proficiencyInfo = getProficiencyInfo(skill.proficiency_level);
   const experienceText = formatYearsOfExperience(skill.years_of_experience);
-  const IconComponent = CATEGORY_ICONS[skill.category_name as keyof typeof CATEGORY_ICONS] || Code;
   
-  // Calculate floating animation delay based on skill name for staggered effect
-  const animationDelay = (skill.name.length % 4) * 0.5;
+  const CategoryIcon = CATEGORY_ICONS[getCategoryIconName(skill.category_name) as keyof typeof CATEGORY_ICONS] || Code;
   
-  // Proficiency percentage for progress bar
-  const proficiencyPercentage = (skill.proficiency_level / 5) * 100;
-
   return (
     <motion.div
-      className={`skill-card relative group cursor-pointer select-none ${className}`}
-      style={{
-        ...style,
-        '--category-color': skill.category_color,
-        '--proficiency-color': proficiencyInfo.color,
-      } as React.CSSProperties}
+      className={`group cursor-pointer ${className}`}
       onClick={onClick}
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
-      animate={{ 
-        opacity: 1, 
-        y: 0, 
-        scale: isActive ? 1.05 : 1,
-      }}
-      whileHover={{ 
-        y: -8, 
-        scale: 1.02,
-        transition: { duration: 0.2, ease: "easeOut" }
-      }}
+      whileHover={{ scale: compact ? 1.02 : 1.01, y: compact ? -2 : 0, x: compact ? 0 : 2 }}
       whileTap={{ scale: 0.98 }}
-      transition={{ 
-        duration: 0.6,
-        delay: animationDelay,
-        type: "spring",
-        stiffness: 100
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Floating Animation */}
-      <motion.div
-        animate={{
-          y: [-2, 2, -2],
-          rotateZ: [-0.5, 0.5, -0.5]
-        }}
-        transition={{
-          duration: 4 + animationDelay,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: animationDelay
-        }}
-        className="w-full h-full"
-      >
-        {/* Card Background with Glass Effect */}
-        <div className={`
-          relative w-full h-full rounded-2xl overflow-hidden
-          bg-background-secondary/80 dark:bg-background-secondary-dark/80 
-          backdrop-blur-lg border border-border-primary/30 dark:border-border-primary-dark/30
-          shadow-lg hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
+      <div
+        className={`
+          relative overflow-hidden rounded-xl h-full
+          bg-background-secondary/50 dark:bg-background-secondary-dark/50 
+          backdrop-blur-sm
+          border border-border-primary/20 dark:border-border-primary-dark/20
+          hover:bg-background-secondary/70 dark:hover:bg-background-secondary-dark/70
+          hover:border-primary/30 dark:hover:border-primary-dark/30
           transition-all duration-300
-          ${isActive ? 'ring-2 ring-primary/50 dark:ring-primary-dark/50 shadow-primary/20 dark:shadow-primary-dark/20' : ''}
-          ${compact ? 'p-3' : 'p-4'}
-        `}>
-          
-          {/* Glow Effect */}
-          <div 
-            className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
-            style={{
-              background: `radial-gradient(circle at center, ${proficiencyInfo.color}33, transparent 70%)`
-            }}
-          />
+          hover:shadow-lg hover:shadow-primary/5 dark:hover:shadow-primary-dark/5
+          ${isActive ? 'ring-1 ring-primary/30 dark:ring-primary-dark/30 shadow-md shadow-primary/10 dark:shadow-primary-dark/10' : ''}
+          ${isFeatured ? 'border-primary/25 dark:border-primary-dark/25' : ''}
+        `}
+      >
+        {/* Background Gradient Effect */}
+        <div 
+          className="absolute inset-0 opacity-[0.01] dark:opacity-[0.02]"
+          style={{
+            background: `linear-gradient(135deg, ${skill.category_color}20, transparent 70%)`
+          }}
+        />
 
-          {/* Featured Badge */}
-          {(skill.is_featured || isFeatured) && (
-            <motion.div
-              className="absolute -top-1 -right-1 z-10"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-            >
-              <div className="relative">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center"
+        {/* Compact Mode for Grid View */}
+        {compact ? (
+          <div className="p-5 h-full flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <motion.div 
+                  className="w-8 h-8 rounded-xl flex items-center justify-center backdrop-blur-sm"
+                  style={{ 
+                    backgroundColor: `${skill.category_color}12`,
+                    border: `1px solid ${skill.category_color}20`
+                  }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <Star className="w-3 h-3 text-white fill-current" />
+                  <CategoryIcon 
+                    className="w-4 h-4" 
+                    style={{ color: skill.category_color }}
+                  />
                 </motion.div>
-                {/* Pulse effect */}
-                <motion.div
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 bg-yellow-400 rounded-full"
-                />
+                {skill.certification_name && (
+                  <motion.div 
+                    className="w-5 h-5 bg-green-500/90 rounded-full flex items-center justify-center shadow-sm"
+                    whileHover={{ scale: 1.2 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </motion.div>
+                )}
               </div>
-            </motion.div>
-          )}
-
-          {/* Main Content */}
-          <div className="relative z-10 h-full flex flex-col">
-            
-            {/* Category Icon */}
-            <div className="flex justify-center mb-3">
-              <div 
-                className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center
-                  transition-all duration-300 group-hover:scale-110
-                  ${compact ? 'w-10 h-10' : 'w-12 h-12'}
-                `}
-                style={{
-                  background: `linear-gradient(135deg, ${skill.category_color}20, ${skill.category_color}10)`,
-                  border: `1px solid ${skill.category_color}30`
-                }}
-              >
-                <IconComponent 
-                  className={`${compact ? 'w-5 h-5' : 'w-6 h-6'} transition-colors duration-300`}
-                  style={{ color: skill.category_color }}
-                />
+              <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
+                <span className="text-xs font-semibold text-text-secondary dark:text-text-secondary-dark">
+                  {skill.proficiency_level}/5
+                </span>
               </div>
             </div>
 
             {/* Skill Name */}
-            <h3 className={`
-              text-center font-semibold text-text-primary dark:text-text-primary-dark
-              mb-3 leading-tight line-clamp-2 group-hover:text-primary dark:group-hover:text-primary-dark
-              transition-colors duration-300
-              ${compact ? 'text-sm' : 'text-base'}
-            `}>
+            <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark mb-3 line-clamp-2 flex-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors duration-300">
               {skill.name}
             </h3>
 
-            {/* Proficiency Bar */}
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs text-text-tertiary dark:text-text-tertiary-dark`}>
-                  Proficiency
+            {/* Progress Bar with Enhanced Design */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-text-tertiary dark:text-text-tertiary-dark">
+                  {proficiencyInfo.label}
                 </span>
-                <span className={`text-xs font-medium`} style={{ color: proficiencyInfo.color }}>
-                  {skill.proficiency_level}/5
-                </span>
-              </div>
-              
-              <div className="relative w-full h-2 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
-                <motion.div
-                  className="absolute left-0 top-0 h-full rounded-full"
-                  style={{ 
-                    background: `linear-gradient(90deg, ${proficiencyInfo.color}, ${proficiencyInfo.color}aa)`
-                  }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${proficiencyPercentage}%` }}
-                  transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-                />
-                {/* Shimmer effect */}
-                <motion.div
-                  className="absolute top-0 left-0 h-full w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                  animate={{ x: [-32, 120] }}
-                  transition={{ duration: 2, delay: 1, ease: "easeInOut" }}
-                />
-              </div>
-            </div>
-
-            {/* Experience */}
-            <div className="mb-3">
-              <div className="flex items-center justify-center gap-1 text-text-secondary dark:text-text-secondary-dark">
-                <Calendar className="w-3 h-3" />
-                <span className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>
+                <span className="text-xs font-semibold" style={{ color: proficiencyInfo.color }}>
                   {experienceText}
                 </span>
               </div>
-            </div>
-
-            {/* Category Label */}
-            <div className="mt-auto">
-              <div 
-                className={`
-                  text-center px-2 py-1 rounded-lg text-xs font-medium
-                  transition-all duration-300
-                `}
-                style={{
-                  backgroundColor: `${skill.category_color}15`,
-                  color: skill.category_color,
-                  border: `1px solid ${skill.category_color}25`
-                }}
-              >
-                {skill.category_name}
+              
+              <div className="relative">
+                {/* Background track */}
+                <div className="h-2 bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 rounded-full overflow-hidden">
+                  {/* Progress fill */}
+                  <motion.div
+                    className="h-full rounded-full relative overflow-hidden"
+                    style={{ 
+                      background: `linear-gradient(90deg, ${proficiencyInfo.color}, ${proficiencyInfo.color}dd)`
+                    }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
+                    transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+                  >
+                    {/* Shimmer effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                      animate={{ x: [-40, 120] }}
+                      transition={{ 
+                        duration: 1.5, 
+                        delay: 0.8, 
+                        ease: "easeInOut",
+                        repeat: Infinity,
+                        repeatDelay: 3
+                      }}
+                    />
+                  </motion.div>
+                </div>
+                
+                {/* Skill level indicators */}
+                <div className="absolute -top-1 -bottom-1 left-0 right-0 flex justify-between items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className={`w-1 h-4 rounded-full transition-all duration-500 ${
+                        i < skill.proficiency_level 
+                          ? 'opacity-80' 
+                          : 'bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 opacity-40'
+                      }`}
+                      style={i < skill.proficiency_level ? { backgroundColor: proficiencyInfo.color } : {}}
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ delay: 0.3 + (i * 0.1), duration: 0.3 }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Certification Indicator */}
-            {skill.certification_name && (
-              <motion.div
-                className="absolute bottom-2 left-2"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.8, type: "spring" }}
-              >
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <Award className="w-2 h-2 text-white" />
-                </div>
-              </motion.div>
+            {/* Experience with Icon */}
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-3.5 h-3.5 text-text-tertiary dark:text-text-tertiary-dark" />
+              <span className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark">
+                {experienceText}
+              </span>
+              {skill.years_of_experience >= 3 && (
+                <TrendingUp className="w-3 h-3 text-green-500" />
+              )}
+            </div>
+
+            {/* Description */}
+            {skill.description && (
+              <p className="text-xs text-text-tertiary dark:text-text-tertiary-dark line-clamp-2 mb-4 flex-1">
+                {skill.description}
+              </p>
             )}
 
-            {/* Hover Overlay with Additional Info */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent 
-                         rounded-2xl flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100
-                         transition-opacity duration-300"
-              initial={false}
+            {/* Category Badge */}
+            <div className="mt-auto">
+              <motion.div 
+                className="text-center px-3 py-1.5 rounded-lg text-xs font-medium backdrop-blur-sm transition-all duration-300"
+                style={{
+                  backgroundColor: `${skill.category_color}08`,
+                  color: skill.category_color,
+                  border: `1px solid ${skill.category_color}15`
+                }}
+                whileHover={{ 
+                  backgroundColor: `${skill.category_color}12`,
+                  scale: 1.02
+                }}
+              >
+                {skill.category_name.split(' ')[0]}
+              </motion.div>
+            </div>
+          </div>
+        ) : (
+          /* List Mode - Enhanced Horizontal Layout */
+          <div className="p-4 flex items-center gap-4 h-full">
+            {/* Icon with Enhanced Design */}
+            <motion.div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm"
+              style={{ 
+                backgroundColor: `${skill.category_color}12`,
+                border: `1px solid ${skill.category_color}20`
+              }}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <div className="text-white text-xs space-y-1">
-                <div className="font-medium">{proficiencyInfo.label}</div>
-                {skill.description && (
-                  <div className="line-clamp-2 opacity-90">
-                    {skill.description}
-                  </div>
-                )}
+              <CategoryIcon 
+                className="w-5 h-5" 
+                style={{ color: skill.category_color }}
+              />
+            </motion.div>
+
+            {/* Main Info */}
+            <div className="flex-1 min-w-0 group-hover:translate-x-1 transition-transform duration-200">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark truncate group-hover:text-primary dark:group-hover:text-primary-dark transition-colors duration-300">
+                  {skill.name}
+                </h3>
                 {skill.certification_name && (
-                  <div className="flex items-center gap-1 text-green-300">
-                    <Award className="w-3 h-3" />
-                    <span className="truncate">Certified</span>
-                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.2 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                  </motion.div>
+                )}
+                {skill.is_featured && (
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 180 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-current flex-shrink-0" />
+                  </motion.div>
+                )}
+                {skill.years_of_experience >= 3 && (
+                  <Zap className="w-3 h-3 text-orange-500 flex-shrink-0" />
                 )}
               </div>
-            </motion.div>
+              
+              <div className="flex items-center gap-3 text-xs text-text-secondary dark:text-text-secondary-dark">
+                <span className="truncate font-medium">{skill.category_name}</span>
+                <span className="text-text-tertiary dark:text-text-tertiary-dark">•</span>
+                <span className="font-medium">{experienceText}</span>
+              </div>
+            </div>
+
+            {/* Progress & Level - Enhanced Compact */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="text-right">
+                <div className="text-xs font-semibold" style={{ color: proficiencyInfo.color }}>
+                  {skill.proficiency_level}/5
+                </div>
+                <div className="text-xs text-text-tertiary dark:text-text-tertiary-dark font-medium">
+                  {proficiencyInfo.label}
+                </div>
+              </div>
+              
+              {/* Vertical Progress Bars */}
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className={`w-1 h-8 rounded-full transition-all duration-300 ${
+                      i < skill.proficiency_level 
+                        ? 'opacity-100' 
+                        : 'bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 opacity-40'
+                    }`}
+                    style={i < skill.proficiency_level ? { backgroundColor: proficiencyInfo.color } : {}}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ delay: 0.1 + (i * 0.05), duration: 0.3 }}
+                    whileHover={{ scaleY: 1.1 }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        )}
+
+        {/* Enhanced Hover Effects for Compact Mode */}
+        {compact && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent 
+                     rounded-xl flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100
+                     transition-opacity duration-300 backdrop-blur-sm"
+            initial={false}
+          >
+            <div className="text-white space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-sm">{proficiencyInfo.label}</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span className="text-xs font-medium">{experienceText}</span>
+                </div>
+              </div>
+              {skill.description && (
+                <p className="line-clamp-2 text-gray-200 text-xs leading-relaxed">
+                  {skill.description}
+                </p>
+              )}
+              {skill.certification_name && (
+                <div className="flex items-center gap-1 text-green-300">
+                  <Award className="w-3 h-3" />
+                  <span className="text-xs font-medium">Certified</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Featured Indicator */}
+        {skill.is_featured && compact && (
+          <motion.div 
+            className="absolute top-3 right-3"
+            whileHover={{ scale: 1.2, rotate: 180 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
+              <Star className="w-3.5 h-3.5 text-white fill-current" />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Certification Indicator */}
+        {skill.certification_name && compact && (
+          <motion.div 
+            className="absolute top-3 left-3"
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            <div className="w-5 h-5 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-md">
+              <Award className="w-2.5 h-2.5 text-white" />
+            </div>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 };
