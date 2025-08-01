@@ -1,4 +1,4 @@
-// src/components/layouts/PageLayout.tsx (MOBILE OPTIMIZED)
+// src/components/layouts/PageLayout.tsx (NATIVE SCROLL SNAP APPROACH)
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -27,22 +27,9 @@ type SectionId = typeof SECTIONS[number]['id'];
 export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
-  const [isMobile, setIsMobile] = useState(false);
   const isInitialized = useRef(false);
-  const lastScrollTime = useRef(0);
 
-  // Detect mobile for performance optimizations
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Initialize with mobile considerations
+  // SOLUTION 1: Use CSS scroll-snap-type ONLY for navigation
   useEffect(() => {
     // Disable browser scroll restoration
     if ('scrollRestoration' in history) {
@@ -52,28 +39,21 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
     isInitialized.current = true;
   }, []);
 
-  // Mobile-optimized navigation
+  // SOLUTION 2: Use scrollIntoView with scroll snap behavior
   useEffect(() => {
     if (!isInitialized.current || defaultSection === 'home') return;
 
-    const navigateToSection = () => {
+    // Wait for DOM to be fully ready
+    const timer = setTimeout(() => {
       const targetElement = document.getElementById(defaultSection);
       
       if (targetElement) {
-        // Use different approach for mobile vs desktop
-        if (isMobile) {
-          // Mobile: Use immediate positioning to avoid lag
-          targetElement.scrollIntoView({
-            behavior: 'auto', // Instant on mobile
-            block: 'start',
-          });
-        } else {
-          // Desktop: Use smooth scroll
-          targetElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        }
+        // Let scroll snap handle the positioning naturally
+        targetElement.scrollIntoView({
+          behavior: 'auto', // Use 'auto' to work with scroll snap
+          block: 'start',
+          inline: 'nearest'
+        });
 
         // Update URL and state
         const section = SECTIONS.find(s => s.id === defaultSection);
@@ -82,29 +62,18 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           setCurrentSection(defaultSection);
         }
       }
-    };
+    }, 100);
 
-    // Delay slightly longer on mobile for DOM readiness
-    const timer = setTimeout(navigateToSection, isMobile ? 150 : 100);
     return () => clearTimeout(timer);
-  }, [defaultSection, isMobile]);
+  }, [defaultSection]);
 
-  // Optimized scroll tracking with performance considerations
+  // SOLUTION 3: Simple, reliable scroll tracking
   useEffect(() => {
     if (!isInitialized.current) return;
 
     let scrollTimer: NodeJS.Timeout;
-    const throttleDelay = isMobile ? 150 : 100; // Longer throttle on mobile
 
     const handleScroll = () => {
-      const now = Date.now();
-      
-      // Additional throttling for mobile
-      if (isMobile && now - lastScrollTime.current < 100) {
-        return;
-      }
-      lastScrollTime.current = now;
-
       if (scrollTimer) clearTimeout(scrollTimer);
       
       scrollTimer = setTimeout(() => {
@@ -139,23 +108,19 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
             window.history.replaceState(null, '', section.path);
           }
         }
-      }, throttleDelay);
+      }, 100);
     };
 
     const container = scrollContainerRef.current;
     if (container) {
-      // Use passive listeners for better mobile performance
-      container.addEventListener('scroll', handleScroll, { 
-        passive: true,
-        capture: false 
-      });
+      container.addEventListener('scroll', handleScroll, { passive: true });
       
       return () => {
         container.removeEventListener('scroll', handleScroll);
         if (scrollTimer) clearTimeout(scrollTimer);
       };
     }
-  }, [currentSection, isMobile]);
+  }, [currentSection]);
 
   return (
     <main className="min-h-screen overflow-x-hidden">
@@ -165,13 +130,11 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         ref={scrollContainerRef}
         className="h-screen overflow-y-auto"
         style={{
-          // Mobile-optimized scroll settings
-          scrollSnapType: isMobile ? 'y proximity' : 'y mandatory', // Less strict on mobile
-          scrollBehavior: isMobile ? 'auto' : 'smooth', // Instant scroll on mobile for better performance
+          // CRITICAL: Let CSS handle all scroll behavior
+          scrollSnapType: 'y mandatory',
+          scrollBehavior: 'smooth',
+          // Prevent any scroll interference
           overscrollBehavior: 'contain',
-          // Mobile-specific optimizations
-          WebkitOverflowScrolling: 'touch', // iOS momentum scrolling
-          touchAction: 'pan-y', // Optimize touch interactions
         }}
       >
         
@@ -182,7 +145,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           style={{
             height: '100vh',
             scrollSnapAlign: 'start',
-            scrollSnapStop: isMobile ? 'normal' : 'always', // Less aggressive snapping on mobile
+            scrollSnapStop: 'always',
           }}
         >
           <Hero />
@@ -195,99 +158,85 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           style={{
             height: '100vh',
             scrollSnapAlign: 'start',
-            scrollSnapStop: isMobile ? 'normal' : 'always',
+            scrollSnapStop: 'always',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: isMobile ? 0.3 : 0.6 }} // Faster on mobile
+          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
           <Projects />
         </motion.section>
         
-        {/* Experience Section - Mobile Optimized */}
+        {/* Experience Section - Contained Overflow */}
         <motion.section 
           id="experience"
           className="flex-shrink-0 relative"
           style={{
             height: '100vh',
-            maxHeight: '100vh',
+            maxHeight: '100vh', // Critical: prevent expansion
             scrollSnapAlign: 'start',
-            scrollSnapStop: isMobile ? 'normal' : 'always',
-            // Lighter containment on mobile for better performance
-            contain: isMobile ? 'layout style' : 'strict',
+            scrollSnapStop: 'always',
+            contain: 'strict', // Strict containment
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: isMobile ? 0.3 : 0.6 }}
+          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div 
-            className="absolute inset-0 overflow-hidden bg-background-primary dark:bg-background-primary-dark"
-            style={{
-              // Mobile-optimized rendering
-              willChange: isMobile ? 'auto' : 'scroll-position',
-            }}
-          >
+          {/* Overflow isolation wrapper */}
+          <div className="absolute inset-0 overflow-hidden bg-background-primary dark:bg-background-primary-dark">
             <div className="h-full w-full overflow-y-auto">
               <Experience />
             </div>
           </div>
         </motion.section>
         
-        {/* Certifications Section - Mobile Optimized */}
+        {/* Certifications Section - Contained Overflow */}
         <motion.section 
           id="certifications"
           className="flex-shrink-0 relative"
           style={{
             height: '100vh',
-            maxHeight: '100vh',
+            maxHeight: '100vh', // Critical: prevent expansion
             scrollSnapAlign: 'start',
-            scrollSnapStop: isMobile ? 'normal' : 'always',
-            contain: isMobile ? 'layout style' : 'strict',
+            scrollSnapStop: 'always',
+            contain: 'strict', // Strict containment
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: isMobile ? 0.3 : 0.6 }}
+          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div 
-            className="absolute inset-0 overflow-hidden bg-black"
-            style={{
-              willChange: isMobile ? 'auto' : 'scroll-position',
-            }}
-          >
+          {/* Overflow isolation wrapper with visual boundary */}
+          <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full w-full overflow-y-auto">
               <Certifications />
             </div>
-            {/* Stronger visual barrier on mobile */}
-            <div className={`absolute bottom-0 left-0 right-0 ${isMobile ? 'h-2' : 'h-1'} bg-black z-50`} />
           </div>
         </motion.section>
         
-        {/* Skills Section - Mobile Optimized */}
+        {/* Skills Section - Clean Isolation */}
         <motion.section 
           id="skills"
           className="flex-shrink-0 relative"
           style={{
             height: '100vh',
             scrollSnapAlign: 'start',
-            scrollSnapStop: isMobile ? 'normal' : 'always',
-            contain: isMobile ? 'layout style' : 'strict',
-            zIndex: 10,
+            scrollSnapStop: 'always',
+            contain: 'strict',
+            zIndex: 10, // Higher z-index for clean separation
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: isMobile ? 0.3 : 0.6 }}
+          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div 
-            className="h-full w-full overflow-hidden bg-background-primary dark:bg-background-primary-dark"
-            style={{
-              willChange: isMobile ? 'auto' : 'scroll-position',
-            }}
-          >
-            <Skills />
+          {/* Overflow isolation wrapper with visual boundary */}
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full w-full overflow-y-auto">
+              <Skills />
+            </div>
           </div>
         </motion.section>
       </div>
