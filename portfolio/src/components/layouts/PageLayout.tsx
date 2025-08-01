@@ -245,40 +245,48 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           <Projects />
         </motion.section>
         
-        {/* Experience Section - Better overflow handling */}
+        {/* Experience Section - With Overflow Containment */}
         <motion.section 
           id="experience"
-          className="snap-start min-h-screen w-full"
+          className="snap-start h-screen w-full relative"
           style={{
+            height: '100vh',
+            minHeight: '100vh', 
+            maxHeight: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            // Force exact positioning for overflow content
-            scrollMarginTop: '0px',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
-          <Experience />
+          {/* Independent scroll container for overflow content */}
+          <div className="h-full overflow-y-auto">
+            <Experience />
+          </div>
         </motion.section>
         
-        {/* Certifications Section - Better overflow handling */}
+        {/* Certifications Section - With Overflow Containment */}
         <motion.section 
           id="certifications"
-          className="snap-start min-h-screen w-full"
+          className="snap-start h-screen w-full relative"
           style={{
+            height: '100vh',
+            minHeight: '100vh',
+            maxHeight: '100vh', 
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            // Ensure proper positioning even with overflow
-            scrollMarginTop: '0px',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
-          <Certifications />
+          {/* Independent scroll container for overflow content */}
+          <div className="h-full overflow-y-auto">
+            <Certifications />
+          </div>
         </motion.section>
         
         {/* Skills Section */}
