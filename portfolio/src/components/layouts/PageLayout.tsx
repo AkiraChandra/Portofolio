@@ -1,4 +1,5 @@
-// src/components/layouts/PageLayout.tsx (NATIVE SCROLL SNAP APPROACH)
+// src/components/layouts/PageLayout.tsx (V2 - UNIFIED NAVIGATION SYSTEM)
+// THIS IS V2 - THE RECOMMENDED VERSION! 🏆
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -15,11 +16,11 @@ interface PageLayoutProps {
 }
 
 const SECTIONS = [
-  { id: 'home', path: '/', index: 0 },
-  { id: 'projects', path: '/projects', index: 1 },
-  { id: 'experience', path: '/experience', index: 2 },
-  { id: 'certifications', path: '/certifications', index: 3 },
-  { id: 'skills', path: '/skills', index: 4 },
+  { id: 'home', path: '/' },
+  { id: 'projects', path: '/projects' },
+  { id: 'experience', path: '/experience' },
+  { id: 'certifications', path: '/certifications' },
+  { id: 'skills', path: '/skills' },
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -27,83 +28,83 @@ type SectionId = typeof SECTIONS[number]['id'];
 export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
-  const isInitialized = useRef(false);
 
-  // SOLUTION 1: Use CSS scroll-snap-type ONLY for navigation
+  // SOLUTION 1: Unified navigation function (same as navbar!)
+  const navigateToSection = (sectionId: SectionId) => {
+    const section = document.getElementById(sectionId);
+    
+    if (section) {
+      // EXACT same approach as navbar - this is why it's smooth!
+      section.scrollIntoView({
+        behavior: 'smooth',  // Same as navbar
+        block: 'start',      // Same as navbar
+      });
+      
+      // Update URL and state
+      const sectionConfig = SECTIONS.find(s => s.id === sectionId);
+      if (sectionConfig) {
+        window.history.replaceState(null, '', sectionConfig.path);
+        setCurrentSection(sectionId);
+      }
+    }
+  };
+
+  // SOLUTION 2: Initialize with same approach as navbar
   useEffect(() => {
     // Disable browser scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
-    
-    isInitialized.current = true;
   }, []);
 
-  // SOLUTION 2: Use scrollIntoView with scroll snap behavior
+  // SOLUTION 3: Handle refresh navigation (navbar-style)
   useEffect(() => {
-    if (!isInitialized.current || defaultSection === 'home') return;
+    if (defaultSection === 'home') return;
 
-    // Wait for DOM to be fully ready
+    // Use same timing and approach as navbar
     const timer = setTimeout(() => {
-      const targetElement = document.getElementById(defaultSection);
-      
-      if (targetElement) {
-        // Let scroll snap handle the positioning naturally
-        targetElement.scrollIntoView({
-          behavior: 'auto', // Use 'auto' to work with scroll snap
-          block: 'start',
-          inline: 'nearest'
-        });
-
-        // Update URL and state
-        const section = SECTIONS.find(s => s.id === defaultSection);
-        if (section) {
-          window.history.replaceState(null, '', section.path);
-          setCurrentSection(defaultSection);
-        }
-      }
-    }, 100);
+      navigateToSection(defaultSection);
+    }, 50); // Minimal delay, similar to navbar's immediate response
 
     return () => clearTimeout(timer);
   }, [defaultSection]);
 
-  // SOLUTION 3: Simple, reliable scroll tracking
+  // SOLUTION 4: Simple scroll tracking (only for URL updates)
   useEffect(() => {
-    if (!isInitialized.current) return;
-
     let scrollTimer: NodeJS.Timeout;
 
     const handleScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
       
+      // Minimal delay for smooth URL updates
       scrollTimer = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
 
         const scrollTop = container.scrollTop;
         const viewportHeight = container.clientHeight;
-        const scrollCenter = scrollTop + (viewportHeight / 2);
+        const scrollCenter = scrollTop + (viewportHeight * 0.5);
         
-        // Find which section contains the scroll center
-        let newActiveSection: SectionId = 'home';
+        // Find active section
+        let activeSection: SectionId = 'home';
         
-        SECTIONS.forEach(section => {
+        for (const section of SECTIONS) {
           const element = document.getElementById(section.id);
-          if (!element) return;
+          if (!element) continue;
           
           const sectionTop = element.offsetTop;
-          const sectionHeight = element.offsetHeight;
-          const sectionBottom = sectionTop + sectionHeight;
+          const sectionBottom = sectionTop + element.offsetHeight;
           
           if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
-            newActiveSection = section.id;
+            activeSection = section.id;
+            break;
           }
-        });
+        }
 
         // Update URL only when section changes
-        if (newActiveSection !== currentSection) {
-          setCurrentSection(newActiveSection);
-          const section = SECTIONS.find(s => s.id === newActiveSection);
+        if (activeSection !== currentSection) {
+          setCurrentSection(activeSection);
+          const section = SECTIONS.find(s => s.id === activeSection);
           if (section) {
             window.history.replaceState(null, '', section.path);
           }
@@ -114,7 +115,6 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll, { passive: true });
-      
       return () => {
         container.removeEventListener('scroll', handleScroll);
         if (scrollTimer) clearTimeout(scrollTimer);
@@ -124,120 +124,111 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      <Navbar />
+      {/* Pass navigation function to Navbar for consistency */}
+      <Navbar onNavigate={(path) => {
+        const section = SECTIONS.find(s => s.path === path);
+        if (section) {
+          navigateToSection(section.id);
+        }
+      }} />
       
       <div 
         ref={scrollContainerRef}
         className="h-screen overflow-y-auto"
         style={{
-          // CRITICAL: Let CSS handle all scroll behavior
           scrollSnapType: 'y mandatory',
           scrollBehavior: 'smooth',
-          // Prevent any scroll interference
           overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         
         {/* Hero Section */}
-        <section 
+        <motion.section 
           id="home" 
-          className="flex-shrink-0"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
           }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
         >
           <Hero />
-        </section>
+        </motion.section>
         
         {/* Projects Section */}
         <motion.section 
           id="projects"
-          className="flex-shrink-0"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
           <Projects />
         </motion.section>
         
-        {/* Experience Section - Contained Overflow */}
+        {/* Experience Section - Isolated Overflow */}
         <motion.section 
           id="experience"
-          className="flex-shrink-0 relative"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: '100vh',
-            maxHeight: '100vh', // Critical: prevent expansion
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            contain: 'strict', // Strict containment
+            contain: 'layout style paint',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
-          {/* Overflow isolation wrapper */}
-          <div className="absolute inset-0 overflow-hidden bg-background-primary dark:bg-background-primary-dark">
-            <div className="h-full w-full overflow-y-auto">
+     
               <Experience />
-            </div>
-          </div>
+   
         </motion.section>
         
-        {/* Certifications Section - Contained Overflow */}
+        {/* Certifications Section - Isolated Overflow */}
         <motion.section 
           id="certifications"
-          className="flex-shrink-0 relative"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: '100vh',
-            maxHeight: '100vh', // Critical: prevent expansion
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            contain: 'strict', // Strict containment
+            contain: 'layout style paint',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
-          {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden bg-black">
-            <div className="h-full w-full overflow-y-auto">
+       
               <Certifications />
-            </div>
-          </div>
+         
         </motion.section>
         
-        {/* Skills Section - Clean Isolation */}
+        {/* Skills Section - Clean */}
         <motion.section 
           id="skills"
-          className="flex-shrink-0 relative"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: '100vh',
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            contain: 'strict',
-            zIndex: 10, // Higher z-index for clean separation
+            contain: 'layout style paint',
+            zIndex: 1,
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true }}
         >
-          {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden bg-black">
-            <div className="h-full w-full overflow-y-auto">
-              <Skills />
-            </div>
-          </div>
+            <Skills />
         </motion.section>
       </div>
     </main>
