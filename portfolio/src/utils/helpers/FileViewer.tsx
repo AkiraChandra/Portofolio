@@ -18,13 +18,11 @@ const getFileType = (url: string) => {
 const FileViewer = ({ 
   url, 
   alt = '', 
-  caption = '', 
   className = '',
   showDownload = true
 }: {
   url: string;
   alt?: string;
-  caption?: string;
   className?: string;
   showDownload?: boolean;
 }) => {
@@ -427,11 +425,11 @@ const FileViewer = ({
       )}
 
       {/* Caption */}
-      {caption && (
+      {/* {caption && (
         <p className="mt-2 text-sm text-text-secondary dark:text-text-secondary-dark">
           {caption}
         </p>
-      )}
+      )} */}
 
       {/* Download/External Link Buttons */}
       {showDownload && (

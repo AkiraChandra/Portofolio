@@ -68,6 +68,80 @@ export const useProjectSizes = () => {
   const isMobileShort = useMediaQuery('(max-width: 767px) and (max-height: 499px)');
   const isMobileNormal = useMediaQuery('(max-width: 767px) and (min-height: 500px) and (max-height: 699px)');
   
+  // Mobile-specific breakpoints for optimization
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
+  const isSmallMobile = useMediaQuery("(max-width: 480px)");
+  const is2xl = useMediaQuery("(min-width: 1536px)");
+
+  // Mobile-specific configurations for performance optimization
+  const getMobileOptimizations = () => {
+    if (isSmallMobile) {
+      return {
+        // UI styling for small mobile
+        cardPadding: "p-3",
+        textSizes: {
+          title: "text-lg",
+          description: "text-xs",
+          tech: "text-xs px-2 py-0.5",
+          link: "text-xs"
+        },
+        // Animation timing optimized for small screens
+        autoSlideDuration: 2500,
+        transitionDuration: 0.2,
+      };
+    }
+    
+    if (isMobile) {
+      return {
+        // UI styling for mobile
+        cardPadding: "p-4",
+        textSizes: {
+          title: "text-xl",
+          description: "text-sm",
+          tech: "text-xs px-2 py-0.5",
+          link: "text-sm"
+        },
+        // Animation timing optimized for mobile
+        autoSlideDuration: 3000,
+        transitionDuration: 0.3,
+      };
+    }
+    
+    if (isTablet) {
+      return {
+        // UI styling for tablet - IMPROVED
+        cardPadding: "p-6", // Increased from p-5
+        textSizes: {
+          title: "text-2xl", // Increased from text-xl
+          description: "text-base", // Increased from text-sm
+          tech: "text-sm px-3 py-1", // Increased from text-xs px-2 py-0.5
+          link: "text-base" // Increased from text-sm
+        },
+        // Animation timing for tablet
+        autoSlideDuration: 3500,
+        transitionDuration: 0.4,
+      };
+    }
+    
+    // Desktop default
+    return {
+      // UI styling for desktop
+      cardPadding: "p-4 md:p-6",
+      textSizes: {
+        title: "text-lg xl:text-xl",
+        description: "text-xs xl:text-sm",
+        tech: "text-xs px-2 py-0.5",
+        link: "text-xs xl:text-sm"
+      },
+      // Animation timing for desktop
+      autoSlideDuration: 4000,
+      transitionDuration: 0.5,
+    };
+  };
+
+  const mobileOptimizations = getMobileOptimizations();
+
   // 2XL+ screens with height variations
   if (is2XLTall) {
     return {
@@ -83,6 +157,12 @@ export const useProjectSizes = () => {
       containerPaddingTop: 112,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
       headerMarginBottom: 56,      // mb-14 equivalent (56px)
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -98,7 +178,13 @@ export const useProjectSizes = () => {
       mobilePreviewImageHeight: 120, // Reduced from 160 to 120
       containerPaddingTop: 80,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
-      headerMarginBottom: 56, 
+      headerMarginBottom: 56,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -114,7 +200,13 @@ export const useProjectSizes = () => {
       mobilePreviewImageHeight: 130, // Reduced from 192 to 130
       containerPaddingTop: 94,    // pt-28 equivalent (112px)
       containerPaddingBottom: 64,  // pb-16 equivalent (64px)
-      headerMarginBottom: 26, 
+      headerMarginBottom: 26,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -127,7 +219,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72 (288px)
       previewImageHeight: 216, // h-54 (216px)
       previewContentHeight: 216,
-      mobilePreviewImageHeight: 140 // Reduced from 224 to 140
+      mobilePreviewImageHeight: 140, // Reduced from 224 to 140
+      containerPaddingTop: 112,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 56,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -139,7 +240,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 256,  // w-64
       previewImageHeight: 144, // h-36
       previewContentHeight: 144,
-      mobilePreviewImageHeight: 120 // Reduced from 144 to 120
+      mobilePreviewImageHeight: 120, // Reduced from 144 to 120
+      containerPaddingTop: 80,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 40,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -151,7 +261,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 256,  // w-64 as in original
       previewImageHeight: 176, // h-44 as in original
       previewContentHeight: 176,
-      mobilePreviewImageHeight: 130 // Reduced from 192 to 130
+      mobilePreviewImageHeight: 130, // Reduced from 192 to 130
+      containerPaddingTop: 100,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 48,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -164,7 +283,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72 as in original LG
       previewImageHeight: 192, // h-48 as in original LG
       previewContentHeight: 192,
-      mobilePreviewImageHeight: 140 // Reduced from 208 to 140
+      mobilePreviewImageHeight: 140, // Reduced from 208 to 140
+      containerPaddingTop: 112,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 56,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -176,7 +304,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 240,  // w-60
       previewImageHeight: 128, // h-32
       previewContentHeight: 128,
-      mobilePreviewImageHeight: 110 // Reduced from 128 to 110
+      mobilePreviewImageHeight: 110, // Reduced from 128 to 110
+      containerPaddingTop: 80,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 40,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -188,20 +325,38 @@ export const useProjectSizes = () => {
       previewImageWidth: 288,  // w-72
       previewImageHeight: 192, // h-48
       previewContentHeight: 192,
-      mobilePreviewImageHeight: 130 // Reduced from 192 to 130
+      mobilePreviewImageHeight: 130, // Reduced from 192 to 130
+      containerPaddingTop: 100,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 48,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
-  // Tablet with height variations
+  // Tablet with height variations - IMPROVED SIZES
   if (isTabletTall) {
     return {
       planetSize: 140,
       spacing: 160,
-      previewWidth: 400,
-      previewImageWidth: 280,
-      previewImageHeight: 180,
-      previewContentHeight: 180,
-      mobilePreviewImageHeight: 140 // Reduced from 200 to 140
+      previewWidth: 600, // Increased from 400
+      previewImageWidth: 350, // Increased from 280
+      previewImageHeight: 220, // Increased from 180
+      previewContentHeight: 220, // Increased from 180
+      mobilePreviewImageHeight: 200, // Increased from 140
+      containerPaddingTop: 112,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 56,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -209,11 +364,20 @@ export const useProjectSizes = () => {
     return {
       planetSize: 90,
       spacing: 110,
-      previewWidth: 400,
-      previewImageWidth: 240,
-      previewImageHeight: 120,
-      previewContentHeight: 120,
-      mobilePreviewImageHeight: 110 // Reduced from 120 to 110
+      previewWidth: 550, // Increased from 400
+      previewImageWidth: 320, // Increased from 240
+      previewImageHeight: 160, // Increased from 120
+      previewContentHeight: 160, // Increased from 120
+      mobilePreviewImageHeight: 140, // Increased from 110
+      containerPaddingTop: 80,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 40,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -221,11 +385,20 @@ export const useProjectSizes = () => {
     return {
       planetSize: 120,
       spacing: 140,
-      previewWidth: 400,
-      previewImageWidth: 260,
-      previewImageHeight: 160,
-      previewContentHeight: 160,
-      mobilePreviewImageHeight: 130 // Reduced from 160 to 130
+      previewWidth: 580, // Increased from 400
+      previewImageWidth: 340, // Increased from 260
+      previewImageHeight: 200, // Increased from 160
+      previewContentHeight: 200, // Increased from 160
+      mobilePreviewImageHeight: 180, // Increased from 130
+      containerPaddingTop: 100,
+      containerPaddingBottom: 64,
+      headerMarginBottom: 48,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -238,7 +411,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 0, // Not used on mobile
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 140 // Reduced from 224 to 140
+      mobilePreviewImageHeight: 140, // Reduced from 224 to 140
+      containerPaddingTop: 60,
+      containerPaddingBottom: 32,
+      headerMarginBottom: 24,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -250,7 +432,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 0,
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 80 // Reduced from 128 to 100
+      mobilePreviewImageHeight: 80, // Reduced from 128 to 100
+      containerPaddingTop: 40,
+      containerPaddingBottom: 32,
+      headerMarginBottom: 16,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -262,7 +453,16 @@ export const useProjectSizes = () => {
       previewImageWidth: 0,
       previewImageHeight: 0,
       previewContentHeight: 0,
-      mobilePreviewImageHeight: 100 // Reduced from 192 to 120
+      mobilePreviewImageHeight: 100, // Reduced from 192 to 120
+      containerPaddingTop: 50,
+      containerPaddingBottom: 32,
+      headerMarginBottom: 20,
+      // Mobile optimization flags and configs
+      isMobile,
+      isTablet,
+      isSmallMobile,
+      is2xl,
+      ...mobileOptimizations
     };
   }
   
@@ -277,6 +477,12 @@ export const useProjectSizes = () => {
     mobilePreviewImageHeight: 100, // Reduced from 192 to 120
     containerPaddingTop: 112,    // pt-28 equivalent (112px)
     containerPaddingBottom: 64,  // pb-16 equivalent (64px)
-    headerMarginBottom: 56, 
+    headerMarginBottom: 56,
+    // Mobile optimization flags and configs
+    isMobile,
+    isTablet,
+    isSmallMobile,
+    is2xl,
+    ...mobileOptimizations
   };
 };

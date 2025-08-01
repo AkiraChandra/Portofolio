@@ -1,9 +1,10 @@
+// src/components/sections/Projects/components/ProjectPreview.tsx (MOBILE OPTIMIZED)
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Project } from "@/types/projects";
 import FileViewer from "@/utils/helpers/FileViewer";
-import { useProjectSizes } from "@/hooks/common/useMediaQuery"; // Import your hook
+import { useProjectSizes } from "@/hooks/common/useMediaQuery";
 
 interface ProjectPreviewProps {
   project: Project;
@@ -20,8 +21,21 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autoSlideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Get dynamic sizes based on screen dimensions
-  const sizes = useProjectSizes();
+  // Get all responsive data from single hook
+  const {
+    isMobile,
+    isTablet,
+    isSmallMobile,
+    previewImageWidth,
+    previewImageHeight,
+    previewContentHeight,
+    mobilePreviewImageHeight,
+    // Mobile-specific configurations
+    cardPadding: mobilePadding,
+    textSizes: mobileTextSizes,
+    autoSlideDuration,
+    transitionDuration
+  } = useProjectSizes();
 
   useEffect(() => {
     return () => {
@@ -38,7 +52,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
     setActiveImageIndex(0);
   }, [project.id]);
 
-  // Auto-slide functionality
+  // Auto-slide functionality - optimized for mobile
   useEffect(() => {
     if (!project.images || project.images.length <= 1 || !isVisible) {
       return;
@@ -49,7 +63,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
         setActiveImageIndex((prev) =>
           prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
         );
-      }, 4000);
+      }, autoSlideDuration);
     };
 
     startAutoSlide();
@@ -59,7 +73,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
         clearTimeout(autoSlideTimeoutRef.current);
       }
     };
-  }, [activeImageIndex, project.images, isVisible]);
+  }, [activeImageIndex, project.images, isVisible, autoSlideDuration]);
 
   const handlePrevImage = () => {
     if (autoSlideTimeoutRef.current) {
@@ -95,18 +109,18 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
       exit={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: transitionDuration }}
       className="w-full flex justify-center items-center min-h-full"
     >
-      <div className="bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-md rounded-xl border border-border-primary/20 dark:border-border-primary-dark/20 p-4 md:p-6 shadow-xl w-full md:w-auto md:inline-flex md:min-w-fit md:max-w-none">
+      <div className={`bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-md rounded-xl border border-border-primary/20 dark:border-border-primary-dark/20 ${mobilePadding} shadow-xl w-full md:w-auto md:inline-flex md:min-w-fit md:max-w-none`}>
         <div style={{ opacity: 1 }}>
           {/* Mobile Layout - Vertical */}
           <div className="flex flex-col justify-center md:hidden">
-            {/* Image Section - Mobile with dynamic height */}
+            {/* Image Section - Mobile with optimized height */}
             {project.images && project.images.length > 0 && (
               <div
-                className="relative w-full rounded-lg overflow-hidden mb-4"
-                style={{ height: `${sizes.mobilePreviewImageHeight}px` }}
+                className={`relative w-full rounded-lg overflow-hidden ${isSmallMobile ? 'mb-3' : 'mb-4'}`}
+                style={{ height: `${mobilePreviewImageHeight}px` }}
               >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -114,14 +128,14 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: transitionDuration }}
                     className="w-full h-full"
                   >
                     <FileViewer
                       url={project.images[activeImageIndex].url}
                       alt={project.images[activeImageIndex].alt || project.name}
-                      caption={project.images[activeImageIndex].caption}
                       className="w-full h-full object-cover"
+                      showDownload={true} // Hide download on mobile for cleaner UI
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -130,34 +144,50 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                   <>
                     <button
                       onClick={handlePrevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                      className={`absolute ${isSmallMobile ? 'left-1 top-1/2 p-0.5' : 'left-2 top-1/2 p-1'} -translate-y-1/2 rounded-full 
                                bg-black/30 hover:bg-black/50 backdrop-blur-sm 
-                               text-white transition-colors"
+                               text-white transition-colors`}
                       aria-label="Previous image"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className={isSmallMobile ? "w-4 h-4" : "w-5 h-5"} />
                     </button>
                     <button
                       onClick={handleNextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                      className={`absolute ${isSmallMobile ? 'right-1 top-1/2 p-0.5' : 'right-2 top-1/2 p-1'} -translate-y-1/2 rounded-full 
                                bg-black/30 hover:bg-black/50 backdrop-blur-sm 
-                               text-white transition-colors"
+                               text-white transition-colors`}
                       aria-label="Next image"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className={isSmallMobile ? "w-4 h-4" : "w-5 h-5"} />
                     </button>
+
+                    {/* Mobile dots - smaller and repositioned */}
+                    <div className={`absolute ${isSmallMobile ? 'bottom-1' : 'bottom-2'} left-1/2 -translate-x-1/2 flex gap-1`}>
+                      {project.images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleDotClick(index)}
+                          className={`${isSmallMobile ? 'w-1 h-1' : 'w-1.5 h-1.5'} rounded-full transition-all ${
+                            activeImageIndex === index
+                              ? "bg-white scale-125"
+                              : "bg-white/50 hover:bg-white/80"
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
                   </>
                 )}
               </div>
             )}
 
-            {/* Content Section - Mobile */}
+            {/* Content Section - Mobile optimized */}
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2">
+              <h3 className={`${mobileTextSizes.title} font-semibold text-text-primary dark:text-text-primary-dark ${isSmallMobile ? 'mb-1' : 'mb-2'}`}>
                 {project.previewContent.title}
               </h3>
 
-              <p className="text-text-secondary dark:text-text-secondary-dark text-sm mb-3 line-clamp-2">
+              <p className={`text-text-secondary dark:text-text-secondary-dark ${mobileTextSizes.description} ${isSmallMobile ? 'mb-2 line-clamp-2' : 'mb-3 line-clamp-2'}`}>
                 {project.previewContent.description}
               </p>
 
@@ -165,24 +195,26 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                 {project.techStack.map((tech) => (
                   <span
                     key={tech}
-                    className="px-2 py-0.5 text-xs rounded-full bg-primary/10 dark:bg-primary-dark/10 
-                             text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20"
+                    className={`${mobileTextSizes.tech} rounded-full bg-primary/10 dark:bg-primary-dark/10 
+                             text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20`}
                   >
                     {tech}
                   </span>
                 ))}
+
               </div>
 
-              <div className="flex items-center space-x-4">
+              {/* Action buttons - mobile optimized */}
+              <div className="flex items-center space-x-3 mt-3">
                 {project.demoLink && (
                   <a
                     href={project.demoLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
+                    className={`inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 ${mobileTextSizes.link}`}
                     tabIndex={0}
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className={isSmallMobile ? "w-3 h-3" : "w-4 h-4"} />
                     <span>Live Demo</span>
                   </a>
                 )}
@@ -192,10 +224,10 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     href={project.githubLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-sm"
+                    className={`inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 ${mobileTextSizes.link}`}
                     tabIndex={0}
                   >
-                    <Github className="w-4 h-4" />
+                    <Github className={isSmallMobile ? "w-3 h-3" : "w-4 h-4"} />
                     <span>View Code</span>
                   </a>
                 )}
@@ -203,15 +235,15 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
             </div>
           </div>
 
-          {/* Desktop Layout - Horizontal with dynamic dimensions */}
+          {/* Desktop Layout - Horizontal with optimized dimensions */}
           <div className="hidden md:flex items-center gap-6 w-auto">
-            {/* Image Section - Desktop with dynamic dimensions */}
+            {/* Image Section - Desktop & Tablet */}
             {project.images && project.images.length > 0 && (
               <div
                 className="flex-shrink-0"
                 style={{
-                  width: `${sizes.previewImageWidth}px`,
-                  height: `${sizes.previewImageHeight}px`,
+                  width: `${previewImageWidth}px`,
+                  height: `${previewImageHeight}px`,
                 }}
               >
                 <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -229,7 +261,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                         alt={
                           project.images[activeImageIndex].alt || project.name
                         }
-                        caption={project.images[activeImageIndex].caption}
                         className="w-full h-full object-cover"
                       />
                     </motion.div>
@@ -239,21 +270,21 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     <>
                       <button
                         onClick={handlePrevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                        className={`absolute left-2 top-1/2 -translate-y-1/2 rounded-full 
                                  bg-black/30 hover:bg-black/50 backdrop-blur-sm 
-                                 text-white transition-colors"
+                                 text-white transition-colors ${isTablet ? 'p-1.5' : 'p-1'}`}
                         aria-label="Previous image"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className={isTablet ? "w-5 h-5" : "w-4 h-4"} />
                       </button>
                       <button
                         onClick={handleNextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full 
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-full 
                                  bg-black/30 hover:bg-black/50 backdrop-blur-sm 
-                                 text-white transition-colors"
+                                 text-white transition-colors ${isTablet ? 'p-1.5' : 'p-1'}`}
                         aria-label="Next image"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className={isTablet ? "w-5 h-5" : "w-4 h-4"} />
                       </button>
 
                       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
@@ -261,7 +292,7 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                           <button
                             key={index}
                             onClick={() => handleDotClick(index)}
-                            className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            className={`${isTablet ? 'w-2 h-2' : 'w-1.5 h-1.5'} rounded-full transition-all ${
                               activeImageIndex === index
                                 ? "bg-white scale-125"
                                 : "bg-white/50 hover:bg-white/80"
@@ -276,50 +307,50 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
               </div>
             )}
 
-            {/* Content Section - Desktop with dynamic height */}
+            {/* Content Section - Desktop & Tablet with optimized height */}
             <div
               className="flex flex-col justify-center w-auto min-w-0"
-              style={{ height: `${sizes.previewContentHeight}px` }}
+              style={{ height: `${previewContentHeight}px` }}
             >
               <div className="flex-1 flex flex-col justify-center">
-                <h3 className="text-lg xl:text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2 whitespace-nowrap">
+                <h3 className={`${mobileTextSizes.title} font-semibold text-text-primary dark:text-text-primary-dark mb-3 ${isTablet ? 'whitespace-normal' : 'whitespace-nowrap'}`}>
                   {project.previewContent.title}
                 </h3>
 
-                <div className="mb-3 overflow-hidden">
-                  <p className="text-text-secondary dark:text-text-secondary-dark text-xs xl:text-sm leading-relaxed overflow-hidden">
+                <div className="mb-4 overflow-hidden">
+                  <p className={`text-text-secondary dark:text-text-secondary-dark ${mobileTextSizes.description} leading-relaxed overflow-hidden ${isTablet ? 'line-clamp-3' : ''}`}>
                     {project.previewContent.description}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 mb-3 xl:mb-4 max-w-xs xl:max-w-md">
-                  {project.techStack.slice(0, 4).map((tech) => (
+                <div className={`flex flex-wrap gap-2 mb-4 ${isTablet ? 'max-w-lg' : 'max-w-xs xl:max-w-md'}`}>
+                  {project.techStack.slice(0, isTablet ? 6 : 4).map((tech) => (
                     <span
                       key={tech}
-                      className="px-2 py-0.5 text-xs rounded-full bg-primary/10 dark:bg-primary-dark/10 
-                               text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20 whitespace-nowrap"
+                      className={`${mobileTextSizes.tech} rounded-full bg-primary/10 dark:bg-primary-dark/10 
+                               text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20 whitespace-nowrap`}
                     >
                       {tech}
                     </span>
                   ))}
-                  {project.techStack.length > 4 && (
-                    <span className="px-2 py-0.5 text-xs text-text-secondary dark:text-text-secondary-dark">
-                      +{project.techStack.length - 4} more
+                  {project.techStack.length > (isTablet ? 6 : 4) && (
+                    <span className={`${mobileTextSizes.tech} text-text-secondary dark:text-text-secondary-dark`}>
+                      +{project.techStack.length - (isTablet ? 6 : 4)} more
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 xl:space-x-4 mt-auto">
+              <div className={`flex items-center mt-auto ${isTablet ? 'space-x-4' : 'space-x-3 xl:space-x-4'}`}>
                 {project.demoLink && (
                   <a
                     href={project.demoLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-xs xl:text-sm whitespace-nowrap"
+                    className={`inline-flex items-center space-x-2 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 ${mobileTextSizes.link} whitespace-nowrap`}
                     tabIndex={0}
                   >
-                    <ExternalLink className="w-3 h-3 xl:w-4 xl:h-4" />
+                    <ExternalLink className={isTablet ? "w-5 h-5" : "w-3 h-3 xl:w-4 xl:h-4"} />
                     <span>Live Demo</span>
                   </a>
                 )}
@@ -329,10 +360,10 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     href={project.githubLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 text-xs xl:text-sm whitespace-nowrap"
+                    className={`inline-flex items-center space-x-2 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors duration-200 ${mobileTextSizes.link} whitespace-nowrap`}
                     tabIndex={0}
                   >
-                    <Github className="w-3 h-3 xl:w-4 xl:h-4" />
+                    <Github className={isTablet ? "w-5 h-5" : "w-3 h-3 xl:w-4 xl:h-4"} />
                     <span>View Code</span>
                   </a>
                 )}
