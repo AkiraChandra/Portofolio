@@ -162,7 +162,7 @@ const Projects = () => {
         containerPaddingTop: 80,
         headerMarginBottom: 20,
         sectionPadding: "pt-12 pb-6",
-        previewMargin: "mb-3 mt-10"
+        previewMargin: "mb-3 mt-6"
       };
     }
     if (isTablet) {
