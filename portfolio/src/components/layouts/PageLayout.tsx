@@ -1,4 +1,4 @@
-// src/components/layouts/PageLayout.tsx (FIXED VERSION)
+// src/components/layouts/PageLayout.tsx (UPDATED)
 'use client';
 
 import React, { useEffect } from 'react';
@@ -8,10 +8,11 @@ import Hero from '@/components/sections/Hero/Hero';
 import Projects from '@/components/sections/Projects/Projects';
 import Experience from '@/components/sections/Experience';
 import Certifications from '@/components/sections/Certifications/Certifications';
+import Skills from '@/components/sections/Skills/Skills'; // NEW IMPORT
 import { useSmoothScroll } from '@/hooks/common/useSmoothScroll';
 
 interface PageLayoutProps {
-  defaultSection?: 'home' | 'projects' | 'experience' | 'certifications';
+  defaultSection?: 'home' | 'projects' | 'experience' | 'certifications' | 'skills'; // UPDATED
 }
 
 const SECTIONS = [
@@ -19,6 +20,7 @@ const SECTIONS = [
   { id: 'projects', path: '/projects' },
   { id: 'experience', path: '/experience' },
   { id: 'certifications', path: '/certifications' },
+  { id: 'skills', path: '/skills' }, // NEW SECTION
 ] as const;
 
 type SectionId = typeof SECTIONS[number]['id'];
@@ -228,6 +230,17 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           <Certifications />
         </motion.section>
         
+        {/* Skills Section - New section added */}
+        <motion.section 
+          id="skills"
+          className="snap-start min-h-screen w-full"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <Skills />
+        </motion.section>
       </div>
     </main>
   );
