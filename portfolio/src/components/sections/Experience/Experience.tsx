@@ -582,7 +582,7 @@ const Experience: React.FC = () => {
                   )}
 
                   {/* Timeline Container */}
-                  <div className={`${isMobile ? "h-[60vh]" : "h-[70vh]"}`}>
+                  <div className={`${isMobile ? "h-[80vh]" : "h-[70vh]"}`}>
                     <div
                       ref={timelineContainerRef}
                       className="h-full overflow-y-auto pr-2 scrollbar-hide"
