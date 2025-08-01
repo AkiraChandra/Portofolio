@@ -163,7 +163,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           <Projects />
         </motion.section>
@@ -182,10 +182,10 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           {/* Overflow isolation wrapper */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden bg-background-primary dark:bg-background-primary-dark">
             <div className="h-full w-full overflow-y-auto">
               <Experience />
             </div>
@@ -206,10 +206,10 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full w-full overflow-y-auto">
               <Certifications />
             </div>
@@ -230,10 +230,10 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           {/* Overflow isolation wrapper with visual boundary */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full w-full overflow-y-auto">
               <Skills />
             </div>
