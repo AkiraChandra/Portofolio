@@ -18,11 +18,11 @@ const Projects = () => {
   const { projects, loading, error, refetch } = useProjects();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
-  
+
   // Mobile detection
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
-  
+
   const {
     activeIndex,
     progress,
@@ -45,24 +45,27 @@ const Projects = () => {
   const [lastHoverTime, setLastHoverTime] = useState(0);
   const size = useProjectSizes();
   const is2xl = useMediaQuery("(min-width: 1536px)");
-  
-  // Mobile-optimized hover handler
-  const handlePlanetHover = debounce((index) => {
-    // Disable hover on mobile for performance
-    if (isMobile) return;
-    
-    const currentTime = Date.now();
-    const timeSinceLastHover = currentTime - lastHoverTime;
-    const minTimeBetweenHovers = 300;
 
-    if (timeSinceLastHover >= minTimeBetweenHovers) {
-      if (!isTransitioning && index !== activeIndex) {
-        setLastHoverTime(currentTime);
-        pausePreview();
-        jumpToProject(index);
+  // Mobile-optimized hover handler
+  const handlePlanetHover = debounce(
+    (index) => {
+      // Disable hover on mobile for performance
+      if (isMobile) return;
+
+      const currentTime = Date.now();
+      const timeSinceLastHover = currentTime - lastHoverTime;
+      const minTimeBetweenHovers = 300;
+
+      if (timeSinceLastHover >= minTimeBetweenHovers) {
+        if (!isTransitioning && index !== activeIndex) {
+          setLastHoverTime(currentTime);
+          pausePreview();
+          jumpToProject(index);
+        }
       }
-    }
-  }, isMobile ? 200 : 100);
+    },
+    isMobile ? 200 : 100
+  );
 
   const handlePlanetClick = (projectId: string) => {
     if (isNavigating) return;
@@ -72,9 +75,12 @@ const Projects = () => {
     setSelectedPlanetId(projectId);
 
     // Faster transition on mobile
-    setTimeout(() => {
-      window.location.href = `/project/${projectId}`;
-    }, isMobile ? 1500 : 2000);
+    setTimeout(
+      () => {
+        window.location.href = `/project/${projectId}`;
+      },
+      isMobile ? 1500 : 2000
+    );
   };
 
   // Enhanced drag handlers for mobile
@@ -162,7 +168,7 @@ const Projects = () => {
         containerPaddingTop: 80,
         headerMarginBottom: 20,
         sectionPadding: "pt-12 pb-6",
-        previewMargin: "mb-3 mt-6"
+        previewMargin: "mb-3 mt-6",
       };
     }
     if (isTablet) {
@@ -170,14 +176,14 @@ const Projects = () => {
         containerPaddingTop: 80,
         headerMarginBottom: 20,
         sectionPadding: "pt-16 pb-8",
-        previewMargin: "mb-4 mt-20"
+        previewMargin: "mb-4 mt-20",
       };
     }
     return {
       containerPaddingTop: size.containerPaddingTop,
       headerMarginBottom: size.headerMarginBottom,
       sectionPadding: "pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16",
-      previewMargin: "mb-4 sm:mb-6"
+      previewMargin: "mb-4 sm:mb-6",
     };
   };
 
@@ -190,37 +196,45 @@ const Projects = () => {
 
       {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
-          <MovingStars />
+        <MovingStars />
       </div>
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-      
+
       <AnimatePresence mode="wait">
         {/* Main Content */}
         <div
           className={`relative w-full min-h-screen flex flex-col ${mobileSpacing.sectionPadding}`}
           style={{
-            ...(is2xl && !isMobile && { paddingTop: `${size.containerPaddingTop}px` }),
+            ...(is2xl &&
+              !isMobile && { paddingTop: `${size.containerPaddingTop}px` }),
           }}
         >
           {/* Header Section - Mobile optimized */}
           <div className="w-full relative z-10">
             <div
-              className={`text-center ${isMobile ? 'mb-4 px-4' : isTablet ? 'mb-6 px-6' : 'mb-8 sm:mb-10 md:mb-6 px-4 sm:px-6 lg:px-8'}`}
+              className={`text-center ${
+                isMobile
+                  ? "mb-4 px-4"
+                  : isTablet
+                  ? "mb-6 px-6"
+                  : "mb-8 sm:mb-10 md:mb-6 px-4 sm:px-6 lg:px-8"
+              }`}
               style={{
-                ...(is2xl && !isMobile && {
-                  marginBottom: `${size.headerMarginBottom}px`,
-                }),
+                ...(is2xl &&
+                  !isMobile && {
+                    marginBottom: `${size.headerMarginBottom}px`,
+                  }),
               }}
             >
               <motion.h2
                 className={`font-bold text-text-primary dark:text-text-primary-dark ${
-                  isMobile 
-                    ? 'text-2xl' 
-                    : isTablet 
-                    ? 'text-3xl' 
-                    : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'
+                  isMobile
+                    ? "text-3xl"
+                    : isTablet
+                    ? "text-4xl"
+                    : "text-3xl sm:text-4xl md:text-5xl"
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -233,11 +247,11 @@ const Projects = () => {
               </motion.h2>
               <motion.p
                 className={`text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto ${
-                  isMobile 
-                    ? 'mt-1 text-sm' 
-                    : isTablet 
-                    ? 'mt-2 text-base' 
-                    : 'mt-2 sm:mt-3 md:mt-3 text-sm sm:text-base md:text-lg'
+                  isMobile
+                    ? "mt-1 text-sm"
+                    : isTablet
+                    ? "mt-2 text-base"
+                    : "mt-2 sm:mt-3 md:mt-3 text-sm sm:text-base md:text-lg"
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -248,7 +262,11 @@ const Projects = () => {
             </div>
 
             {/* Project Preview - Mobile optimized */}
-            <div className={`w-full ${isMobile ? 'px-3' : isTablet ? 'px-4' : 'px-4 sm:px-6 lg:px-8'} ${mobileSpacing.previewMargin}`}>
+            <div
+              className={`w-full ${
+                isMobile ? "px-3" : isTablet ? "px-4" : "px-4 sm:px-6 lg:px-8"
+              } ${mobileSpacing.previewMargin}`}
+            >
               <motion.div
                 className="flex justify-center"
                 drag={isMobile ? "x" : false}
@@ -268,11 +286,11 @@ const Projects = () => {
                           exit={{ opacity: 0, x: isDragging ? 0 : -20 }}
                           transition={{ duration: isMobile ? 0.2 : 0.25 }}
                           className={`mx-auto ${
-                            isMobile 
-                              ? 'w-full px-1' 
-                              : isTablet 
-                              ? 'w-11/12 px-2' 
-                              : 'w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 max-w-lg px-2 sm:px-4'
+                            isMobile
+                              ? "w-full px-1"
+                              : isTablet
+                              ? "w-11/12 px-2"
+                              : "w-full sm:w-11/12 md:w-10/12 lg:w-9/12 xl:w-8/12 max-w-lg px-2 sm:px-4"
                           }`}
                         >
                           <ProjectPreview
@@ -288,14 +306,18 @@ const Projects = () => {
             </div>
 
             {/* Navigation Controls - Mobile optimized */}
-            <div className={`w-full flex justify-center ${isMobile ? 'mb-8' : isTablet ? 'mb-8' : 'mb-12 sm:mb-6 2xl:mb-8'}`}>
+            <div
+              className={`w-full flex justify-center ${
+                isMobile ? "mb-4" : isTablet ? "mb-8" : "mb-12 sm:mb-6 2xl:mb-8"
+              }`}
+            >
               <motion.div
                 className={`flex justify-between items-center bg-background-primary/80 dark:bg-[#1a0836]/80 backdrop-blur-sm rounded-full ${
-                  isMobile 
-                    ? 'w-[240px] px-2 py-1' 
-                    : isTablet 
-                    ? 'w-[280px] px-2.5 py-1.5' 
-                    : 'w-[280px] sm:w-[320px] px-2 py-1 sm:px-3 sm:py-1.5'
+                  isMobile
+                    ? "w-[240px] px-2 py-1"
+                    : isTablet
+                    ? "w-[280px] px-2.5 py-1.5"
+                    : "w-[280px] sm:w-[320px] px-2 py-1 sm:px-3 sm:py-1.5"
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -305,7 +327,11 @@ const Projects = () => {
                   onClick={() =>
                     activeIndex > 0 && jumpToProject(activeIndex - 1)
                   }
-                  className={`${isMobile ? 'p-1.5 text-base' : 'p-1.5 sm:p-2 text-base sm:text-lg'} text-primary dark:text-primary-dark 
+                  className={`${
+                    isMobile
+                      ? "p-1.5 text-base"
+                      : "p-1.5 sm:p-2 text-base sm:text-lg"
+                  } text-primary dark:text-primary-dark 
                  transition-all hover:scale-110 focus:outline-none focus:ring-2 
                  focus:ring-primary/50 rounded-full ${
                    activeIndex === 0
@@ -319,12 +345,18 @@ const Projects = () => {
                 </button>
 
                 {/* Dots navigation */}
-                <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                <div
+                  className={`flex items-center ${
+                    isMobile ? "gap-1" : "gap-1.5"
+                  }`}
+                >
                   {projects.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => jumpToProject(index)}
-                      className={`${isMobile ? 'w-1.5 h-1.5' : 'w-1.5 h-1.5 sm:w-2 sm:h-2'} rounded-full transition-all duration-200 
+                      className={`${
+                        isMobile ? "w-1.5 h-1.5" : "w-1.5 h-1.5 sm:w-2 sm:h-2"
+                      } rounded-full transition-all duration-200 
                     hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary/50 
                     ${
                       index === activeIndex
@@ -341,7 +373,11 @@ const Projects = () => {
                     activeIndex < projects.length - 1 &&
                     jumpToProject(activeIndex + 1)
                   }
-                  className={`${isMobile ? 'p-1.5 text-base' : 'p-1.5 sm:p-2 text-base sm:text-lg'} text-primary dark:text-primary-dark 
+                  className={`${
+                    isMobile
+                      ? "p-1.5 text-base"
+                      : "p-1.5 sm:p-2 text-base sm:text-lg"
+                  } text-primary dark:text-primary-dark 
                  transition-all hover:scale-110 focus:outline-none focus:ring-2 
                  focus:ring-primary/50 rounded-full ${
                    activeIndex === projects.length - 1
