@@ -190,7 +190,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true , margin: "-20%"}}
         >
           <div className="absolute inset-0 overflow-hidden">
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y">
               <Experience />
             </div>
           </div>
@@ -211,7 +211,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true , margin: "-20%"}}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y">
               <Certifications />
             </div>
           </div>
@@ -232,8 +232,10 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           transition={{ duration: 0.6 }}
           viewport={{ once: true , margin: "-20%" }}
         >
-          <div className="h-full overflow-hidden">
-            <Skills />
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y">
+              <Skills />
+            </div>
           </div>
         </motion.section>
       </div>
