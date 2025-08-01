@@ -146,7 +146,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Hero Section */}
         <motion.section 
           id="home" 
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -162,7 +162,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Projects Section */}
         <motion.section 
           id="projects"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -178,7 +178,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Experience Section - Isolated Overflow */}
         <motion.section 
           id="experience"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -189,15 +189,17 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-     
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="h-full overflow-y-auto">
               <Experience />
-   
+            </div>
+          </div>
         </motion.section>
         
         {/* Certifications Section - Isolated Overflow */}
         <motion.section 
           id="certifications"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -208,15 +210,17 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-       
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto">
               <Certifications />
-         
+            </div>
+          </div>
         </motion.section>
         
         {/* Skills Section - Clean */}
         <motion.section 
           id="skills"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
@@ -228,7 +232,9 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
+          <div className="h-full overflow-hidden">
             <Skills />
+          </div>
         </motion.section>
       </div>
     </main>
