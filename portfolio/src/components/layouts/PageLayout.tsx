@@ -191,7 +191,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Projects Section */}
         <motion.section 
           id="projects"
-          className="snap-start h-screen w-full"
+          className="snap-start"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -203,7 +203,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Experience Section - Enhanced snap behavior for overflow content */}
         <motion.section 
           id="experience"
-          className="snap-start min-h-screen w-full"
+          className="snap-start"
           style={{
             // Add specific scroll margin for better positioning on reload
             scrollMarginTop: '0px',
@@ -221,7 +221,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Certifications Section */}
         <motion.section 
           id="certifications"
-          className="snap-start min-h-screen w-full"
+          className="snap-start"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -233,7 +233,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         {/* Skills Section - New section added */}
         <motion.section 
           id="skills"
-          className="snap-start min-h-screen w-full"
+          className="snap-start"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
