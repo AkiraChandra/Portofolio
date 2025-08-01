@@ -241,6 +241,7 @@ export default function PageLayout({
           style={{ scrollSnapAlign: "start", scrollSnapStop: "always" }}
         >
           <Hero />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
         </section>
 
         {/* Projects Section */}
@@ -254,50 +255,45 @@ export default function PageLayout({
           viewport={{ once: true, margin: "-20%" }}
         >
           <Projects />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
         </motion.section>
 
-        {/* Experience Section - With Overflow Containment */}
+        {/* Experience Section - Better overflow handling */}
         <motion.section
           id="experience"
-          className="snap-start h-screen w-full relative"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: "100vh",
-            minHeight: "100vh",
-            maxHeight: "100vh",
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
+            // Force exact positioning for overflow content
+            scrollMarginTop: "0px",
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
-          {/* Independent scroll container for overflow content */}
-          <div className="h-full overflow-y-auto">
-            <Experience />
-          </div>
+          <Experience />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
         </motion.section>
 
-        {/* Certifications Section - With Overflow Containment */}
+        {/* Certifications Section - Better overflow handling */}
         <motion.section
           id="certifications"
-          className="snap-start h-screen w-full relative"
+          className="snap-start min-h-screen w-full"
           style={{
-            height: "100vh",
-            minHeight: "100vh",
-            maxHeight: "100vh",
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
+            // Ensure proper positioning even with overflow
+            scrollMarginTop: "0px",
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-20%" }}
         >
-          {/* Independent scroll container for overflow content */}
-          <div className="h-full overflow-y-auto">
-            <Certifications />
-          </div>
+          <Certifications />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
         </motion.section>
 
         {/* Skills Section */}
@@ -310,10 +306,8 @@ export default function PageLayout({
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
-          {/* Independent scroll container for overflow content */}
-          <div className="h-full overflow-y-auto">
-            <Skills />
-          </div>
+          <Skills />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
         </motion.section>
       </div>
     </main>
