@@ -1,4 +1,5 @@
-// src/components/layouts/PageLayout.tsx (FIXED VERSION)
+// src/components/layouts/PageLayout.tsx (V2 - UNIFIED NAVIGATION SYSTEM)
+// THIS IS V2 - THE RECOMMENDED VERSION! 🏆
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -9,7 +10,6 @@ import Projects from '@/components/sections/Projects/Projects';
 import Experience from '@/components/sections/Experience';
 import Certifications from '@/components/sections/Certifications/Certifications';
 import Skills from '@/components/sections/Skills/Skills';
-import { useSmoothScroll } from '@/hooks/common/useSmoothScroll';
 
 interface PageLayoutProps {
   defaultSection?: 'home' | 'projects' | 'experience' | 'certifications' | 'skills';
@@ -26,272 +26,215 @@ const SECTIONS = [
 type SectionId = typeof SECTIONS[number]['id'];
 
 export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps) {
-  const isScrolling = useSmoothScroll(0.3);
-  const [isInitialized, setIsInitialized] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const isManualScrolling = useRef(false);
+  const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
 
-  // SOLUTION 1: Disable browser scroll restoration and handle manually
+  // SOLUTION 1: Unified navigation function (same as navbar!)
+  const navigateToSection = (sectionId: SectionId) => {
+    const section = document.getElementById(sectionId);
+    
+    if (section) {
+      // EXACT same approach as navbar - this is why it's smooth!
+      section.scrollIntoView({
+        behavior: 'smooth',  // Same as navbar
+        block: 'start',      // Same as navbar
+      });
+      
+      // Update URL and state
+      const sectionConfig = SECTIONS.find(s => s.id === sectionId);
+      if (sectionConfig) {
+        window.history.replaceState(null, '', sectionConfig.path);
+        setCurrentSection(sectionId);
+      }
+    }
+  };
+
+  // SOLUTION 2: Initialize with same approach as navbar
   useEffect(() => {
-    // Disable browser's automatic scroll restoration
+    // Disable browser scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
-
-    // Force reset scroll to top on mount, then initialize
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.scrollTop = 0;
-      
-      // Initialize after a short delay
-      const timer = setTimeout(() => {
-        setIsInitialized(true);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
   }, []);
 
-  // SOLUTION 2: Enhanced scroll to section with snap-friendly behavior
+  // SOLUTION 3: Handle refresh navigation (navbar-style)
   useEffect(() => {
-    if (!isInitialized || defaultSection === 'home') return;
+    if (defaultSection === 'home') return;
 
-    const scrollToSection = (attempt = 0) => {
-      const container = scrollContainerRef.current;
-      const targetSection = document.getElementById(defaultSection);
-      
-      if (container && targetSection) {
-        isManualScrolling.current = true;
-        
-        // Calculate exact scroll position
-        const containerRect = container.getBoundingClientRect();
-        const targetRect = targetSection.getBoundingClientRect();
-        const currentScrollTop = container.scrollTop;
-        
-        // Get accurate offset position
-        const offsetTop = targetSection.offsetTop;
-        
-        // Use direct scroll positioning for better snap compatibility
-        container.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
-        
-        // Clear manual scrolling flag after animation
-        setTimeout(() => {
-          isManualScrolling.current = false;
-        }, 1000);
-        
-      } else if (attempt < 3) {
-        // Retry if elements not ready
-        setTimeout(() => scrollToSection(attempt + 1), 200);
-      }
-    };
-
-    scrollToSection();
-  }, [defaultSection, isInitialized]);
-
-  // SOLUTION 3: Improved intersection observer with manual scroll detection
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    let currentActiveSection: SectionId = defaultSection;
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Skip updates during manual scrolling
-        if (isManualScrolling.current) return;
-        
-        // Find the section that's most in view
-        const visibleEntries = entries
-          .filter(entry => entry.isIntersecting && entry.intersectionRatio > 0.5)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-          
-        if (visibleEntries.length > 0) {
-          const mostVisibleEntry = visibleEntries[0];
-          const sectionId = mostVisibleEntry.target.id as SectionId;
-          const section = SECTIONS.find(s => s.id === sectionId);
-          
-          if (section && section.id !== currentActiveSection) {
-            currentActiveSection = section.id;
-            window.history.replaceState(null, '', section.path);
-          }
-        }
-      },
-      {
-        root: scrollContainerRef.current,
-        // More precise thresholds for better detection
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0],
-        // Adjusted margin to avoid conflicts with overflow sections
-        rootMargin: '-10% 0px -10% 0px',
-      }
-    );
-
-    // Start observing after a delay to avoid conflicts
+    // Use same timing and approach as navbar
     const timer = setTimeout(() => {
-      SECTIONS.forEach(section => {
-        const element = document.getElementById(section.id);
-        if (element) {
-          observer.observe(element);
-        }
-      });
-      observerRef.current = observer;
-    }, 300);
+      navigateToSection(defaultSection);
+    }, 50); // Minimal delay, similar to navbar's immediate response
 
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, [defaultSection, isInitialized]);
+    return () => clearTimeout(timer);
+  }, [defaultSection]);
 
-  // SOLUTION 4: Simplified backup scroll handler  
+  // SOLUTION 4: Simple scroll tracking (only for URL updates)
   useEffect(() => {
-    if (!isInitialized) return;
-
     let scrollTimer: NodeJS.Timeout;
-    
+
     const handleScroll = () => {
-      // Skip during manual scrolling
-      if (isManualScrolling.current) return;
-      
-      // Clear previous timer
       if (scrollTimer) clearTimeout(scrollTimer);
       
-      // Debounce the scroll handler
+      // Minimal delay for smooth URL updates
       scrollTimer = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
 
-        const containerHeight = container.clientHeight;
         const scrollTop = container.scrollTop;
+        const viewportHeight = container.clientHeight;
+        const scrollCenter = scrollTop + (viewportHeight * 0.5);
         
-        // Find which section is most visible
-        let mostVisibleSection: typeof SECTIONS[number] = SECTIONS[0];
-        let maxVisibleArea = 0;
-
-        SECTIONS.forEach(section => {
+        // Find active section
+        let activeSection: SectionId = 'home';
+        
+        for (const section of SECTIONS) {
           const element = document.getElementById(section.id);
-          if (!element) return;
+          if (!element) continue;
           
-          const elementTop = element.offsetTop;
-          const elementHeight = element.offsetHeight;
+          const sectionTop = element.offsetTop;
+          const sectionBottom = sectionTop + element.offsetHeight;
           
-          // Calculate visible area
-          const visibleTop = Math.max(scrollTop, elementTop);
-          const visibleBottom = Math.min(scrollTop + containerHeight, elementTop + elementHeight);
-          const visibleArea = Math.max(0, visibleBottom - visibleTop);
-          
-          if (visibleArea > maxVisibleArea) {
-            maxVisibleArea = visibleArea;
-            mostVisibleSection = section;
-          }
-        });
-
-        // Update URL if significant portion is visible (lower threshold)
-        if (maxVisibleArea > containerHeight * 0.2) { // Reduced from 0.3 to 0.2
-          const currentPath = window.location.pathname;
-          if (mostVisibleSection.path !== currentPath) {
-            window.history.replaceState(null, '', mostVisibleSection.path);
+          if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
+            activeSection = section.id;
+            break;
           }
         }
-      }, 50); // Reduced debounce delay from 150 to 50
+
+        // Update URL only when section changes
+        if (activeSection !== currentSection) {
+          setCurrentSection(activeSection);
+          const section = SECTIONS.find(s => s.id === activeSection);
+          if (section) {
+            window.history.replaceState(null, '', section.path);
+          }
+        }
+      }, 100);
     };
 
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll, { passive: true });
-      
       return () => {
         container.removeEventListener('scroll', handleScroll);
         if (scrollTimer) clearTimeout(scrollTimer);
       };
     }
-  }, [isInitialized]);
+  }, [currentSection]);
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      <Navbar />
+      {/* Pass navigation function to Navbar for consistency */}
+      <Navbar onNavigate={(path) => {
+        const section = SECTIONS.find(s => s.path === path);
+        if (section) {
+          navigateToSection(section.id);
+        }
+      }} />
       
       <div 
         ref={scrollContainerRef}
-        className="h-screen overflow-y-auto snap-y snap-mandatory"
+        className="h-screen overflow-y-auto"
         style={{
-          // SOLUTION 5: Enhanced CSS for better snap behavior
+          scrollSnapType: 'y mandatory',
           scrollBehavior: 'smooth',
-          scrollPaddingTop: '0px',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         
         {/* Hero Section */}
-        <section 
+        <motion.section 
           id="home" 
-          className="snap-start h-screen w-full"
-          style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true , margin: "-20%" }}
         >
           <Hero />
-        </section>
+        </motion.section>
         
         {/* Projects Section */}
         <motion.section 
           id="projects"
-          className="snap-start h-screen w-full"
-          style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true , margin: "-20%" }}
         >
           <Projects />
         </motion.section>
         
-        {/* Experience Section - Better overflow handling */}
+        {/* Experience Section - Isolated Overflow */}
         <motion.section 
           id="experience"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            // Force exact positioning for overflow content
-            scrollMarginTop: '0px',
+            contain: 'layout style paint',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true , margin: "-20%"}}
         >
-          <Experience />
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <Experience />
+            </div>
+          </div>
         </motion.section>
         
-        {/* Certifications Section - Better overflow handling */}
+        {/* Certifications Section - Isolated Overflow */}
         <motion.section 
           id="certifications"
-          className="snap-start min-h-screen w-full"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: 'start',
             scrollSnapStop: 'always',
-            // Ensure proper positioning even with overflow
-            scrollMarginTop: '0px',
+            contain: 'layout style paint',
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true , margin: "-20%"}}
         >
-          <Certifications />
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto">
+              <Certifications />
+            </div>
+          </div>
         </motion.section>
         
-        {/* Skills Section */}
+        {/* Skills Section - Clean */}
         <motion.section 
           id="skills"
-          className="snap-start min-h-screen w-full"
-          style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+            contain: 'layout style paint',
+            zIndex: 1,
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
+          viewport={{ once: true , margin: "-20%" }}
         >
-          <Skills />
+          <div className="h-full overflow-hidden">
+            <Skills />
+          </div>
         </motion.section>
       </div>
     </main>

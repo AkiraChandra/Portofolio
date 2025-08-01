@@ -17,10 +17,7 @@ import {
   Calendar,
   MapPin,
   Rocket,
-  Zap,
-  Target,
   Star,
-  ChevronRight,
   Eye,
 } from "lucide-react";
 import TimelinePoint from "./components/TimeLinePoint";
@@ -30,8 +27,7 @@ import type { Experience as ExperienceType } from "@/types/experience";
 import ResumeExport from "./components/ResumeExport";
 import { useExperienceVisibility } from "@/hooks/experience/useExperienceVisibility";
 import { useExperience } from "@/hooks/experience/useExperience";
-import SmartImage from "@/components/common/SmartImage";
-import PlaceholderImage from "@/components/common/PlaceholderImage";
+
 
 // Add CSS for hiding scrollbar
 const scrollbarHideStyles = `
@@ -511,7 +507,7 @@ const Experience: React.FC = () => {
       </div>
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-      <div ref={headerRef} className={`mb-0 ${isMobile ? "pb-60" : "pb-0"}`}>
+      <div ref={headerRef} className={`mb-0 ${isMobile ? "pb-20" : "pb-0"}`}>
         <FloatingElements />
         <div className="relative z-10 max-w-7xl mx-auto min-h-screen">
           <div className="pt-16 lg:pt-20">
@@ -582,7 +578,7 @@ const Experience: React.FC = () => {
                   )}
 
                   {/* Timeline Container */}
-                  <div className={`${isMobile ? "h-[80vh]" : "h-[70vh]"}`}>
+                  <div className={`${isMobile ? "h-[90vh]" : "h-[70vh]"}`}>
                     <div
                       ref={timelineContainerRef}
                       className="h-full overflow-y-auto pr-2 scrollbar-hide"
