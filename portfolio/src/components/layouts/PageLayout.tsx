@@ -243,7 +243,7 @@ export default function PageLayout({
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto">
-              <Certifications />
+              <Skills />
             </div>
           </div>
         </motion.section>
