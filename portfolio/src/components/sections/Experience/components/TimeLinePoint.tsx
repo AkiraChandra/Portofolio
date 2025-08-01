@@ -16,23 +16,6 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
     onClick();
   };
 
-  // Helper function to validate if URL is accessible
-  const getImageSrc = () => {
-    if (!experience.icon) {
-      return "/images/default-company.png"; // fallback image
-    }
-
-    // If it's already a full URL (like Supabase bucket URL), use it directly
-    if (
-      experience.icon.startsWith("http://") ||
-      experience.icon.startsWith("https://")
-    ) {
-      return experience.icon;
-    }
-
-    // If it's a relative path, assume it's a local asset
-    return experience.icon;
-  };
 
   return (
     <motion.div
@@ -77,7 +60,7 @@ const TimelinePoint: React.FC<TimelineItemProps> = ({
           {/* Vertical line */}
           {!isLast && (
             <div
-              className={`absolute left-[11px] top-[13px] w-0.5 h-[150px] -translate-y-2
+              className={`absolute left-[11px] top-[36px] w-0.5 h-[150px] -translate-y-2
                            ${
                              isActive
                                ? "bg-primary dark:bg-primary-dark"

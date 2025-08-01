@@ -1,4 +1,4 @@
-// src/components/sections/Experience/components/TimeLineInfo.tsx
+// src/components/sections/Experience/components/TimeLineInfo.tsx (Updated)
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -13,6 +13,8 @@ import {
   Briefcase,
   PictureInPicture,
   Camera,
+  Layers,
+  Sparkles
 } from "lucide-react";
 import { TimelineInfoProps } from "@/types/experience";
 import SmartImage from "@/components/common/SmartImage";
@@ -22,17 +24,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
   experience,
   isVisible,
 }) => {
-  const [activeTab, setActiveTab] = useState<"overview" | "skills" | "photos">(
-    "overview"
-  );
-
-  const skillLevels = experience.technologies?.map((tech, index) => ({
-    name: tech,
-    level: Math.floor(Math.random() * 30) + 70,
-    color: `hsl(${
-      index * (360 / (experience.technologies?.length || 1))
-    }, 70%, 60%)`,
-  }));
+  const [activeTab, setActiveTab] = useState<"overview" | "photos">("overview");
 
   // Helper function to get proper image source
   const getImageSrc = (
@@ -137,7 +129,6 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
           {/* Navigation Tabs */}
           <div className="flex border-b border-border-primary/20 dark:border-border-primary-dark/20">
             <TabButton tab="overview" label="Overview" icon={Briefcase} />
-            <TabButton tab="skills" label="Skills" icon={Code} />
             <TabButton tab="photos" label="Photos" icon={Camera} />
           </div>
 
@@ -153,71 +144,81 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
                   transition={{ duration: 0.2 }}
                 >
                   {/* Description */}
-                  <p className="text-sm text-text-secondary dark:text-text-secondary-dark leading-relaxed mb-4">
+                  <p className="text-sm text-text-secondary dark:text-text-secondary-dark leading-relaxed mb-6">
                     {experience.description}
                   </p>
 
+                  {/* Technologies Used - New Design */}
+                  {experience.technologies && experience.technologies.length > 0 && (
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Code className="w-5 h-5 text-primary dark:text-primary-dark" />
+                        <h4 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">
+                          Technologies Used
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {experience.technologies.map((tech, index) => (
+                          <motion.div
+                            key={tech}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="group relative"
+                          >
+                            <div className="relative overflow-hidden rounded-xl p-3 bg-gradient-to-br from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 border border-primary/10 dark:border-primary-dark/10 backdrop-blur-sm hover:from-primary/10 hover:to-yellow-400/10 dark:hover:from-primary-dark/10 dark:hover:to-yellow-400/10 transition-all duration-300">
+                              {/* Subtle glow effect */}
+                              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                              
+                              {/* Tech name */}
+                              <div className="relative z-10 flex items-center justify-between">
+                                <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
+                                  {tech}
+                                </span>
+                                <div className="w-2 h-2 rounded-full bg-primary/30 dark:bg-primary-dark/30 group-hover:bg-primary dark:group-hover:bg-primary-dark transition-colors" />
+                              </div>
+                              
+                              {/* Animated underline */}
+                              <motion.div
+                                className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-yellow-400 dark:from-primary-dark dark:to-yellow-400"
+                                initial={{ width: 0 }}
+                                animate={{ width: "100%" }}
+                                transition={{ delay: index * 0.1 + 0.2, duration: 0.5 }}
+                              />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Achievements */}
                   <div>
-                    <h4 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark mb-2">
-                      Key Achievements
-                    </h4>
-                    <ul className="space-y-2">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Award className="w-5 h-5 text-primary dark:text-primary-dark" />
+                      <h4 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">
+                        Key Achievements
+                      </h4>
+                    </div>
+                    <ul className="space-y-3">
                       {experience.achievements.map((achievement, index) => (
                         <motion.li
                           key={index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className="flex items-start gap-2 text-sm text-text-secondary dark:text-text-secondary-dark"
+                          className="group flex items-start gap-3 text-sm text-text-secondary dark:text-text-secondary-dark p-3 rounded-lg hover:bg-background-tertiary/30 dark:hover:bg-background-tertiary-dark/30 transition-colors"
                         >
-                          <Award
-                            size={16}
-                            className="mt-0.5 flex-shrink-0 text-primary dark:text-primary-dark"
-                          />
-                          <span>{achievement}</span>
+                          <div className="relative mt-1">
+                            <div className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark group-hover:scale-125 transition-transform" />
+                            <div className="absolute inset-0 w-2 h-2 rounded-full bg-primary/30 dark:bg-primary-dark/30 animate-ping group-hover:animate-none" />
+                          </div>
+                          <span className="leading-relaxed group-hover:text-text-primary dark:group-hover:text-text-primary-dark transition-colors">
+                            {achievement}
+                          </span>
                         </motion.li>
                       ))}
                     </ul>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === "skills" && (
-                <motion.div
-                  key="skills"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    {skillLevels?.map((skill, index) => (
-                      <motion.div
-                        key={skill.name}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark">
-                            {skill.name}
-                          </span>
-                          <span className="text-xs text-text-tertiary dark:text-text-tertiary-dark">
-                            {skill.level}%
-                          </span>
-                        </div>
-                        <div className="h-2 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${skill.level}%` }}
-                            transition={{ duration: 1, delay: index * 0.1 }}
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: skill.color }}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
                   </div>
                 </motion.div>
               )}
@@ -243,7 +244,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: index * 0.1 }}
-                            className="relative aspect-square rounded-lg overflow-hidden bg-background-tertiary/50 dark:bg-background-tertiary-dark/50"
+                            className="relative aspect-square rounded-lg overflow-hidden bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 group hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10 transition-all duration-300"
                           >
                             {hasValidImageUrl ? (
                               <SmartImage
@@ -253,7 +254,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
                                 }
                                 fill
                                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                className="object-cover"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 onError={() => {
                                   console.warn(
                                     `Project image failed: ${image.url}`
@@ -267,19 +268,30 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
                               />
                             )}
 
+                            {/* Hover overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            
+                            {/* Image caption */}
                             {image.caption && (
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2">
-                                <p className="text-xs text-white truncate">
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                <p className="text-xs text-white font-medium">
                                   {image.caption}
                                 </p>
                               </div>
                             )}
+
+                            {/* Image number indicator */}
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <span className="text-xs text-white font-medium">
+                                {index + 1}
+                              </span>
+                            </div>
                           </motion.div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-12">
                       <Camera
                         size={48}
                         className="mx-auto text-text-tertiary dark:text-text-tertiary-dark mb-4"
