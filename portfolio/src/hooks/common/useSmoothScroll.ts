@@ -1,46 +1,75 @@
+// src/hooks/common/useSmothScroll.ts
+import { useEffect, useRef, useState } from 'react';
 
-// src/hooks/common/useSmoothScroll.ts (MOBILE OPTIMIZED)
-import { useEffect } from 'react';
-import { useMediaQuery } from './useMediaQuery';
+export const useSmoothScroll = (threshold = 0.5) => {
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
 
-export const useSmoothScroll = (duration: number = 0.5) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
-  
   useEffect(() => {
-    // Skip smooth scroll setup if reduced motion is preferred
-    if (prefersReducedMotion) return;
-    
-    // Mobile-optimized smooth scroll
-    const style = document.createElement('style');
-    style.textContent = `
-      html {
-        scroll-behavior: ${isMobile ? 'auto' : 'smooth'};
-      }
-      
-      @media (max-width: 768px) {
-        .h-screen.overflow-y-auto {
-          scroll-behavior: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-      }
-      
-      .snap-y.snap-mandatory {
-        scroll-snap-type: ${isMobile ? 'y proximity' : 'y mandatory'};
-      }
-      
-      .snap-start {
-        scroll-snap-align: ${isMobile ? 'start' : 'start'};
-        scroll-snap-stop: ${isMobile ? 'normal' : 'always'};
-      }
-    `;
-    
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, [duration, isMobile, prefersReducedMotion]);
+    let lastScrollTop = 0;
+    let ticking = false;
 
-  return isMobile;
+    const handleScroll = () => {
+      if (!ticking && !isScrolling) {
+        window.requestAnimationFrame(() => {
+          const currentScrollTop = window.scrollY;
+          const windowHeight = window.innerHeight;
+          const scrollDirection = currentScrollTop > lastScrollTop ? 'down' : 'up';
+          
+          // Calculate how far through the current section we've scrolled
+          const currentSection = Math.floor(currentScrollTop / windowHeight);
+          const sectionProgress = (currentScrollTop % windowHeight) / windowHeight;
+
+          // If we've scrolled past the threshold, scroll to the next/previous section
+          if (sectionProgress > threshold && scrollDirection === 'down') {
+            setIsScrolling(true);
+            window.scrollTo({
+              top: (currentSection + 1) * windowHeight,
+              behavior: 'smooth'
+            });
+            
+            // Clear any existing timeout
+            if (scrollTimeout.current) {
+              clearTimeout(scrollTimeout.current);
+            }
+            
+            // Set a timeout to prevent scroll hijacking during the animation
+            scrollTimeout.current = setTimeout(() => {
+              setIsScrolling(false);
+            }, 1000);
+          } else if (sectionProgress < (1 - threshold) && scrollDirection === 'up') {
+            setIsScrolling(true);
+            window.scrollTo({
+              top: currentSection * windowHeight,
+              behavior: 'smooth'
+            });
+            
+            if (scrollTimeout.current) {
+              clearTimeout(scrollTimeout.current);
+            }
+            
+            scrollTimeout.current = setTimeout(() => {
+              setIsScrolling(false);
+            }, 1000);
+          }
+
+          lastScrollTop = currentScrollTop;
+          ticking = false;
+        });
+
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, [threshold, isScrolling]);
+
+  return isScrolling;
 };

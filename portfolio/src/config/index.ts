@@ -10,14 +10,19 @@ export const config = {
     social: {
       github: "https://github.com/akirachandra",
       linkedin: "https://linkedin.com/in/akirachandra",
-      instagram: "https://www.instagram.com/akira_chd?igsh=MTB1aWdnYmljdWt3aw%3D%3D&utm_source=qr",
+      instagram:
+        "https://www.instagram.com/akira_chd?igsh=MTB1aWdnYmljdWt3aw%3D%3D&utm_source=qr",
     },
-      navigation: {
+    navigation: {
       links: [
         { title: "Home", href: "#home", path: "/" },
         { title: "Projects", href: "#projects", path: "/projects" },
         { title: "Experience", href: "#experience", path: "/experience" },
-        { title: "Certifications", href: "#certifications", path: "/certifications" }, // Updated from "Skills"
+        {
+          title: "Certifications",
+          href: "#certifications",
+          path: "/certifications",
+        }, // Updated from "Skills"
       ],
     },
   },
@@ -273,21 +278,22 @@ export const config = {
           transition: {
             duration: 1.2,
             ease: [0.68, -0.6, 0.32, 1.6],
-            opacity: { duration: 0.3, delay: 3 },
+            opacity: { duration: 0.3, delay: 0.5 },
             scale: {
               duration: 0.8,
               ease: "easeOut",
-              delay: 3,
+              delay: 0.4,
             },
             rotate: {
               duration: 1,
               ease: "easeOut",
-              delay: 2.9,
+              delay: 0.3,
             },
-            delay: 3,
+            delay: 0.2,
           },
         },
       }),
+
       wave: {
         variants: {
           initial: {
@@ -302,23 +308,25 @@ export const config = {
         transition: (delay: number = 0) => ({
           duration: 2.5,
           repeat: Infinity,
-          delay: 3 + delay,
+          delay: 0.8 + delay,
           ease: "easeOut",
           times: [0, 0.8, 1],
           repeatDelay: 0.5,
           repeatType: "loop" as const,
         }),
       },
+
       ring: {
         initial: { opacity: 0 },
         animate: {
           opacity: 1,
           transition: {
-            delay: 3.5,
+            delay: 1,
             duration: 0.5,
           },
         },
       },
+
       gradient: {
         variants: {
           initial: { x: "-100%" },
@@ -331,9 +339,10 @@ export const config = {
           repeat: Infinity,
           ease: "linear",
           repeatType: "loop" as const,
-          delay: 3.5,
+          delay: 1.2,
         },
       },
+
       hover: {
         initial: { rotate: 0 },
         hover: {
@@ -341,7 +350,7 @@ export const config = {
           transition: {
             duration: 0.6,
             ease: "easeInOut",
-            times: [0, 0.3, 0.6, 3],
+            times: [0, 0.3, 0.6, 1],
           },
         },
       },
