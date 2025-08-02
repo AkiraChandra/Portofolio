@@ -581,8 +581,7 @@ const Experience: React.FC = () => {
                   <div className={`${isMobile ? "h-[90vh]" : "h-[70vh]"}`}>
                     <div
                       ref={timelineContainerRef}
-                      className="h-full overflow-y-auto pr-2 scrollbar-hide"
-                      style={{
+                      className="h-full overflow-y-auto pr-2 scrollbar-hide mobile-scroll-smooth ios-scroll-fix" style={{
                         scrollBehavior: shouldReduceMotion ? "auto" : "smooth",
                       }}
                     >
@@ -665,16 +664,16 @@ const Experience: React.FC = () => {
                                                   ))}
                                                 {exp.technologies.length >
                                                   6 && (
-                                                  <span
-                                                    className="px-2 py-1 text-xs rounded-lg bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 
+                                                    <span
+                                                      className="px-2 py-1 text-xs rounded-lg bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 
                                                              text-text-tertiary dark:text-text-tertiary-dark"
-                                                  >
-                                                    +
-                                                    {exp.technologies.length -
-                                                      6}{" "}
-                                                    more
-                                                  </span>
-                                                )}
+                                                    >
+                                                      +
+                                                      {exp.technologies.length -
+                                                        6}{" "}
+                                                      more
+                                                    </span>
+                                                  )}
                                               </div>
                                             </div>
                                           )}
@@ -703,13 +702,13 @@ const Experience: React.FC = () => {
                                                   ))}
                                                 {exp.achievements.length >
                                                   3 && (
-                                                  <li className="text-sm text-text-tertiary dark:text-text-tertiary-dark pl-3.5">
-                                                    +
-                                                    {exp.achievements.length -
-                                                      3}{" "}
-                                                    more achievements
-                                                  </li>
-                                                )}
+                                                    <li className="text-sm text-text-tertiary dark:text-text-tertiary-dark pl-3.5">
+                                                      +
+                                                      {exp.achievements.length -
+                                                        3}{" "}
+                                                      more achievements
+                                                    </li>
+                                                  )}
                                               </ul>
                                             </div>
                                           )}

@@ -93,57 +93,42 @@ body {
    ============================================== */
 
 /* Mobile (0-768px) - Natural scrolling, no snap */
+/* Fix untuk bug mobile scroll timeout */
 @media (max-width: 768px) {
-  /* Force all scroll to be natural and fast */
-  html, body, * {
-    scroll-behavior: auto !important;
-    scroll-snap-type: none !important;
-    scroll-snap-align: none !important;
-    scroll-snap-stop: normal !important;
-  }
-  
-  /* Main container - single source of truth for mobile */
+  /* Ganti overscroll-behavior untuk menghindari delay */
   .mobile-scroll-container {
-    /* Native mobile scroll - fastest and most natural */
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    overscroll-behavior-x: hidden;
-    
-    /* Prevent any conflicting behaviors */
-    scroll-snap-type: none;
+    overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+    touch-action: pan-y;
     scroll-behavior: auto;
     
-    /* Minimal GPU usage */
+    /* Tambahkan properti untuk mencegah stuck scroll */
+    overflow-anchor: none;
+    scroll-snap-type: none;
+  }
+  
+  /* Fix khusus untuk timeline container */
+  .h-full.overflow-y-auto {
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Prevent momentum scroll conflicts */
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    
-    /* Essential for smooth mobile experience */
-    touch-action: pan-y;
   }
   
-  /* Mobile sections - clean and simple */
-  .mobile-section {
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport for mobile browsers */
-    position: relative;
-    
-    /* Remove any snap behaviors completely */
-    scroll-snap-align: none;
-    scroll-snap-stop: normal;
-    scroll-margin: 0;
-    
-    /* Clean spacing */
-    width: 100%;
-    overflow-x: hidden;
+  /* Tambahkan smooth transition tanpa delay */
+  .mobile-scroll-smooth {
+    transition: scroll-behavior 0s;
+    scroll-behavior: auto;
   }
   
-  /* Hide scrollbars on mobile for clean look */
-  .mobile-scroll-container::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .mobile-scroll-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  /* iOS Safari specific fix */
+  .ios-scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    overscroll-behavior: auto;
   }
 }
 
