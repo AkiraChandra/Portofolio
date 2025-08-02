@@ -1,283 +1,140 @@
-// src/components/layouts/PageLayout.tsx - SIMPLE DIRECT IMPORTS VERSION
-'use client';
+// src/components/layouts/PageLayout.tsx (V2 - UNIFIED NAVIGATION SYSTEM)
+// THIS IS V2 - THE RECOMMENDED VERSION! 🏆
+"use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { useMediaQuery } from '@/hooks/common/useMediaQuery';
+import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import Navbar from "@/components/common/navigations/Navbar";
+import Hero from "@/components/sections/Hero/Hero";
+import Projects from "@/components/sections/Projects/Projects";
+import Experience from "@/components/sections/Experience";
+import Certifications from "@/components/sections/Certifications/Certifications";
+import Skills from "@/components/sections/Skills/Skills";
 
-// ✅ DIRECT STATIC IMPORTS - Most Compatible
-import Hero from '@/components/sections/Hero/Hero';
-import Projects from '@/components/sections/Projects/Projects';
-import Experience from '@/components/sections/Experience';
-import Skills from '@/components/sections/Skills/Skills';
-import Certifications from '@/components/sections/Certifications/Certifications';
-
-// ✅ CONDITIONAL IMPORTS WITH TRY-CATCH
-let NavbarComponent: React.ComponentType<any>;
-let ContactComponent: React.ComponentType<any>;
-
-try {
-  // Try primary navbar path
-  NavbarComponent = require('@/components/common/navigations/Navbar').default;
-} catch {
-  try {
-    // Try alternative navbar path
-    NavbarComponent = require('@/features/navigation/Navbar').default;
-  } catch {
-    // Fallback navbar component
-    NavbarComponent = ({ onNavigate }: { onNavigate?: (path: string) => void }) => (
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-sm border-b border-border-primary/20 dark:border-border-primary-dark/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex-shrink-0">
-              <span className="text-xl font-bold text-text-primary dark:text-text-primary-dark">
-                Portfolio
-              </span>
-            </div>
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                {[
-                  { name: 'Home', path: '/' },
-                  { name: 'Projects', path: '/projects' },
-                  { name: 'Experience', path: '/experience' },
-                  { name: 'Certifications', path: '/certifications' },
-                  { name: 'Skills', path: '/skills' },
-                ].map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => onNavigate?.(item.path)}
-                    className="text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    {item.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  }
-}
-
-try {
-  // Try to import contact component
-  ContactComponent = require('@/components/sections/Contact/Contact').default;
-} catch {
-  // Fallback contact component
-  ContactComponent = () => (
-    <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
-      <div className="text-center max-w-md mx-auto px-4">
-        <h2 className="text-3xl font-bold text-text-primary dark:text-text-primary-dark mb-4">
-          Get In Touch
-        </h2>
-        <p className="text-text-secondary dark:text-text-secondary-dark mb-8">
-          Contact section coming soon!
-        </p>
-        <div className="flex justify-center space-x-4">
-          <a 
-            href="mailto:contact@example.com"
-            className="px-6 py-3 bg-primary dark:bg-primary-dark text-white rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Send Email
-          </a>
-          <a 
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 border border-primary dark:border-primary-dark text-primary dark:text-primary-dark rounded-lg hover:bg-primary/10 dark:hover:bg-primary-dark/10 transition-colors"
-          >
-            LinkedIn
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+interface PageLayoutProps {
+  defaultSection?:
+    | "home"
+    | "projects"
+    | "experience"
+    | "certifications"
+    | "skills";
 }
 
 const SECTIONS = [
-  { id: 'home', path: '/', component: Hero },
-  { id: 'projects', path: '/projects', component: Projects },
-  { id: 'experience', path: '/experience', component: Experience },
-  { id: 'certifications', path: '/certifications', component: Certifications },
-  { id: 'skills', path: '/skills', component: Skills },
+  { id: "home", path: "/" },
+  { id: "projects", path: "/projects" },
+  { id: "experience", path: "/experience" },
+  { id: "certifications", path: "/certifications" },
+  { id: "skills", path: "/skills" },
 ] as const;
 
-type SectionId = typeof SECTIONS[number]['id'];
+type SectionId = (typeof SECTIONS)[number]["id"];
 
-interface PageLayoutProps {
-  defaultSection?: SectionId;
-}
-
-const PageLayout: React.FC<PageLayoutProps> = ({ defaultSection = 'home' }) => {
+export default function PageLayout({
+  defaultSection = "home",
+}: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  
-  // Mobile-specific states
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [canAutoNavigate, setCanAutoNavigate] = useState(true);
-  const lastScrollTop = useRef<number>(0);
+  const [currentSection, setCurrentSection] =
+    useState<SectionId>(defaultSection);
 
-  // Optimized navigation function for mobile
-  const navigateToSection = useCallback((sectionId: SectionId) => {
+  // SOLUTION 1: Unified navigation function (same as navbar!)
+  const navigateToSection = (sectionId: SectionId) => {
     const section = document.getElementById(sectionId);
-    if (!section) return;
 
-    // Immediate URL update for responsiveness
-    const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
-    if (sectionConfig) {
-      window.history.replaceState(null, '', sectionConfig.path);
-      setCurrentSection(sectionId);
-    }
-
-    // Use different scroll behavior for mobile vs desktop
-    section.scrollIntoView({
-      behavior: isMobile ? 'auto' : 'smooth', // Instant scroll on mobile for better UX
-      block: 'start',
-    });
-  }, [isMobile]);
-
-  // Enhanced mobile scroll detection with auto-navigation
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    let animationFrame: number;
-    
-    const handleScroll = () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-
-      animationFrame = requestAnimationFrame(() => {
-        if (!container || isScrolling) return;
-
-        const currentScrollTop = container.scrollTop;
-        const containerHeight = container.clientHeight;
-        const scrollDirection = currentScrollTop > lastScrollTop.current ? 'down' : 'up';
-        
-        // Mobile-specific scroll handling
-        if (isMobile && canAutoNavigate) {
-          // Check if we've reached the end of current section
-          const sections = Array.from(container.children) as HTMLElement[];
-          let targetSection: SectionId | null = null;
-
-          sections.forEach((section, index) => {
-            const rect = section.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            
-            // Calculate relative position within container
-            const sectionTop = rect.top - containerRect.top + container.scrollTop;
-            const sectionBottom = sectionTop + rect.height;
-            const scrollBottom = currentScrollTop + containerHeight;
-            
-            // If scrolled to bottom of section and user is still scrolling down
-            if (scrollDirection === 'down' && 
-                scrollBottom >= sectionBottom - 50 && // 50px threshold
-                currentScrollTop > lastScrollTop.current) {
-              
-              const nextSectionIndex = index + 1;
-              if (nextSectionIndex < SECTIONS.length) {
-                targetSection = SECTIONS[nextSectionIndex].id;
-              }
-            }
-            
-            // If scrolled to top of section and user is still scrolling up
-            else if (scrollDirection === 'up' && 
-                     currentScrollTop <= sectionTop + 50 && // 50px threshold
-                     currentScrollTop < lastScrollTop.current) {
-              
-              const prevSectionIndex = index - 1;
-              if (prevSectionIndex >= 0) {
-                targetSection = SECTIONS[prevSectionIndex].id;
-              }
-            }
-          });
-
-          // Auto-navigate if target section found
-          if (targetSection && targetSection !== currentSection) {
-            setIsScrolling(true);
-            setCanAutoNavigate(false);
-            
-            // Brief delay to prevent rapid section changes
-            setTimeout(() => {
-              navigateToSection(targetSection);
-              
-              setTimeout(() => {
-                setIsScrolling(false);
-                setCanAutoNavigate(true);
-              }, 300); // Shorter delay for mobile
-            }, 50);
-          }
-        }
-
-        // Regular section detection for URL updates
-        if (!isMobile || !isScrolling) {
-          const scrollCenter = currentScrollTop + containerHeight * 0.5;
-          let activeSection: SectionId = 'home';
-
-          for (const section of SECTIONS) {
-            const element = document.getElementById(section.id);
-            if (!element) continue;
-
-            const sectionTop = element.offsetTop;
-            const sectionBottom = sectionTop + element.offsetHeight;
-
-            if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
-              activeSection = section.id;
-              break;
-            }
-          }
-
-          // Update URL only when section changes
-          if (activeSection !== currentSection && !isScrolling) {
-            setCurrentSection(activeSection);
-            const section = SECTIONS.find((s) => s.id === activeSection);
-            if (section) {
-              window.history.replaceState(null, '', section.path);
-            }
-          }
-        }
-
-        lastScrollTop.current = currentScrollTop;
+    if (section) {
+      // EXACT same approach as navbar - this is why it's smooth!
+      section.scrollIntoView({
+        behavior: "smooth", // Same as navbar
+        block: "start", // Same as navbar
       });
-    };
 
-    // Use passive listener for better performance
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
+      // Update URL and state
+      const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
+      if (sectionConfig) {
+        window.history.replaceState(null, "", sectionConfig.path);
+        setCurrentSection(sectionId);
       }
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, [currentSection, isMobile, isScrolling, canAutoNavigate, navigateToSection]);
+    }
+  };
 
-  // Initialize section on mount
+  // SOLUTION 2: Initialize with same approach as navbar
   useEffect(() => {
-    if (defaultSection === 'home') return;
-
-    const timer = setTimeout(() => {
-      navigateToSection(defaultSection);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [defaultSection, navigateToSection]);
-
-  // Disable browser scroll restoration
-  useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    // Disable browser scroll restoration
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
     }
   }, []);
 
+  // SOLUTION 3: Handle refresh navigation (navbar-style)
+  useEffect(() => {
+    if (defaultSection === "home") return;
+
+    // Use same timing and approach as navbar
+    const timer = setTimeout(() => {
+      navigateToSection(defaultSection);
+    }, 50); // Minimal delay, similar to navbar's immediate response
+
+    return () => clearTimeout(timer);
+  }, [defaultSection]);
+
+  // SOLUTION 4: Simple scroll tracking (only for URL updates)
+  useEffect(() => {
+    let scrollTimer: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      if (scrollTimer) clearTimeout(scrollTimer);
+
+      // Minimal delay for smooth URL updates
+      scrollTimer = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const scrollTop = container.scrollTop;
+        const viewportHeight = container.clientHeight;
+        const scrollCenter = scrollTop + viewportHeight * 0.5;
+
+        // Find active section
+        let activeSection: SectionId = "home";
+
+        for (const section of SECTIONS) {
+          const element = document.getElementById(section.id);
+          if (!element) continue;
+
+          const sectionTop = element.offsetTop;
+          const sectionBottom = sectionTop + element.offsetHeight;
+
+          if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
+            activeSection = section.id;
+            break;
+          }
+        }
+
+        // Update URL only when section changes
+        if (activeSection !== currentSection) {
+          setCurrentSection(activeSection);
+          const section = SECTIONS.find((s) => s.id === activeSection);
+          if (section) {
+            window.history.replaceState(null, "", section.path);
+          }
+        }
+      }, 100);
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll, { passive: true });
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+        if (scrollTimer) clearTimeout(scrollTimer);
+      };
+    }
+  }, [currentSection]);
+
   return (
     <main className="min-h-screen overflow-x-hidden">
-      {/* Direct Navbar Component */}
-      <NavbarComponent
-        onNavigate={(path: string) => {
+      {/* Pass navigation function to Navbar for consistency */}
+      <Navbar
+        onNavigate={(path) => {
           const section = SECTIONS.find((s) => s.path === path);
           if (section) {
             navigateToSection(section.id);
@@ -287,23 +144,26 @@ const PageLayout: React.FC<PageLayoutProps> = ({ defaultSection = 'home' }) => {
 
       <div
         ref={scrollContainerRef}
-        className="h-screen overflow-y-auto mobile-optimized-scroll"
+        className="h-screen overflow-y-auto"
         style={{
-          // Mobile-optimized scroll behavior
-          scrollSnapType: isMobile ? 'none' : 'y proximity',
-          scrollBehavior: isMobile ? 'auto' : 'smooth',
-          overscrollBehavior: 'contain',
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y',
+          scrollSnapType: "y mandatory",
+          scrollBehavior: "smooth",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {/* Hero Section */}
         <motion.section
           id="home"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           <Hero />
         </motion.section>
@@ -311,65 +171,83 @@ const PageLayout: React.FC<PageLayoutProps> = ({ defaultSection = 'home' }) => {
         {/* Projects Section */}
         <motion.section
           id="projects"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-20%' }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
         >
           <Projects />
         </motion.section>
 
-        {/* Experience Section */}
+        {/* Experience Section - Isolated Overflow */}
         <motion.section
           id="experience"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-20%' }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
         >
-          <Experience />
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <Experience />
+            </div>
+          </div>
         </motion.section>
 
-        {/* Certifications Section */}
+        {/* Certifications Section - Isolated Overflow */}
         <motion.section
           id="certifications"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-20%' }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
         >
-          <Certifications />
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto">
+              <Certifications />
+            </div>
+          </div>
         </motion.section>
 
-        {/* Skills Section */}
+        {/* Skills Section - Clean */}
         <motion.section
           id="skills"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+            zIndex: 1,
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-20%' }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
         >
-          <Skills />
-        </motion.section>
-
-        {/* Contact Section */}
-        <motion.section
-          id="contact"
-          className="min-h-screen snap-start mobile-section scroll-performance-optimized relative"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-20%' }}
-          transition={{ duration: 0.5 }}
-        >
-          <ContactComponent />
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto">
+              <Skills />
+            </div>
+          </div>
         </motion.section>
       </div>
     </main>
   );
-};
-
-export default PageLayout;
+}
