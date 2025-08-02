@@ -141,17 +141,41 @@ body {
     scroll-behavior: smooth;
   }
   
-  .tablet-scroll-container {
-    scroll-snap-type: y proximity; /* Softer snap for tablets */
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
+/* Ganti overscroll-behavior untuk menghindari delay */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+  touch-action: pan-y;
+  scroll-behavior: auto;
   
-  .tablet-section {
-    scroll-snap-align: start;
-    scroll-snap-stop: normal; /* Less aggressive */
-  }
+  /* Tambahkan properti untuk mencegah stuck scroll */
+  overflow-anchor: none;
+  scroll-snap-type: none;
+}
+
+/* Fix khusus untuk timeline container */
+.h-full.overflow-y-auto {
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent momentum scroll conflicts */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Tambahkan smooth transition tanpa delay */
+.mobile-scroll-smooth {
+  transition: scroll-behavior 0s;
+  scroll-behavior: auto;
+}
+
+/* iOS Safari specific fix */
+.ios-scroll-fix {
+  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  overscroll-behavior: auto;
+}
 }
 
 /* ==============================================
