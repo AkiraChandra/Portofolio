@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==============================================
+   BASE THEME VARIABLES
+   ============================================== */
 @layer base {
   :root {
     /* Light theme colors */
@@ -68,6 +71,248 @@
   }
 }
 
+/* ==============================================
+   ENHANCED SCROLL BEHAVIOR - MOBILE OPTIMIZED
+   ============================================== */
+
+/* Base scroll behavior - responsive to device */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply overflow-x-hidden;
+}
+
+/* Mobile-specific scroll optimizations */
+@media (max-width: 768px) {
+  /* Disable smooth scroll on mobile for instant response */
+  html,
+  * {
+    scroll-behavior: auto !important;
+  }
+  
+  /* Remove scroll snap on mobile to prevent sticking */
+  .mobile-scroll-container {
+    scroll-snap-type: none !important;
+  }
+  
+  /* Enhanced touch scrolling */
+  .mobile-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    scroll-behavior: auto;
+  }
+  
+  /* Faster transitions for mobile */
+  .mobile-section {
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+  }
+  
+  /* Remove snap points on mobile */
+  .snap-section {
+    scroll-snap-align: none !important;
+    scroll-snap-stop: normal !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Softer snap on tablets */
+  .snap-container {
+    scroll-snap-type: y proximity;
+  }
+  
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal; /* Less aggressive than "always" */
+  }
+}
+
+/* Desktop - full smooth scrolling */
+@media (min-width: 1025px) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  .snap-container {
+    scroll-snap-type: y mandatory;
+  }
+  
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
+/* Enhanced mobile scroll container */
+.mobile-optimized-scroll {
+  /* Remove all conflicting scroll behaviors on mobile */
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  
+  /* Optimize for touch */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  
+  /* Prevent momentum scrolling issues */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  
+  /* Better performance */
+  will-change: scroll-position;
+  contain: strict;
+}
+
+/* Mobile section spacing */
+@media (max-width: 768px) {
+  .mobile-section {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+    scroll-margin-top: 0;
+    
+    /* Remove any snap behaviors */
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+  }
+  
+  /* Ensure sections don't have conflicting positioning */
+  .mobile-section > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Performance optimizations for mobile scrolling */
+@media (max-width: 768px) {
+  /* Reduce paint areas during scroll */
+  .scroll-performance-optimized {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    contain: layout style paint;
+  }
+  
+  /* Minimize reflows during scroll */
+  .scroll-content {
+    will-change: auto; /* Don't keep will-change active unnecessarily */
+  }
+  
+  /* Fast animations for mobile */
+  .mobile-fast-transition {
+    transition: all 0.15s ease-out;
+  }
+  
+  /* Remove expensive effects on mobile scroll */
+  .mobile-scroll-disable-effects {
+    filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ==============================================
+   SCROLLBAR CUSTOMIZATION
+   ============================================== */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary dark:bg-primary-dark;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer dan Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari dan Opera */
+}
+
+/* Custom scrollbar for mobile when needed */
+@media (max-width: 768px) {
+  /* Hide scrollbar completely on mobile for cleaner look */
+  .mobile-hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .mobile-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ==============================================
+   SECTION POSITIONING & SNAP BEHAVIOR
+   ============================================== */
+
+/* Enhanced snap scrolling for experience section */
+#experience {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: 0;
+}
+
+/* Better positioning for overflow sections */
+.experience-container {
+  position: relative;
+  min-height: 100vh;
+  scroll-snap-align: start;
+}
+
+/* Enhanced snap behavior */
+.snap-container .snap-start.min-h-screen {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Touch-friendly scroll indicators */
+@media (max-width: 768px) {
+  .mobile-scroll-indicator {
+    display: none; /* Hide on mobile or make touch-friendly */
+  }
+  
+  .mobile-touch-navigation {
+    padding: 12px; /* Larger touch targets */
+    min-height: 44px; /* iOS touch target minimum */
+    min-width: 44px;
+  }
+}
+
+/* Prevent scroll interference from other elements */
+@media (max-width: 768px) {
+  /* Ensure no child elements interfere with scroll */
+  .mobile-scroll-child {
+    pointer-events: auto;
+    touch-action: inherit;
+  }
+  
+  /* Fix for modals and overlays */
+  .mobile-scroll-overlay {
+    position: fixed;
+    touch-action: none; /* Prevent scrolling when overlay is open */
+  }
+}
+
+/* ==============================================
+   ANIMATION UTILITIES & OPTIMIZATIONS
+   ============================================== */
+
 @layer utilities {
   .animate-star {
     opacity: 0;
@@ -97,6 +342,25 @@
   }
 }
 
+/* GPU Acceleration */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+.gpu-accelerate-auto {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: auto;
+}
+
+/* ==============================================
+   KEYFRAME ANIMATIONS
+   ============================================== */
+
 @keyframes star {
   0% {
     transform: translateX(-100px) translateY(100px) rotate(-45deg);
@@ -112,91 +376,6 @@
     transform: translateX(200px) translateY(-200px) rotate(-45deg);
     opacity: 0;
   }
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  @apply overflow-x-hidden;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary dark:bg-primary-dark;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;  /* Internet Explorer dan Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari dan Opera */
-}
-
-/* Jangan hapus custom scrollbar yang sudah ada untuk komponen lain */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary dark:bg-primary-dark;
-}
-/* Enhanced snap scrolling for experience section */
-#experience {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  scroll-margin-top: 0;
-}
-
-/* Better positioning for overflow sections */
-.experience-container {
-  position: relative;
-  min-height: 100vh;
-  scroll-snap-align: start;
-}
-
-/* Enhanced snap behavior */
-.snap-container .snap-start.min-h-screen {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-.gpu-accelerate {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: transform;
-}
-
-.gpu-accelerate-auto {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: auto;
 }
 
 /* Optimized animations dengan GPU acceleration */
@@ -246,6 +425,19 @@ body {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ==============================================
+   PERFORMANCE-OPTIMIZED ANIMATION CLASSES
+   ============================================== */
+
 /* Performance-optimized utility classes */
 .animate-star-optimized {
   animation: star-optimized 10s linear infinite;
@@ -270,6 +462,19 @@ body {
   will-change: transform, opacity;
   transform: translateZ(0);
 }
+
+/* Intersection-based animation pausing */
+.pause-animations {
+  animation-play-state: paused;
+}
+
+.resume-animations {
+  animation-play-state: running;
+}
+
+/* ==============================================
+   MOBILE-SPECIFIC OPTIMIZATIONS
+   ============================================== */
 
 /* Mobile-specific optimizations */
 @media (max-width: 768px) {
@@ -323,6 +528,10 @@ body {
   }
 }
 
+/* ==============================================
+   ACCESSIBILITY & REDUCED MOTION
+   ============================================== */
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-star-optimized,
@@ -360,24 +569,19 @@ body {
   }
 }
 
-/* Intersection-based animation pausing */
-.pause-animations {
-  animation-play-state: paused;
+/* Progressive enhancement for better scroll */
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 769px) {
+    /* Only enable smooth scroll on desktop when user doesn't prefer reduced motion */
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }
 
-.resume-animations {
-  animation-play-state: running;
-}
-
-/* Optimized scrollbar untuk mobile */
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+/* ==============================================
+   PERFORMANCE & OPTIMIZATION UTILITIES
+   ============================================== */
 
 /* Performance hints untuk browser */
 .performance-optimized {
@@ -390,15 +594,6 @@ body {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite ease-in-out;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
 }
 
 .dark .lazy-placeholder {
@@ -441,6 +636,10 @@ body {
   contain-intrinsic-size: 0 400px;
 }
 
+/* ==============================================
+   DEVICE-SPECIFIC OPTIMIZATIONS
+   ============================================== */
+
 /* Reduced complexity for low-end devices */
 @media (max-width: 768px) and (max-resolution: 150dpi) {
   /* Disable expensive effects */
@@ -479,6 +678,18 @@ body {
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000px;
   }
+  
+  /* iOS Safari scroll optimization */
+  .ios-scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* Fix iOS Safari 100vh issue */
+  .ios-viewport-fix {
+    height: -webkit-fill-available;
+  }
 }
 
 /* Chrome mobile optimizations */
@@ -487,10 +698,54 @@ body {
     will-change: auto;
     transform: translateZ(0);
   }
+  
+  /* Chrome mobile specific optimizations */
+  .chrome-mobile-scroll {
+    contain: strict;
+    content-visibility: auto;
+  }
+}
+
+/* ==============================================
+   EXPERIMENTAL & FALLBACK SUPPORT
+   ============================================== */
+
+/* Experimental: Scroll-driven animations (where supported) */
+@supports (animation-timeline: scroll()) {
+  @media (min-width: 769px) {
+    .scroll-driven-animation {
+      animation-timeline: scroll();
+      animation-range: 0% 100%;
+    }
+  }
+}
+
+/* Fallback for older browsers */
+@supports not (overscroll-behavior: contain) {
+  .mobile-scroll-container {
+    /* Fallback for older mobile browsers */
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
 /* Force repaint prevention */
 .prevent-repaint {
   contain: strict;
   content-visibility: auto;
+}
+
+/* ==============================================
+   DEBUG UTILITIES (REMOVE IN PRODUCTION)
+   ============================================== */
+
+/* Debug classes - remove in production */
+.debug-scroll-mobile {
+  border: 2px solid red;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.debug-scroll-desktop {
+  border: 2px solid blue;
+  background: rgba(0, 0, 255, 0.1);
 }
