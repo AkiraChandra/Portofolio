@@ -38,7 +38,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MovingStars from "@/components/ui/animations/Movingstars";
 import SmartImage from "@/components/common/SmartImage";
-import FileViewer from "@/utils/helpers/FileViewer";
 
 interface ProjectDetailProps {
   project: Project;
