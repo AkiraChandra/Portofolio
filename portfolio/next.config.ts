@@ -1,20 +1,17 @@
+// File: next.config.ts - FIXED TO REMOVE POLYFILLS
 import type { NextConfig } from "next";
 
-/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  // Existing configurations
   eslint: {
     ignoreDuringBuilds: true,
   },
   
-  // Optimasi Gambar
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,90 +22,118 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Optimasi Experimental
   experimental: {
     optimizePackageImports: ['framer-motion', 'lucide-react'],
-    
-    // Tambahan optimasi
-    webpackBuildWorker: true,
-    optimisticClientCache: true,
   },
 
-  // Compiler Optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-    
-    // Tambahan reactRemoveProperties untuk produksi
-    reactRemoveProperties: process.env.NODE_ENV === 'production' 
-      ? { properties: ['^data-testid$'] } 
-      : {},
   },
 
-  // Optimasi Performa
-  productionBrowserSourceMaps: false,
-  compress: true,
-
-  // Webpack Configuration
   webpack: (config, { dev, isServer }) => {
-    // Alias untuk optimasi
-    if (!dev && !isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'framer-motion': 'framer-motion',
-      }
+    // ✅ CRITICAL: Disable Node.js polyfills
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        path: false,
+        os: false,
+        process: false,  // ✅ Remove process polyfill
+        buffer: false,   // ✅ Remove buffer polyfill
+        stream: false,
+        util: false,
+        url: false,
+        querystring: false,
+        assert: false,
+        http: false,
+        https: false,
+        zlib: false,
+      };
     }
-    
-    // Konfigurasi Split Chunks yang Lebih Agresif
-    if (!dev) {
+
+    // ✅ OPTIMIZED: Better chunk splitting
+    if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
-        maxInitialRequests: 3,
-        maxAsyncRequests: 5,
-        minSize: 10000,  // Turunkan dari 20000
-        maxSize: 200000, // Batasi ukuran maksimal
-        minChunks: 1,
-        
-        // Cache Groups yang Lebih Spesifik
+        maxInitialRequests: 10,        // Increase from 3
+        maxAsyncRequests: 30,
+        minSize: 20000,                // Increase min size
+        maxSize: 100000,               // Decrease max size
         cacheGroups: {
-          // Vendor untuk library eksternal
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            priority: -10,
-            reuseExistingChunk: true,
-            enforce: true,
-            name(module: { context: string }): string {
-              // Nama chunk berdasarkan modul utama
-              const packageName: string = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1] || '';
-              return `npm.${packageName.replace('@', '')}`;
-            },
-          },
-          
-          // Common chunks untuk kode internal
-          common: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-            test: /[\\/]src[\\/]/,
-          },
-          
-          // Chunk untuk styles
-          styles: {
-            name: 'styles',
-            test: /\.(css|scss)$/,
+          // ✅ React Core (smallest possible)
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react-core',
             chunks: 'all',
+            priority: 50,
             enforce: true,
-            priority: 10,
+            maxSize: 40000,  // Keep React small
           },
-        },
+          
+          // ✅ React Scheduler (separate)
+          scheduler: {
+            test: /[\\/]node_modules[\\/]scheduler[\\/]/,
+            name: 'react-scheduler',
+            chunks: 'all',
+            priority: 45,
+            enforce: true,
+          },
+          
+          // ✅ JSX Runtime (separate)
+          jsx: {
+            test: /[\\/]node_modules[\\/]react[\\/]jsx-runtime/,
+            name: 'jsx-runtime',
+            chunks: 'all',
+            priority: 44,
+            enforce: true,
+          },
+          
+          // ✅ Next.js runtime
+          next: {
+            test: /[\\/]node_modules[\\/]next[\\/]/,
+            name: 'next-runtime',
+            chunks: 'all',
+            priority: 40,
+            maxSize: 60000,
+          },
+          
+          // ✅ Framer Motion (async only)
+          framer: {
+            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+            name: 'framer-motion',
+            chunks: 'async',  // Never in initial bundle
+            priority: 35,
+            enforce: true,
+          },
+          
+          // ✅ UI Libraries
+          ui: {
+            test: /[\\/]node_modules[\\/](lucide-react)[\\/]/,
+            name: 'ui-libs',
+            chunks: 'all',
+            priority: 30,
+            maxSize: 50000,
+          },
+          
+          // ✅ Small vendors
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendor',
+            chunks: 'all',
+            priority: 10,
+            maxSize: 50000,
+            minChunks: 2,
+          }
+        }
       };
-
-      // Optimasi tambahan
-      config.optimization.moduleIds = 'deterministic';
-      config.optimization.runtimeChunk = 'single';
       
-      // Aktifkan tree shaking
+      // ✅ Tree shaking
       config.optimization.usedExports = true;
-      config.optimization.sideEffects = true;
+      config.optimization.sideEffects = false;
+      config.optimization.moduleIds = 'deterministic';
     }
     
     return config;
