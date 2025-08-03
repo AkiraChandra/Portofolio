@@ -14,8 +14,6 @@ import {
   Settings, 
   Users,
   Star,
-  TrendingUp,
-  Clock
 } from 'lucide-react';
 import type { SkillWithCategory } from '@/types/skills';
 import { getProficiencyInfo, formatYearsOfExperience, getSkillDisplayInfo } from '@/utils/skills/skillsUtils';

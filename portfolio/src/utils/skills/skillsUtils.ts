@@ -1,7 +1,7 @@
 // src/utils/skills/skillsUtils.ts
 
-import type { SkillWithCategory, SkillCategory, SkillsByCategory, ProficiencyLevel } from '@/types/skills';
-import { PROFICIENCY_LEVELS, EXPERIENCE_LEVELS } from '@/types/skills';
+import type { SkillWithCategory, ProficiencyLevel } from '@/types/skills';
+import { PROFICIENCY_LEVELS } from '@/types/skills';
 
 // ==========================================
 // SKILL FORMATTING UTILITIES

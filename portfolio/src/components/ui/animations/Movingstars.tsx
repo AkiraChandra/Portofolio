@@ -1,9 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { config } from '@/config';
 import { useEffect, useState } from 'react';
-import { useTheme } from '@/hooks/theme/useTheme';
 
 const MovingStars = () => {
   const [starPositions, setStarPositions] = useState<Array<{
@@ -11,7 +9,6 @@ const MovingStars = () => {
     left: number;
   }>>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { theme } = useTheme();
 
   const generatePosition = (existingPositions: Array<{ bottom: number; left: number }>) => {
     const minDistance = 20;

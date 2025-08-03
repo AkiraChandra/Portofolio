@@ -47,7 +47,6 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
             // OPTIMIZATION 4: Responsive sizes based on actual display dimensions
             sizes="(max-width: 480px) 140px, (max-width: 768px) 160px, (max-width: 1024px) 160px, 220px"
             priority
-            quality={85} // Balanced quality vs file size
             // OPTIMIZATION 5: Add blur placeholder for smooth loading
             placeholder="blur"
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Qc7bk/wANVdVzBZFmgjmTM080OoKCKu0HS0T41LbZVPdS/I0gTthV"

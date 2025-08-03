@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import _ from 'lodash';
+import { debounce } from "@/utils/helpers/debounce";
 
 interface UseProjectTransitionProps {
   totalProjects: number;
@@ -68,7 +68,7 @@ export const useProjectTransition = ({
 
   // Debounced version of the core jump logic
   const debouncedJumpCore = useCallback(
-    _.debounce((index: number) => {
+    debounce((index: number) => {
       clearTimers();
       setProgress(0);
       setIsLineAnimating(false);

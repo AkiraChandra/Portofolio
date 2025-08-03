@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '@/hooks/theme/useTheme';
 
 interface MenuButtonProps {
   isOpen: boolean;
@@ -11,7 +10,6 @@ interface MenuButtonProps {
 }
 
 const MenuButton: React.FC<MenuButtonProps> = ({ isOpen, toggle, className = '' }) => {
-  const { theme } = useTheme();
 
   const variant = {
     opened: {

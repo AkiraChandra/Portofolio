@@ -1,7 +1,6 @@
 // src/components/sections/Experience/components/TimeLinePoint.tsx
 
 import React from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { TimelineItemProps } from "@/types/experience";
 import SmartImage from '@/components/common/SmartImage';

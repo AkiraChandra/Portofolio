@@ -5,36 +5,19 @@ import { Project } from "@/types/projects";
 import {
   ArrowLeft,
   Github,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
   X,
   ZoomIn,
-  Calendar,
   Code,
   Eye,
   Star,
   Globe,
   Layers,
   Settings,
-  Clock,
-  Tag,
-  Download,
-  Share2,
-  Bookmark,
   Play,
-  Pause,
-  RotateCcw,
-  Monitor,
-  Tablet,
-  Smartphone,
-  MousePointer,
-  Sparkles,
-  Filter,
-  BarChart3,
-  Activity
+  Pause
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MovingStars from "@/components/ui/animations/Movingstars";
 import SmartImage from "@/components/common/SmartImage";
@@ -397,7 +380,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                         </svg>
                       </div>
                       <h3 className="text-lg font-medium text-text-secondary dark:text-text-secondary-dark mb-2">No Images Available</h3>
-                      <p className="text-sm">This project doesn't have any preview images yet.</p>
+                      <p className="text-sm">This project doesn&apos;t have any preview images yet.</p>
                     </div>
                   </div>
                 )}
@@ -413,7 +396,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
                   variants={itemVariants}
                 >
                   <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="w-5 h-5 text-primary dark:text-primary-dark" />
+                      <p className="text-sm">This project doesn&apos;t have any preview images yet.</p>
                     <h3 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">
                       Project Stats
                     </h3>

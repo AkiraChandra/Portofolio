@@ -6,11 +6,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
-interface Section {
-  id: string;
-  path: string;
-  element?: HTMLElement;
-}
 
 const SECTIONS = [
   { id: 'home', path: '/' },

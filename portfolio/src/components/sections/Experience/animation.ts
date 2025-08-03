@@ -1,8 +1,4 @@
 // src/components/sections/Experience/animation.ts
-// ✅ OPTIMIZED VERSION - Replace expensive springs with lightweight ease
-
-import { Variants } from 'framer-motion';
-
 export const timelineVariants = {
   container: {
     hidden: { 
@@ -11,7 +7,6 @@ export const timelineVariants = {
     visible: {
       opacity: 1,
       transition: {
-        // ✅ PERFORMANCE FIX: Reduce stagger for fewer calculations
         staggerChildren: 0.1, // was 0.2
         delayChildren: 0.1     // was 0.3
       }
@@ -27,10 +22,8 @@ export const timelineVariants = {
       scale: 1,
       opacity: 1,
       transition: {
-        // ✅ PERFORMANCE FIX: Replace expensive spring with simple ease
         duration: 0.3,
         ease: 'easeOut'
-        // ❌ REMOVED: type: 'spring', stiffness: 260, damping: 20
       }
     }
   },
@@ -44,7 +37,6 @@ export const timelineVariants = {
       x: 0,
       opacity: 1,
       transition: {
-        // ✅ PERFORMANCE FIX: Replace spring with lightweight ease
         duration: 0.4,
         ease: 'easeOut'
         // ❌ REMOVED: type: 'spring', stiffness: 100, damping: 20

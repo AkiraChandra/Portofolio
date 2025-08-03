@@ -1,136 +1,112 @@
-'use client';
-
-import React, { useState, useRef, useEffect } from 'react';
+// File: src/components/common/SmartImage.tsx
+import { memo, useState, useCallback } from 'react';
 import Image from 'next/image';
-
-// Simple cache untuk URL yang gagal
-const failedUrls = new Set<string>();
 
 interface SmartImageProps {
   src: string;
   alt: string;
-  fallbackSrc?: string;
-  className?: string;
-  fill?: boolean;
   width?: number;
   height?: number;
-  sizes?: string;
+  className?: string;
+  fill?: boolean;
   priority?: boolean;
+  quality?: number;
+  sizes?: string;
   showPlaceholder?: boolean;
-  onError?: () => void;
+  placeholder?: 'blur' | 'empty';
+  blurDataURL?: string;
+  loading?: 'eager' | 'lazy';
+  unoptimized?: boolean;
   onLoad?: () => void;
+  onError?: () => void;
+  [key: string]: any;
 }
 
-const SmartImage: React.FC<SmartImageProps> = ({
+const SmartImage = memo(({
   src,
   alt,
-  fallbackSrc,
-  className = '',
-  fill,
   width,
   height,
+  className,
+  fill,
+  priority = false,
+  quality = 75,
   sizes,
-  priority,
-  showPlaceholder = true,
-  onError,
+  showPlaceholder = false,
+  placeholder,
+  blurDataURL,
+  loading,
+  unoptimized,
   onLoad,
-}) => {
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [hasError, setHasError] = useState(false);
+  onError,
+  ...props
+}: SmartImageProps) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [showFallback, setShowFallback] = useState(false);
-  const hasTriedFallback = useRef(false);
+  const [hasError, setHasError] = useState(false);
+  const [showFallback, setShowFallback] = useState(false); // ✅ NOW USED
 
-  // Reset state ketika src berubah
-  useEffect(() => {
-    // Jika URL sudah pernah gagal, langsung show placeholder
-    if (failedUrls.has(src)) {
-      setHasError(true);
-      setIsLoading(false);
-      return;
-    }
-
-    // Reset semua state
-    setCurrentSrc(src);
-    setHasError(false);
-    setShowFallback(false);
-    setIsLoading(true);
-    hasTriedFallback.current = false;
-  }, [src]);
-
-  const handleImageError = () => {
-    // Tambahkan ke failed cache
-    failedUrls.add(currentSrc);
-    
-    // Coba fallback jika ada dan belum pernah dicoba
-    if (!hasTriedFallback.current && fallbackSrc && !failedUrls.has(fallbackSrc)) {
-      hasTriedFallback.current = true;
-      setCurrentSrc(fallbackSrc);
-      setShowFallback(true);
-      setIsLoading(true);
-      setHasError(false);
-    } else {
-      // Tampilkan placeholder
-      setHasError(true);
-      setIsLoading(false);
-    }
-    
-    onError?.();
-  };
-
-  const handleImageLoad = () => {
+  const handleLoad = useCallback(() => {
     setIsLoading(false);
-    setHasError(false);
-    onLoad?.();
-  };
+    if (onLoad) onLoad();
+  }, [onLoad]);
 
-  // Jika error dan harus show placeholder
-  if (hasError && showPlaceholder) {
+  const handleError = useCallback(() => {
+    setIsLoading(false);
+    setHasError(true);
+    setShowFallback(true); // ✅ NOW setShowFallback IS USED
+    if (onError) onError();
+  }, [onError]);
+
+  // ✅ IMPLEMENT showFallback functionality
+  if (hasError || showFallback) {
     return (
-      <div 
-        className={`bg-gray-200 dark:bg-gray-700 flex items-center justify-center ${className}`}
-        style={fill ? undefined : { width, height }}
-      >
-        <svg 
-          className="w-1/3 h-1/3 text-gray-400" 
-          fill="currentColor" 
-          viewBox="0 0 20 20"
-        >
-          <path 
-            fillRule="evenodd" 
-            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" 
-            clipRule="evenodd" 
-          />
-        </svg>
+      <div className={`bg-gray-200 dark:bg-gray-700 flex items-center justify-center ${className}`}>
+        <div className="text-center p-4">
+          <div className="w-12 h-12 mx-auto mb-2 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+            <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span className="text-gray-500 text-sm">Failed to load image</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Loading shimmer */}
-      {isLoading && (
-        <div 
-          className={`absolute inset-0 bg-gray-100 dark:bg-gray-800 animate-pulse ${className}`}
-          style={fill ? undefined : { width, height }}
-        />
+    <div className="relative w-full h-full">
+      {/* ✅ Loading placeholder */}
+      {isLoading && showPlaceholder && (
+        <div className={`absolute inset-0 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg ${className}`}>
+          <div className="flex items-center justify-center h-full">
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+          </div>
+        </div>
       )}
       
-      {/* Actual image */}
+      {/* ✅ Actual Image */}
       <Image
-        src={currentSrc}
+        src={src}
         alt={alt}
-        className={className}
+        width={width}
+        height={height}
         fill={fill}
-        width={!fill ? width : undefined}
-        height={!fill ? height : undefined}
-        sizes={sizes}
+        className={className}
         priority={priority}
-        onError={handleImageError}
-        onLoad={handleImageLoad}
+        quality={quality}
+        sizes={sizes}
+        placeholder={placeholder}
+        blurDataURL={blurDataURL}
+        loading={loading}
+        unoptimized={unoptimized}
+        onLoad={handleLoad}
+        onError={handleError}
+        {...props}
       />
-    </>
+    </div>
   );
-};
+});
+
+SmartImage.displayName = 'SmartImage';
 
 export default SmartImage;

@@ -77,7 +77,7 @@ export const useSkills = (options: UseSkillsOptions = {}): UseSkillsReturn => {
       }
       setSkills(skillsResult.data);
 
-      // Handle categories result - Don't fail whole operation
+      // Handle categories result - Don&apos;t fail whole operation
       if (categoriesResult.error) {
         console.warn('Categories error:', categoriesResult.error);
       } else {
@@ -156,7 +156,13 @@ export interface UseSkillsStatsReturn {
 }
 
 export const useSkillsStats = (): UseSkillsStatsReturn => {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    totalSkills: number;
+    featuredSkills: number;
+    categoriesCount: number;
+    avgProficiency: number;
+    avgExperience: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -172,7 +178,14 @@ export const useSkillsStats = (): UseSkillsStatsReturn => {
         return;
       }
 
-      setStats(result);
+      // Transform SkillStats to the expected shape
+      setStats({
+        totalSkills: result.totalSkills,
+        featuredSkills: typeof result.featuredSkills === 'number' ? result.featuredSkills : 0,
+        categoriesCount: result.skillsByCategory ? Object.keys(result.skillsByCategory).length : 0,
+        avgProficiency: typeof result.avgProficiency === 'number' ? result.avgProficiency : 0,
+        avgExperience: 0 // Placeholder, update if you have this info in result
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch stats';
       setError(errorMessage);

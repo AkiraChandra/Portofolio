@@ -1,21 +1,19 @@
-// src/components/sections/Projects/components/ProjectPreview.tsx (MOBILE OPTIMIZED)
+// File: src/components/sections/Projects/components/ProjectPreview.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Project } from "@/types/projects";
-import FileViewer from "@/utils/helpers/FileViewer";
+import SmartImage from "@/components/common/SmartImage"; // ✅ GANTI: FileViewer ke SmartImage
 import { useProjectSizes } from "@/hooks/common/useMediaQuery";
 
 interface ProjectPreviewProps {
   project: Project;
   isVisible: boolean;
-  containerWidth?: number;
 }
 
 const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   project,
   isVisible,
-  containerWidth = 400,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,7 +21,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
 
   // Get all responsive data from single hook
   const {
-    isMobile,
     isTablet,
     isSmallMobile,
     previewImageWidth,
@@ -131,11 +128,15 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     transition={{ duration: transitionDuration }}
                     className="w-full h-full"
                   >
-                    <FileViewer
-                      url={project.images[activeImageIndex].url}
+                    {/* ✅ OPTIMIZED: SmartImage untuk performance yang lebih baik */}
+                    <SmartImage
+                      src={project.images[activeImageIndex].url}
                       alt={project.images[activeImageIndex].alt || project.name}
-                      className="w-full h-full object-cover"
-                      showDownload={true} // Hide download on mobile for cleaner UI
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      priority={activeImageIndex === 0} // Priority untuk gambar pertama
+                      showPlaceholder={true}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -201,7 +202,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                     {tech}
                   </span>
                 ))}
-
               </div>
 
               {/* Action buttons - mobile optimized */}
@@ -256,12 +256,15 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
                       transition={{ duration: 0.3 }}
                       className="w-full h-full"
                     >
-                      <FileViewer
-                        url={project.images[activeImageIndex].url}
-                        alt={
-                          project.images[activeImageIndex].alt || project.name
-                        }
-                        className="w-full h-full object-cover"
+                      {/* ✅ OPTIMIZED: SmartImage untuk desktop/tablet */}
+                      <SmartImage
+                        src={project.images[activeImageIndex].url}
+                        alt={project.images[activeImageIndex].alt || project.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 50vw, 33vw"
+                        priority={activeImageIndex === 0}
+                        showPlaceholder={true}
                       />
                     </motion.div>
                   </AnimatePresence>

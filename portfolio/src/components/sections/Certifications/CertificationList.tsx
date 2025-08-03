@@ -9,8 +9,6 @@ import {
   Award, 
   Clock, 
   Star,
-  Building2,
-  Calendar,
   AlertTriangle,
   CheckCircle,
   X,
@@ -27,8 +25,6 @@ interface CertificationsListProps {
   showFilters?: boolean;
   showStats?: boolean;
   onCertificationSelect?: (certification: Certification) => void;
-  onToggleFeatured?: (id: string, featured: boolean) => void;
-  isAdmin?: boolean;
 }
 
 const CertificationsList: React.FC<CertificationsListProps> = ({
@@ -39,8 +35,6 @@ const CertificationsList: React.FC<CertificationsListProps> = ({
   showFilters = true,
   showStats = true,
   onCertificationSelect,
-  onToggleFeatured,
-  isAdmin = false
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<CertificationFilters>({});
@@ -134,15 +128,6 @@ const CertificationsList: React.FC<CertificationsListProps> = ({
   const organizations = useMemo(() => {
     const orgs = [...new Set(certifications.map(cert => cert.issuingOrganization))];
     return orgs.sort();
-  }, [certifications]);
-
-  // Get unique skills for filter
-  const allSkills = useMemo(() => {
-    const skillsSet = new Set<string>();
-    certifications.forEach(cert => {
-      cert.skills?.forEach(skill => skillsSet.add(skill));
-    });
-    return Array.from(skillsSet).sort();
   }, [certifications]);
 
   const clearFilters = () => {
@@ -290,7 +275,7 @@ const CertificationsList: React.FC<CertificationsListProps> = ({
                     </label>
                     <select
                       value={filters.status || 'all'}
-                      onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value as any }))}
+                      onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value as 'all' | 'active' | 'expired' | 'pending' }))}
                       className="w-full px-3 py-2 bg-background-primary dark:bg-background-primary-dark 
                                border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg 
                                text-text-primary dark:text-text-primary-dark text-sm"
@@ -401,7 +386,6 @@ const CertificationsList: React.FC<CertificationsListProps> = ({
                 <CertificationCard
                   certification={certification}
                   onViewDetails={onCertificationSelect}
-                  isAdmin={isAdmin}
                 />
               </motion.div>
             ))}

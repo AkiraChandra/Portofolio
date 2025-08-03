@@ -1,7 +1,7 @@
 // src/components/sections/Hero/Hero.tsx - ENHANCED PERFORMANCE (Design Unchanged)
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MovingStars from "@/components/ui/animations/Movingstars";
@@ -12,7 +12,8 @@ import AboutModal from "@/components/sections/Hero/components/AboutModal";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 
-const Hero: React.FC = () => {
+const Hero: React.FC = memo(() => {
+Hero.displayName = "Hero";
   // 🚀 OPTIMIZATION 1: Simplified media queries
   const isMobile = useMediaQuery("(max-width: 768px)");
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -268,13 +269,13 @@ const Hero: React.FC = () => {
 
                   <motion.h1 variants={optimizedAnimations.hero.child} className="mb-3">
                     <div className="flex items-baseline space-x-2 font-poppins font-bold text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark lg:space-x-4 lg:mb-1">
-                      <span className="whitespace-nowrap">Hi! I'm</span>
+                      <span className="whitespace-nowrap">Hi! I&apos;m</span>
                       <span className="dark:text-yellow-400 text-glow whitespace-nowrap">
                         {config.site.author}
                       </span>
                     </div>
                     <div className="max-w-60 sm:max-w-none lg:max-w-none xl:max-w-none mb-2 overflow-visible space-x-1 lg:space-x-2 font-poppins font-bold leading-none sm:leading-none lg:leading-none text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark">
-                      <span className="whitespace-nowrap">I'm a </span>
+                      <span className="whitespace-nowrap">I&apos;m a </span>
                       <TypeWriter words={words} />
                     </div>
                   </motion.h1>
@@ -298,7 +299,7 @@ const Hero: React.FC = () => {
                       whileTap={buttonTapAnimation}
                       className="px-6 sm:px-8 py-2.5 sm:py-3 lg:px-8 xl:px-10 lg:py-3 xl:py-4 bg-yellow-500 text-black rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2 text-sm sm:text-base lg:text-lg"
                     >
-                      Let's Connect
+                      Let&apos;s Connect
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
@@ -364,7 +365,6 @@ const Hero: React.FC = () => {
                     className="w-full h-full object-contain"
                     priority
                     loading="eager"
-                    quality={isMobile ? 75 : 90} // Reduced quality for mobile
                     placeholder="blur"
                     blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Qc7bk/wANVdVzBZFmgjmTM080OoKCKu0HS0T41LbZVPdS/I0gTthV"
                   />
@@ -410,6 +410,6 @@ const Hero: React.FC = () => {
       />
     </>
   );
-};
+});
 
 export default Hero;

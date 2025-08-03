@@ -16,13 +16,12 @@ import {
   X,
   RefreshCw
 } from 'lucide-react';
-import { useSkills, useSkillsStats } from '@/hooks/skills/useSkills';
+import { useSkills } from '@/hooks/skills/useSkills';
 import SkillCard from './components/SkillCard';
 import SkillPreviewCard from './components/SkillPreviewCard';
 import MovingStars from '@/components/ui/animations/Movingstars';
 import { 
   getCategoryIconName, 
-  getCategoryIconColors,
   renderCategoryIcon 
 } from '@/utils/skills/iconUtils';
 import type { SkillWithCategory } from '@/types/skills';
@@ -45,10 +44,6 @@ const FeaturedSkillItem = memo<{
     onSelect(skill);
   }, [skill, onSelect]);
 
-  const iconColors = useMemo(() => 
-    getCategoryIconColors(skill.category_name), 
-    [skill.category_name]
-  );
 
   return (
     <div className="flex-none w-56">
@@ -157,7 +152,7 @@ const CategoryButton = memo<{
 // MAIN COMPONENT
 // ==========================================
 
-const Skills: React.FC = () => {
+const Skills: React.FC = memo(() => {
   // State
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -173,8 +168,6 @@ const Skills: React.FC = () => {
     categories,
     loading,
     error,
-    filters,
-    setFilters,
     clearFilters,
     setSearchQuery,
     refetch
@@ -885,10 +878,10 @@ const Skills: React.FC = () => {
       </AnimatePresence>
     </section>
   );
-};
+});
 
 // Set display names for better debugging
 FeaturedSkillItem.displayName = 'FeaturedSkillItem';
 CategoryButton.displayName = 'CategoryButton';
-
+Skills.displayName = 'Skills';
 export default memo(Skills);

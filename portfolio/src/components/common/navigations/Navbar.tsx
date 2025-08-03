@@ -166,7 +166,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
                          rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-sm lg:text-base font-medium 
                          whitespace-nowrap min-w-[120px]"
               >
-                Let's Connect
+                Let&apos;s Connect
               </motion.button>
             </div>
           )}
@@ -267,7 +267,7 @@ const Navbar = ({ onNavigate }: NavbarProps = {}) => {
                              rounded-lg hover:bg-primary-dark dark:hover:bg-primary transition-colors text-base font-medium 
                              whitespace-nowrap min-w-[120px]"
                   >
-                    Let's Connect
+                    Let&apos;s Connect
                   </motion.button>
                 </div>
               </div>
