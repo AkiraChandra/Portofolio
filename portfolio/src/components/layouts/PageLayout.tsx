@@ -1,15 +1,16 @@
-// src/components/layouts/PageLayout.tsx (V2 - UNIFIED NAVIGATION SYSTEM)
-// THIS IS V2 - THE RECOMMENDED VERSION! 🏆
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/common/navigations/Navbar";
-import Hero from "@/components/sections/Hero/Hero";
-import Projects from "@/components/sections/Projects/Projects";
-import Experience from "@/components/sections/Experience";
-import Certifications from "@/components/sections/Certifications/Certifications";
-import Skills from "@/components/sections/Skills/Skills";
+import { 
+  LazyHero,
+  LazyProjects, 
+  LazySkills, 
+  LazyExperience, 
+  LazyCertifications,
+  LazySection 
+} from '@/components/LazyComponents';
 
 interface PageLayoutProps {
   defaultSection?:
@@ -37,18 +38,15 @@ export default function PageLayout({
   const [currentSection, setCurrentSection] =
     useState<SectionId>(defaultSection);
 
-  // SOLUTION 1: Unified navigation function (same as navbar!)
   const navigateToSection = (sectionId: SectionId) => {
     const section = document.getElementById(sectionId);
 
     if (section) {
-      // EXACT same approach as navbar - this is why it's smooth!
       section.scrollIntoView({
-        behavior: "smooth", // Same as navbar
-        block: "start", // Same as navbar
+        behavior: "smooth",
+        block: "start",
       });
 
-      // Update URL and state
       const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
       if (sectionConfig) {
         window.history.replaceState(null, "", sectionConfig.path);
@@ -57,34 +55,28 @@ export default function PageLayout({
     }
   };
 
-  // SOLUTION 2: Initialize with same approach as navbar
   useEffect(() => {
-    // Disable browser scroll restoration
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
   }, []);
 
-  // SOLUTION 3: Handle refresh navigation (navbar-style)
   useEffect(() => {
     if (defaultSection === "home") return;
 
-    // Use same timing and approach as navbar
     const timer = setTimeout(() => {
       navigateToSection(defaultSection);
-    }, 50); // Minimal delay, similar to navbar's immediate response
+    }, 50);
 
     return () => clearTimeout(timer);
   }, [defaultSection]);
 
-  // SOLUTION 4: Simple scroll tracking (only for URL updates)
   useEffect(() => {
     let scrollTimer: NodeJS.Timeout;
 
     const handleScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
 
-      // Minimal delay for smooth URL updates
       scrollTimer = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
@@ -93,7 +85,6 @@ export default function PageLayout({
         const viewportHeight = container.clientHeight;
         const scrollCenter = scrollTop + viewportHeight * 0.5;
 
-        // Find active section
         let activeSection: SectionId = "home";
 
         for (const section of SECTIONS) {
@@ -109,7 +100,6 @@ export default function PageLayout({
           }
         }
 
-        // Update URL only when section changes
         if (activeSection !== currentSection) {
           setCurrentSection(activeSection);
           const section = SECTIONS.find((s) => s.id === activeSection);
@@ -132,7 +122,6 @@ export default function PageLayout({
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      {/* Pass navigation function to Navbar for consistency */}
       <Navbar
         onNavigate={(path) => {
           const section = SECTIONS.find((s) => s.path === path);
@@ -152,40 +141,36 @@ export default function PageLayout({
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {/* Hero Section */}
-        <motion.section
+        {/* ✅ HERO - Critical, but optimized */}
+        <section
           id="home"
           className="flex-shrink-0 h-screen"
           style={{
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
-          <Hero />
-        </motion.section>
+          <LazySection>
+            <LazyHero />
+          </LazySection>
+        </section>
 
-        {/* Projects Section */}
-        <motion.section
+        {/* ✅ PROJECTS - Lazy loaded */}
+        <section
           id="projects"
           className="flex-shrink-0 h-screen"
           style={{
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
-          <Projects />
-        </motion.section>
+          <LazySection>
+            <LazyProjects />
+          </LazySection>
+        </section>
 
-        {/* Experience Section - Isolated Overflow */}
-        <motion.section
+        {/* ✅ EXPERIENCE - Lazy loaded with isolation */}
+        <section
           id="experience"
           className="flex-shrink-0 relative h-screen"
           style={{
@@ -193,20 +178,18 @@ export default function PageLayout({
             scrollSnapStop: "always",
             contain: "layout style paint",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden">
             <div className="h-full overflow-y-auto">
-              <Experience />
+              <LazySection>
+                <LazyExperience />
+              </LazySection>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        {/* Certifications Section - Isolated Overflow */}
-        <motion.section
+        {/* ✅ CERTIFICATIONS - Lazy loaded with isolation */}
+        <section
           id="certifications"
           className="flex-shrink-0 relative h-screen"
           style={{
@@ -214,20 +197,18 @@ export default function PageLayout({
             scrollSnapStop: "always",
             contain: "layout style paint",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto">
-              <Certifications />
+              <LazySection>
+                <LazyCertifications />
+              </LazySection>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        {/* Skills Section - Clean */}
-        <motion.section
+        {/* ✅ SKILLS - Lazy loaded with isolation */}
+        <section
           id="skills"
           className="flex-shrink-0 relative h-screen"
           style={{
@@ -236,17 +217,15 @@ export default function PageLayout({
             contain: "layout style paint",
             zIndex: 1,
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto">
-              <Skills />
+              <LazySection>
+                <LazySkills />
+              </LazySection>
             </div>
           </div>
-        </motion.section>
+        </section>
       </div>
     </main>
   );
