@@ -13,8 +13,73 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Portfolio",
-  description: "Personal portfolio website",
+  title: {
+    default: "Akira Chandra - Full Stack Developer Portfolio",
+    template: "%s | Akira Chandra",
+  },
+  description:
+    "Full Stack Developer specializing in modern web technologies and creative solutions. Experienced in React, Next.js, TypeScript, and mobile development.",
+  keywords: [
+    "Full Stack Developer",
+    "Web Developer",
+    "React Developer",
+    "Next.js Developer",
+    "TypeScript",
+    "JavaScript",
+    "Portfolio",
+    "Akira Chandra",
+  ],
+  authors: [{ name: "Akira Chandra" }],
+  creator: "Akira Chandra",
+  publisher: "Akira Chandra",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://www.akirachandra.my.id"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://www.akirachandra.my.id",
+    title: "Akira Chandra - Full Stack Developer Portfolio",
+    description:
+      "Full Stack Developer specializing in modern web technologies and creative solutions.",
+    siteName: "Akira Chandra Portfolio",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Akira Chandra Portfolio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Akira Chandra - Full Stack Developer Portfolio",
+    description:
+      "Full Stack Developer specializing in modern web technologies and creative solutions.",
+    images: ["/og-image.png"],
+    creator: "@akirachandra",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code", // Replace with actual code
+  },
 };
 
 export default function RootLayout({
