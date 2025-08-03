@@ -1,4 +1,3 @@
-// File: next.config.ts - FIXED TO REMOVE POLYFILLS
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -30,9 +29,10 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
-  webpack: (config, { dev, isServer }) => {
-    // ✅ CRITICAL: Disable Node.js polyfills
+  webpack: (config: any, { dev, isServer }: any) => {
+    // ✅ CRITICAL FIX: Disable Node.js polyfills
     if (!isServer) {
+      config.resolve = config.resolve || {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -41,8 +41,8 @@ const nextConfig: NextConfig = {
         crypto: false,
         path: false,
         os: false,
-        process: false,  // ✅ Remove process polyfill
-        buffer: false,   // ✅ Remove buffer polyfill
+        process: false,
+        buffer: false,
         stream: false,
         util: false,
         url: false,
@@ -54,26 +54,23 @@ const nextConfig: NextConfig = {
       };
     }
 
-    // ✅ OPTIMIZED: Better chunk splitting
     if (!dev && !isServer) {
+      config.optimization = config.optimization || {};
       config.optimization.splitChunks = {
         chunks: 'all',
-        maxInitialRequests: 10,        // Increase from 3
+        maxInitialRequests: 15,
         maxAsyncRequests: 30,
-        minSize: 20000,                // Increase min size
-        maxSize: 100000,               // Decrease max size
+        minSize: 20000,        
+        maxSize: 80000,
         cacheGroups: {
-          // ✅ React Core (smallest possible)
           react: {
             test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
             name: 'react-core',
             chunks: 'all',
             priority: 50,
             enforce: true,
-            maxSize: 40000,  // Keep React small
+            maxSize: 50000,
           },
-          
-          // ✅ React Scheduler (separate)
           scheduler: {
             test: /[\\/]node_modules[\\/]scheduler[\\/]/,
             name: 'react-scheduler',
@@ -81,8 +78,6 @@ const nextConfig: NextConfig = {
             priority: 45,
             enforce: true,
           },
-          
-          // ✅ JSX Runtime (separate)
           jsx: {
             test: /[\\/]node_modules[\\/]react[\\/]jsx-runtime/,
             name: 'jsx-runtime',
@@ -90,8 +85,6 @@ const nextConfig: NextConfig = {
             priority: 44,
             enforce: true,
           },
-          
-          // ✅ Next.js runtime
           next: {
             test: /[\\/]node_modules[\\/]next[\\/]/,
             name: 'next-runtime',
@@ -99,17 +92,13 @@ const nextConfig: NextConfig = {
             priority: 40,
             maxSize: 60000,
           },
-          
-          // ✅ Framer Motion (async only)
           framer: {
             test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
             name: 'framer-motion',
-            chunks: 'async',  // Never in initial bundle
+            chunks: 'async',
             priority: 35,
             enforce: true,
           },
-          
-          // ✅ UI Libraries
           ui: {
             test: /[\\/]node_modules[\\/](lucide-react)[\\/]/,
             name: 'ui-libs',
@@ -117,8 +106,6 @@ const nextConfig: NextConfig = {
             priority: 30,
             maxSize: 50000,
           },
-          
-          // ✅ Small vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
@@ -130,7 +117,6 @@ const nextConfig: NextConfig = {
         }
       };
       
-      // ✅ Tree shaking
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
       config.optimization.moduleIds = 'deterministic';
