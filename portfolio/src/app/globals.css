@@ -1,70 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ==============================================
-   OPTIMIZED MOBILE SCROLL SOLUTION
+   BASE THEME VARIABLES
+   ============================================== */
+@layer base {
+  :root {
+    /* Light theme colors */
+    --color-primary: 243 235 0;
+    --color-primary-dark: 246 176 13;
+
+    --color-background-primary: 255 255 255;
+    --color-background-secondary: 249 250 251;
+    --color-background-tertiary: 243 244 246;
+
+    --color-text-primary: 23 23 23;
+    --color-text-secondary: 55 65 81;
+    --color-text-tertiary: 107 114 128;
+
+    --color-border-primary: 229 231 235;
+    --color-border-secondary: 209 213 219;
+
+    --color-glow-primary: 243 235 0;
+    --color-glow-secondary: 147 51 234;
+
+    /* Glow Effects - Light Mode */
+    --color-effects-outer: 2 50 126;
+    --color-effects-middle: 59 130 246;
+    --color-effects-inner: 96 165 250;
+
+    --glow-outer: rgba(2, 50, 126, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.5;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --color-primary: 246 176 13;
+    --color-primary-dark: 229 160 12;
+    /* Dark theme colors - Deep Purple Cosmic Theme */
+    --color-background-primary: 36 8 50;
+    --color-background-secondary: 25 12 61;
+    --color-background-tertiary: 35 18 82;
+
+    --color-text-primary: 237 237 237;
+    --color-text-secondary: 209 213 219;
+    --color-text-tertiary: 156 163 175;
+
+    --color-border-primary: 55 65 81;
+    --color-border-secondary: 75 85 99;
+
+    --color-glow-primary: 246 176 13;
+    --color-glow-secondary: 124 58 237;
+
+    /* Glow Effects - Dark Mode */
+    --color-effects-outer: 2 50 126;
+    --color-effects-middle: 59 130 246;
+    --color-effects-inner: 96 165 250;
+
+    --glow-outer: rgba(205, 4, 255, 0.05);
+    --glow-middle: rgba(132, 0, 255, 0.08);
+    --glow-inner: rgba(96, 165, 250, 0.1);
+
+    --moon-glow-color: 246 176 13;
+    --moon-glow-opacity: 0.8;
+  }
+}
+
+/* ==============================================
+   UNIFIED SCROLL SYSTEM - SIMPLIFIED & CLEAN
    ============================================== */
 
-/* Base scroll behavior - simplified */
+/* Base - Only one source of truth */
 html {
-  scroll-behavior: auto; /* Always start with auto for mobile */
+  scroll-behavior: auto; /* Start with auto for all devices */
+  overflow-x: hidden;
 }
 
 body {
   overflow-x: hidden;
+  /* Remove any default margins/padding that could cause double scroll */
   margin: 0;
   padding: 0;
 }
 
 /* ==============================================
-   MOBILE SCROLL OPTIMIZATION (0-768px)
+   MOBILE-FIRST SCROLL APPROACH
    ============================================== */
 
+/* Mobile (0-768px) - Natural scrolling, no snap */
+/* Fix untuk bug mobile scroll timeout */
 @media (max-width: 768px) {
-  /* Remove all smooth scroll behavior on mobile */
-  html, * {
-    scroll-behavior: auto !important;
+  /* Ganti overscroll-behavior untuk menghindari delay */
+  .mobile-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+    touch-action: pan-y;
+    scroll-behavior: auto;
+    
+    /* Tambahkan properti untuk mencegah stuck scroll */
+    overflow-anchor: none;
+    scroll-snap-type: none;
   }
   
-  /* Mobile container optimizations */
-  .mobile-scroll-container,
+  /* Fix khusus untuk timeline container */
   .h-full.overflow-y-auto {
-    /* Essential mobile scroll properties */
+    overscroll-behavior-y: auto !important;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: auto;
-    touch-action: pan-y;
     
-    /* Remove conflicts */
-    scroll-behavior: auto !important;
-    scroll-snap-type: none !important;
-    
-    /* Hardware acceleration without conflicts */
+    /* Prevent momentum scroll conflicts */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    
-    /* Prevent layout shifts */
-    overflow-anchor: none;
-    contain: layout style paint;
   }
   
-  /* Remove transitions that cause delays */
+  /* Tambahkan smooth transition tanpa delay */
   .mobile-scroll-smooth {
-    transition: none !important;
-    scroll-behavior: auto !important;
+    transition: scroll-behavior 0s;
+    scroll-behavior: auto;
   }
   
-  /* iOS specific fixes */
+  /* iOS Safari specific fix */
   .ios-scroll-fix {
     -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
     overscroll-behavior: auto;
-    /* Remove transform conflicts */
-  }
-  
-  /* Timeline container specific fixes */
-  .timeline-container {
-    scroll-behavior: auto !important;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    
-    /* Immediate scroll without animation on mobile */
-    transition: none !important;
   }
 }
 
@@ -77,12 +141,41 @@ body {
     scroll-behavior: smooth;
   }
   
-  /* Moderate optimization for tablets */
-  .tablet-scroll-container {
-    scroll-behavior: smooth;
-    overscroll-behavior: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+/* Ganti overscroll-behavior untuk menghindari delay */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+  touch-action: pan-y;
+  scroll-behavior: auto;
+  
+  /* Tambahkan properti untuk mencegah stuck scroll */
+  overflow-anchor: none;
+  scroll-snap-type: none;
+}
+
+/* Fix khusus untuk timeline container */
+.h-full.overflow-y-auto {
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent momentum scroll conflicts */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Tambahkan smooth transition tanpa delay */
+.mobile-scroll-smooth {
+  transition: scroll-behavior 0s;
+  scroll-behavior: auto;
+}
+
+/* iOS Safari specific fix */
+.ios-scroll-fix {
+  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  overscroll-behavior: auto;
+}
 }
 
 /* ==============================================
@@ -94,10 +187,9 @@ body {
     scroll-behavior: smooth;
   }
   
-  /* Full smooth scroll experience on desktop */
   .desktop-scroll-container {
-    scroll-behavior: smooth;
     scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
     overscroll-behavior: contain;
   }
   
@@ -108,25 +200,171 @@ body {
 }
 
 /* ==============================================
-   ACCESSIBILITY & PERFORMANCE
+   CUSTOM SCROLLBAR (DESKTOP ONLY)
    ============================================== */
 
-/* Respect user preferences */
-@media (prefers-reduced-motion: reduce) {
-  html, * {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background-tertiary dark:bg-background-tertiary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary dark:bg-primary-dark;
   }
 }
 
-/* Performance optimizations */
-.scroll-container {
-  will-change: auto; /* Remove will-change on mobile */
+/* ==============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================== */
+
+/* GPU acceleration for smooth performance */
+.scroll-optimized {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-@media (min-width: 1025px) {
-  .scroll-container {
-    will-change: scroll-position;
+/* Container performance */
+.scroll-container {
+  will-change: scroll-position;
+  contain: layout style;
+}
+
+/* ==============================================
+   REDUCED MOTION SUPPORT
+   ============================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html, *, .scroll-container {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==============================================
+   UTILITY CLASSES
+   ============================================== */
+
+@layer utilities {
+  /* Clean utility for hiding scrollbars */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text glow effects */
+  .text-glow {
+    text-shadow: 0 0 3px rgb(var(--color-glow-primary) / 0.7),
+      0 0 4px rgb(var(--color-glow-primary) / 0.7),
+      0 0 15px rgb(var(--color-glow-primary) / 0.7);
+  }
+
+  .text-glow-sm {
+    text-shadow: 0 0 2px rgb(var(--color-glow-primary) / 0.7),
+      0 0 4px rgb(var(--color-glow-primary) / 0.7),
+      0 0 6px rgb(var(--color-glow-primary) / 0.7);
+  }
+
+  .text-glow-lg {
+    text-shadow: 0 0 5px rgb(var(--color-glow-primary) / 0.7),
+      0 0 20px rgb(var(--color-glow-primary) / 0.7),
+      0 0 25px rgb(var(--color-glow-primary) / 0.7);
+  }
+}
+
+/* ==============================================
+   ANIMATIONS - SIMPLIFIED FOR PERFORMANCE
+   ============================================== */
+
+@keyframes star {
+  0% {
+    transform: translateX(-100px) translateY(100px) rotate(-45deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.5;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(200px) translateY(-200px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Animation classes with performance optimization */
+.animate-star {
+  opacity: 0;
+  animation: star 6s linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Pause animations on mobile for better performance */
+@media (max-width: 768px) {
+  .animate-star {
+    animation-duration: 8s; /* Slower on mobile */
+  }
+}
+
+/* ==============================================
+   DEVICE SPECIFIC FIXES
+   ============================================== */
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .ios-scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  
+  /* Fix iOS Safari 100vh issue */
+  .ios-viewport-fix {
+    height: -webkit-fill-available;
+  }
+}
+
+/* ==============================================
+   LAYOUT UTILITIES
+   ============================================== */
+
+/* Section utilities */
+.section-spacing {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+/* Navbar offset for anchor scrolling */
+.section-offset {
+  scroll-margin-top: 5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-offset {
+    scroll-margin-top: 6rem;
   }
 }
