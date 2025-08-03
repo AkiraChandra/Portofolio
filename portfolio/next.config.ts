@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
     if (!dev && !isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        'framer-motion': 'framer-motion/dist/framer-motion',
+      'framer-motion': 'framer-motion',
       }
     }
     return config
