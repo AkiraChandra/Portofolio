@@ -1,26 +1,49 @@
-// src/services/skillsService.ts
+// src/services/skillsService.ts - LEAN VERSION (Hanya Method yang Dipakai)
 
 import { supabase } from '@/lib/supabase';
 import type {
-  Skill,
-  SkillCategory,
-  SkillWithCategory,
-  SkillsByCategory,
   SkillFilters,
   SkillSearchParams,
   SkillsResponse,
-  SkillCategoriesResponse,
-  SkillsByCategoryResponse,
-  ExperienceSkill
+  SkillCategoriesResponse
 } from '@/types/skills';
 
 export class SkillsService {
+  // Cache untuk performance
+  private static cache = new Map<string, { data: any; timestamp: number }>();
+  private static CACHE_TTL = 5 * 60 * 1000; // 5 menit
+
   // ==========================================
-  // SKILL CATEGORIES
+  // CACHE MANAGEMENT
+  // ==========================================
+  
+  private static getFromCache<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      return cached.data;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private static setCache(key: string, data: any): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  static clearCache(): void {
+    this.cache.clear();
+  }
+
+  // ==========================================
+  // SKILL CATEGORIES - REQUIRED
   // ==========================================
   
   static async getSkillCategories(): Promise<SkillCategoriesResponse> {
     try {
+      const cacheKey = 'skill_categories';
+      const cached = this.getFromCache<SkillCategoriesResponse>(cacheKey);
+      if (cached) return cached;
+
       const { data, error, count } = await supabase
         .from('skill_categories')
         .select('*')
@@ -31,10 +54,10 @@ export class SkillsService {
         return { data: [], count: 0, error: error.message };
       }
 
-      return {
-        data: data || [],
-        count: count || 0
-      };
+      const result = { data: data || [], count: count || 0 };
+      this.setCache(cacheKey, result);
+      return result;
+
     } catch (error) {
       console.error('Unexpected error fetching skill categories:', error);
       return {
@@ -45,28 +68,8 @@ export class SkillsService {
     }
   }
 
-  static async getSkillCategoryById(id: string): Promise<SkillCategory | null> {
-    try {
-      const { data, error } = await supabase
-        .from('skill_categories')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching skill category:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Unexpected error fetching skill category:', error);
-      return null;
-    }
-  }
-
   // ==========================================
-  // SKILLS
+  // SKILLS - MAIN METHOD
   // ==========================================
 
   static async getSkills(params: SkillSearchParams = {}): Promise<SkillsResponse> {
@@ -75,58 +78,25 @@ export class SkillsService {
         .from('skills_with_categories')
         .select('*', { count: 'exact' });
 
-      // Apply search query
+      // Search optimization
       if (params.query) {
-        query = query.or(`name.ilike.%${params.query}%,description.ilike.%${params.query}%,category_name.ilike.%${params.query}%`);
+        const searchTerm = params.query.trim();
+        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,category_name.ilike.%${searchTerm}%`);
       }
 
       // Apply filters
       if (params.filters) {
-        const { filters } = params;
-        
-        if (filters.category_id) {
-          query = query.eq('category_id', filters.category_id);
-        }
-        
-        if (filters.proficiency_level) {
-          query = query.gte('proficiency_level', filters.proficiency_level);
-        }
-        
-        if (filters.is_featured !== undefined) {
-          query = query.eq('is_featured', filters.is_featured);
-        }
-        
-        if (filters.years_experience_min) {
-          query = query.gte('years_of_experience', filters.years_experience_min);
-        }
-        
-        if (filters.years_experience_max) {
-          query = query.lte('years_of_experience', filters.years_experience_max);
-        }
-        
-        if (filters.has_certification !== undefined) {
-          if (filters.has_certification) {
-            query = query.not('certification_name', 'is', null);
-          } else {
-            query = query.is('certification_name', null);
-          }
-        }
+        this.applyFilters(query, params.filters);
       }
 
       // Apply sorting
-      const sortBy = params.sort_by || 'category_order';
-      const sortOrder = params.sort_order || 'asc';
-      
-      if (sortBy === 'category_order') {
-        query = query.order('category_order', { ascending: sortOrder === 'asc' })
-                    .order('skill_order', { ascending: true });
-      } else {
-        query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-      }
+      this.applySorting(query, params.sort_by, params.sort_order);
 
       // Apply pagination
-      if (params.limit) {
-        query = query.range(params.offset || 0, (params.offset || 0) + params.limit - 1);
+      if (params.limit && params.limit > 0) {
+        const start = params.offset || 0;
+        const end = start + params.limit - 1;
+        query = query.range(start, end);
       }
 
       const { data, error, count } = await query;
@@ -136,10 +106,8 @@ export class SkillsService {
         return { data: [], count: 0, error: error.message };
       }
 
-      return {
-        data: data || [],
-        count: count || 0
-      };
+      return { data: data || [], count: count || 0 };
+
     } catch (error) {
       console.error('Unexpected error fetching skills:', error);
       return {
@@ -150,264 +118,117 @@ export class SkillsService {
     }
   }
 
+  // Helper methods untuk getSkills
+  private static applyFilters(query: any, filters: SkillFilters): void {
+    if (filters.category_id) {
+      query = query.eq('category_id', filters.category_id);
+    }
+    if (filters.proficiency_level) {
+      query = query.gte('proficiency_level', filters.proficiency_level);
+    }
+    if (filters.is_featured !== undefined) {
+      query = query.eq('is_featured', filters.is_featured);
+    }
+    if (filters.years_experience_min) {
+      query = query.gte('years_of_experience', filters.years_experience_min);
+    }
+    if (filters.years_experience_max) {
+      query = query.lte('years_of_experience', filters.years_experience_max);
+    }
+    if (filters.has_certification !== undefined) {
+      if (filters.has_certification) {
+        query = query.not('certification_name', 'is', null);
+      } else {
+        query = query.is('certification_name', null);
+      }
+    }
+  }
+
+  private static applySorting(query: any, sortBy?: string, sortOrder?: string): void {
+    const actualSortBy = sortBy || 'category_order';
+    const actualSortOrder = sortOrder || 'asc';
+    
+    if (actualSortBy === 'category_order') {
+      query = query
+        .order('category_order', { ascending: actualSortOrder === 'asc' })
+        .order('display_order', { ascending: true });
+    } else {
+      query = query.order(actualSortBy, { ascending: actualSortOrder === 'asc' });
+    }
+  }
+
+  // ==========================================
+  // FEATURED SKILLS - REQUIRED
+  // ==========================================
+
   static async getFeaturedSkills(): Promise<SkillsResponse> {
-    return this.getSkills({
+    const cacheKey = 'featured_skills';
+    const cached = this.getFromCache<SkillsResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.getSkills({
       filters: { is_featured: true },
       sort_by: 'proficiency_level',
       sort_order: 'desc'
     });
-  }
 
-  static async getSkillsByCategory(): Promise<SkillsByCategoryResponse> {
-    try {
-      const { data, error, count } = await supabase
-        .from('skills_by_category')
-        .select('*')
-        .order('category_order', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching skills by category:', error);
-        return { data: [], count: 0, error: error.message };
-      }
-
-      return {
-        data: data || [],
-        count: count || 0
-      };
-    } catch (error) {
-      console.error('Unexpected error fetching skills by category:', error);
-      return {
-        data: [],
-        count: 0,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
+    if (!result.error) {
+      this.setCache(cacheKey, result);
     }
-  }
 
-  static async getSkillById(id: string): Promise<SkillWithCategory | null> {
-    try {
-      const { data, error } = await supabase
-        .from('skills_with_categories')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching skill:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Unexpected error fetching skill:', error);
-      return null;
-    }
-  }
-
-  static async getSkillsByIds(ids: string[]): Promise<SkillWithCategory[]> {
-    try {
-      const { data, error } = await supabase
-        .from('skills_with_categories')
-        .select('*')
-        .in('id', ids)
-        .order('category_order', { ascending: true })
-        .order('skill_order', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching skills by IDs:', error);
-        return [];
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Unexpected error fetching skills by IDs:', error);
-      return [];
-    }
+    return result;
   }
 
   // ==========================================
-  // EXPERIENCE SKILLS
-  // ==========================================
-
-  static async getSkillsByExperienceId(experienceId: string): Promise<SkillWithCategory[]> {
-    try {
-      const { data, error } = await supabase
-        .from('experience_skills')
-        .select(`
-          skill_id,
-          skills_with_categories (*)
-        `)
-        .eq('experience_id', experienceId);
-
-      if (error) {
-        console.error('Error fetching skills for experience:', error);
-        return [];
-      }
-
-      // Extract skills from the joined data
-      const skills = data?.map((item: any) => item.skills_with_categories).filter(Boolean) || [];
-      
-      return skills;
-    } catch (error) {
-      console.error('Unexpected error fetching skills for experience:', error);
-      return [];
-    }
-  }
-
-  static async getExperiencesBySkillId(skillId: string): Promise<string[]> {
-    try {
-      const { data, error } = await supabase
-        .from('experience_skills')
-        .select('experience_id')
-        .eq('skill_id', skillId);
-
-      if (error) {
-        console.error('Error fetching experiences for skill:', error);
-        return [];
-      }
-
-      return data?.map(item => item.experience_id) || [];
-    } catch (error) {
-      console.error('Unexpected error fetching experiences for skill:', error);
-      return [];
-    }
-  }
-
-  // ==========================================
-  // STATISTICS
+  // STATISTICS - REQUIRED
   // ==========================================
 
   static async getSkillsStats() {
     try {
-      const [skillsResult, categoriesResult] = await Promise.all([
-        this.getSkills(),
-        this.getSkillCategories()
-      ]);
+      const cacheKey = 'skills_stats';
+      const cached = this.getFromCache<any>(cacheKey);
+      if (cached) return cached;
 
-      const skills = skillsResult.data;
-      const categories = categoriesResult.data;
+      // Single query untuk performance
+      const { data: skillsData, error } = await supabase
+        .from('skills_with_categories')
+        .select('proficiency_level, years_of_experience, is_featured, category_id');
 
-      const totalSkills = skills.length;
-      const featuredSkills = skills.filter(skill => skill.is_featured).length;
-      const categoriesCount = categories.length;
+      if (error) {
+        console.error('Error fetching skills stats:', error);
+        return null;
+      }
+
+      const { data: categoriesData } = await supabase
+        .from('skill_categories')
+        .select('id');
+
+      const totalSkills = skillsData?.length || 0;
+      const featuredSkills = skillsData?.filter(skill => skill.is_featured).length || 0;
+      const categoriesCount = categoriesData?.length || 0;
       
       const avgProficiency = totalSkills > 0 
-        ? skills.reduce((sum, skill) => sum + skill.proficiency_level, 0) / totalSkills 
+        ? skillsData.reduce((sum: number, skill: any) => sum + skill.proficiency_level, 0) / totalSkills 
         : 0;
       
       const avgExperience = totalSkills > 0 
-        ? skills.reduce((sum, skill) => sum + skill.years_of_experience, 0) / totalSkills 
+        ? skillsData.reduce((sum: number, skill: any) => sum + skill.years_of_experience, 0) / totalSkills 
         : 0;
 
-      // Additional stats
-      const skillsByProficiency = skills.reduce((acc, skill) => {
-        acc[skill.proficiency_level] = (acc[skill.proficiency_level] || 0) + 1;
-        return acc;
-      }, {} as Record<number, number>);
-
-      const skillsByCategory = categories.map(category => ({
-        category: category.name,
-        count: skills.filter(skill => skill.category_id === category.id).length,
-        color: category.color
-      }));
-
-      const recentlyUsed = skills
-        .filter(skill => skill.last_used_date)
-        .sort((a, b) => new Date(b.last_used_date).getTime() - new Date(a.last_used_date).getTime())
-        .slice(0, 5);
-
-      const withCertifications = skills.filter(skill => skill.certification_name).length;
-
-      return {
+      const stats = {
         totalSkills,
         featuredSkills,
         categoriesCount,
         avgProficiency: Math.round(avgProficiency * 10) / 10,
-        avgExperience: Math.round(avgExperience * 10) / 10,
-        skillsByProficiency,
-        skillsByCategory,
-        recentlyUsed,
-        withCertifications
+        avgExperience: Math.round(avgExperience * 10) / 10
       };
+
+      this.setCache(cacheKey, stats);
+      return stats;
+
     } catch (error) {
       console.error('Error fetching skills stats:', error);
-      return {
-        totalSkills: 0,
-        featuredSkills: 0,
-        categoriesCount: 0,
-        avgProficiency: 0,
-        avgExperience: 0,
-        skillsByProficiency: {},
-        skillsByCategory: [],
-        recentlyUsed: [],
-        withCertifications: 0
-      };
+      return null;
     }
-  }
-
-  // ==========================================
-  // SEARCH HELPERS
-  // ==========================================
-
-  static async searchSkills(query: string, limit = 10): Promise<SkillWithCategory[]> {
-    try {
-      const result = await this.getSkills({
-        query,
-        limit,
-        sort_by: 'proficiency_level',
-        sort_order: 'desc'
-      });
-
-      return result.data;
-    } catch (error) {
-      console.error('Error searching skills:', error);
-      return [];
-    }
-  }
-
-  static async getTopSkills(limit = 10): Promise<SkillWithCategory[]> {
-    try {
-      const result = await this.getSkills({
-        filters: { proficiency_level: 4 },
-        limit,
-        sort_by: 'proficiency_level',
-        sort_order: 'desc'
-      });
-
-      return result.data;
-    } catch (error) {
-      console.error('Error fetching top skills:', error);
-      return [];
-    }
-  }
-
-  // ==========================================
-  // UTILITY METHODS
-  // ==========================================
-
-  static getProficiencyLabel(level: number): string {
-    const labels = {
-      1: 'Beginner',
-      2: 'Novice', 
-      3: 'Intermediate',
-      4: 'Advanced',
-      5: 'Expert'
-    };
-    return labels[level as keyof typeof labels] || 'Unknown';
-  }
-
-  static getExperienceCategory(years: number): string {
-    if (years < 0.5) return 'New';
-    if (years < 1) return 'Fresh';
-    if (years < 2) return 'Junior';
-    if (years < 3) return 'Mid-level';
-    return 'Senior';
-  }
-
-  static formatYearsExperience(years: number): string {
-    if (years === 0) return 'New';
-    if (years < 1) return `${Math.round(years * 12)} months`;
-    if (years === 1) return '1 year';
-    return `${Math.round(years * 10) / 10} years`;
   }
 }

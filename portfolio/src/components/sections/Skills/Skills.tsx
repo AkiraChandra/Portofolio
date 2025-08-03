@@ -1,7 +1,7 @@
-// src/components/sections/Skills/Skills.tsx - Simplified Compact Version
+// src/components/sections/Skills/Skills.tsx - HIGH PERFORMANCE VERSION
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -14,62 +14,152 @@ import {
   BarChart3,
   ChevronDown,
   X,
-  Code,
-  Globe,
-  Smartphone,
-  Database,
-  Cloud,
-  Layers,
-  Settings,
-  Users,
-  Award,
   RefreshCw
 } from 'lucide-react';
 import { useSkills, useSkillsStats } from '@/hooks/skills/useSkills';
 import SkillCard from './components/SkillCard';
-import FeaturedSkillsCarousel from './components/FeaturedSkillsCarousel';
 import SkillPreviewCard from './components/SkillPreviewCard';
 import MovingStars from '@/components/ui/animations/Movingstars';
-import type { SkillWithCategory, SkillFilters } from '@/types/skills';
+import { 
+  getCategoryIconName, 
+  getCategoryIconColors,
+  renderCategoryIcon 
+} from '@/utils/skills/iconUtils';
+import type { SkillWithCategory } from '@/types/skills';
 
+// Types
 type ViewMode = 'grid' | 'list';
 type SortBy = 'proficiency' | 'experience' | 'name' | 'category';
 
-// Icon mapping untuk categories
-const CATEGORY_ICONS = {
-  'Code': Code,
-  'Globe': Globe,
-  'Smartphone': Smartphone,
-  'Database': Database,
-  'Cloud': Cloud,
-  'Layers': Layers,
-  'Settings': Settings,
-  'Users': Users,
-  'Award': Award,
-} as const;
+// ==========================================
+// PERFORMANCE OPTIMIZATIONS
+// ==========================================
 
-// Function to map category names to icon names
-const getCategoryIconName = (categoryName: string): string => {
-  const lowerName = categoryName.toLowerCase();
-  if (lowerName.includes('programming') || lowerName.includes('language')) return 'Code';
-  if (lowerName.includes('web') || lowerName.includes('frontend') || lowerName.includes('backend')) return 'Globe';
-  if (lowerName.includes('mobile') || lowerName.includes('app')) return 'Smartphone';
-  if (lowerName.includes('database') || lowerName.includes('storage')) return 'Database';
-  if (lowerName.includes('cloud') || lowerName.includes('devops')) return 'Cloud';
-  if (lowerName.includes('framework') || lowerName.includes('library')) return 'Layers';
-  if (lowerName.includes('tool') || lowerName.includes('software')) return 'Settings';
-  if (lowerName.includes('soft') || lowerName.includes('management')) return 'Users';
-  if (lowerName.includes('certification') || lowerName.includes('certificate')) return 'Award';
-  return 'Code';
-};
+// Memoized Featured Skill Item Component
+const FeaturedSkillItem = memo<{
+  skill: SkillWithCategory;
+  index: number;
+  onSelect: (skill: SkillWithCategory) => void;
+}>(({ skill, index, onSelect }) => {
+  const handleClick = useCallback(() => {
+    onSelect(skill);
+  }, [skill, onSelect]);
 
-const getCategoryIcon = (iconName: string) => {
-  const IconComponent = CATEGORY_ICONS[iconName as keyof typeof CATEGORY_ICONS] || Code;
-  return <IconComponent className="w-full h-full" />;
-};
+  const iconColors = useMemo(() => 
+    getCategoryIconColors(skill.category_name), 
+    [skill.category_name]
+  );
+
+  return (
+    <div className="flex-none w-56">
+      <div 
+        className="bg-gradient-to-br from-background-secondary/40 to-background-tertiary/20 
+                  dark:from-background-secondary-dark/40 dark:to-background-tertiary-dark/20 
+                  backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 
+                  rounded-lg p-4 h-32 cursor-pointer hover:border-primary/50 dark:hover:border-primary-dark/50 
+                  hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
+                  transition-all duration-300 group hover:scale-105"
+        onClick={handleClick}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
+            style={{ backgroundColor: `${skill.category_color}20` }}
+          >
+            {renderCategoryIcon(skill.category_name, "w-4 h-4")}
+          </div>
+          <div className="flex items-center gap-1">
+            <motion.div 
+              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <span className="text-xs text-primary dark:text-primary-dark font-medium">
+              {skill.proficiency_level}/5
+            </span>
+          </div>
+        </div>
+        
+        <h3 className="text-text-primary dark:text-text-primary-dark font-medium text-sm mb-1 line-clamp-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
+          {skill.name}
+        </h3>
+        
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-text-secondary dark:text-text-secondary-dark">
+            {skill.years_of_experience}y exp
+          </span>
+          <span 
+            className="text-xs px-2 py-0.5 rounded-full"
+            style={{ 
+              backgroundColor: `${skill.category_color}15`,
+              color: skill.category_color 
+            }}
+          >
+            {skill.category_name.split(' ')[0]}
+          </span>
+        </div>
+        
+        {/* Animated progress bar */}
+        <div className="h-1 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full rounded-full relative"
+            style={{ backgroundColor: skill.category_color }}
+            initial={{ width: 0 }}
+            animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
+            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
+          >
+            {/* Shimmer effect */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                repeatDelay: 3,
+                ease: "easeInOut"
+              }}
+            />
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// Memoized Category Button Component
+const CategoryButton = memo<{
+  category: { id: string; name: string; color: string; icon: string };
+  skillCount: number;
+  isSelected: boolean;
+  onClick: (id: string) => void;
+}>(({ category, skillCount, isSelected, onClick }) => {
+  const handleClick = useCallback(() => {
+    onClick(category.id);
+  }, [category.id, onClick]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+        isSelected
+          ? 'text-white shadow-md'
+          : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark border border-border-primary/20 dark:border-border-primary-dark/20'
+      }`}
+      style={isSelected ? { backgroundColor: category.color } : {}}
+    >
+      {renderCategoryIcon(category.name, "w-3 h-3")}
+      {category.name} ({skillCount})
+    </button>
+  );
+});
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
 
 const Skills: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  // State
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortBy>('proficiency');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -77,21 +167,20 @@ const Skills: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Get all skills
+  // Hooks with lean interface
   const {
     skills,
     categories,
     loading,
     error,
-    totalCount,
+    filters,
+    setFilters,
+    clearFilters,
+    setSearchQuery,
     refetch
-  } = useSkills({
-    initialFilters: {},
-    initialSearchQuery: '',
-    autoFetch: true
-  });
+  } = useSkills();
 
-  // Create dynamic categories from actual skills data
+  // Memoized dynamic categories - expensive computation
   const dynamicCategories = useMemo(() => {
     if (skills.length === 0) return [];
 
@@ -114,16 +203,11 @@ const Skills: React.FC = () => {
     return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [skills]);
 
-  const displayCategories = dynamicCategories.length > 0 ? dynamicCategories : categories;
+  const displayCategories = useMemo(() => 
+    dynamicCategories.length > 0 ? dynamicCategories : categories,
+    [dynamicCategories, categories]
+  );
 
-  // Initialize
-  useEffect(() => {
-    if (!loading) {
-      setIsInitialized(true);
-    }
-  }, [loading]);
-
-  // Get featured skills
   const featuredSkills = useMemo(() => {
     if (skills.length === 0) return [];
     
@@ -150,21 +234,29 @@ const Skills: React.FC = () => {
     return featured;
   }, [skills]);
 
-  // Filter and sort skills
+  // Memoized filtered and sorted skills - most expensive computation
   const filteredAndSortedSkills = useMemo(() => {
-    let filtered = skills.filter(skill => {
-      const matchesSearch = searchQuery === '' || 
-        skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (skill.description && skill.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesCategory = selectedCategory === '' || 
+    let filtered = skills;
+
+    // Apply search filter
+    if (localSearchQuery) {
+      const query = localSearchQuery.toLowerCase();
+      filtered = filtered.filter(skill => 
+        skill.name.toLowerCase().includes(query) ||
+        (skill.description && skill.description.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(skill => 
         skill.category_id === selectedCategory ||
         skill.category_name.toLowerCase().replace(/\s+/g, '-') === selectedCategory ||
-        skill.category_name === selectedCategory;
-      
-      return matchesSearch && matchesCategory;
-    });
+        skill.category_name === selectedCategory
+      );
+    }
 
+    // Apply sorting
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'proficiency':
@@ -179,23 +271,58 @@ const Skills: React.FC = () => {
           return 0;
       }
     });
-  }, [skills, searchQuery, selectedCategory, sortBy]);
+  }, [skills, localSearchQuery, selectedCategory, sortBy]);
+
+  // ==========================================
+  // OPTIMIZED EVENT HANDLERS
+  // ==========================================
 
   const handleSkillSelect = useCallback((skill: SkillWithCategory) => {
     setSelectedSkill(skill);
   }, []);
 
-  const clearFilters = useCallback(() => {
-    setSearchQuery('');
+  const handleClearFilters = useCallback(() => {
+    setLocalSearchQuery('');
     setSelectedCategory('');
     setSortBy('proficiency');
-  }, []);
+    clearFilters();
+  }, [clearFilters]);
 
   const handleRetry = useCallback(() => {
     refetch();
   }, [refetch]);
 
-  // Show loading state
+  const handleCategorySelect = useCallback((categoryId: string) => {
+    setSelectedCategory(categoryId);
+  }, []);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearchQuery(value);
+    
+    // Debounced search to backend
+    const timeoutId = setTimeout(() => {
+      setSearchQuery(value);
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [setSearchQuery]);
+
+  // ==========================================
+  // EFFECTS
+  // ==========================================
+
+  useEffect(() => {
+    if (!loading) {
+      setIsInitialized(true);
+    }
+  }, [loading]);
+
+  // ==========================================
+  // RENDER OPTIMIZATIONS
+  // ==========================================
+
+  // Early returns for loading/error states
   if (!isInitialized) {
     return (
       <section className="relative min-h-screen bg-black overflow-hidden">
@@ -213,7 +340,6 @@ const Skills: React.FC = () => {
     );
   }
 
-  // Show error state
   if (error && skills.length === 0) {
     return (
       <section className="relative min-h-screen bg-black overflow-hidden">
@@ -269,7 +395,7 @@ const Skills: React.FC = () => {
             Technical expertise across {displayCategories.length} categories
           </motion.p>
 
-          {/* Compact Stats */}
+          {/* Optimized Stats */}
           <motion.div 
             className="flex items-center justify-center gap-6 text-sm"
             initial={{ opacity: 0, y: 20 }}
@@ -294,7 +420,7 @@ const Skills: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Featured Skills - Auto-Scrolling Marquee */}
+        {/* Optimized Featured Skills Marquee */}
         {featuredSkills.length > 0 && (
           <motion.div
             className="mb-8"
@@ -343,83 +469,12 @@ const Skills: React.FC = () => {
                   }}
                 >
                   {featuredSkills.map((skill, index) => (
-                    <div
+                    <FeaturedSkillItem
                       key={skill.id}
-                      className="flex-none w-56"
-                    >
-                      <div 
-                        className="bg-gradient-to-br from-background-secondary/40 to-background-tertiary/20 
-                                  dark:from-background-secondary-dark/40 dark:to-background-tertiary-dark/20 
-                                  backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 
-                                  rounded-lg p-4 h-32 cursor-pointer hover:border-primary/50 dark:hover:border-primary-dark/50 
-                                  hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
-                                  transition-all duration-300 group hover:scale-105"
-                        onClick={() => handleSkillSelect(skill)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
-                            style={{ backgroundColor: `${skill.category_color}20` }}
-                          >
-                            <div className="w-4 h-4" style={{ color: skill.category_color }}>
-                              {getCategoryIcon(getCategoryIconName(skill.category_name))}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <motion.div 
-                              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
-                              animate={{ scale: [1, 1.5, 1] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            />
-                            <span className="text-xs text-primary dark:text-primary-dark font-medium">
-                              {skill.proficiency_level}/5
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <h3 className="text-text-primary dark:text-text-primary-dark font-medium text-sm mb-1 line-clamp-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
-                          {skill.name}
-                        </h3>
-                        
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-text-secondary dark:text-text-secondary-dark">
-                            {skill.years_of_experience}y exp
-                          </span>
-                          <span 
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ 
-                              backgroundColor: `${skill.category_color}15`,
-                              color: skill.category_color 
-                            }}
-                          >
-                            {skill.category_name.split(' ')[0]}
-                          </span>
-                        </div>
-                        
-                        {/* Animated progress bar */}
-                        <div className="h-1 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full rounded-full relative"
-                            style={{ backgroundColor: skill.category_color }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
-                            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                          >
-                            {/* Shimmer effect */}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                              animate={{ x: ['-100%', '100%'] }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                repeatDelay: 3,
-                                ease: "easeInOut"
-                              }}
-                            />
-                          </motion.div>
-                        </div>
-                      </div>
-                    </div>
+                      skill={skill}
+                      index={index}
+                      onSelect={handleSkillSelect}
+                    />
                   ))}
                 </motion.div>
                 
@@ -435,83 +490,12 @@ const Skills: React.FC = () => {
                   }}
                 >
                   {featuredSkills.map((skill, index) => (
-                    <div
+                    <FeaturedSkillItem
                       key={`duplicate-${skill.id}`}
-                      className="flex-none w-56"
-                    >
-                      <div 
-                        className="bg-gradient-to-br from-background-secondary/40 to-background-tertiary/20 
-                                  dark:from-background-secondary-dark/40 dark:to-background-tertiary-dark/20 
-                                  backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 
-                                  rounded-lg p-4 h-32 cursor-pointer hover:border-primary/50 dark:hover:border-primary-dark/50 
-                                  hover:shadow-lg hover:shadow-primary/10 dark:hover:shadow-primary-dark/10
-                                  transition-all duration-300 group hover:scale-105"
-                        onClick={() => handleSkillSelect(skill)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform"
-                            style={{ backgroundColor: `${skill.category_color}20` }}
-                          >
-                            <div className="w-4 h-4" style={{ color: skill.category_color }}>
-                              {getCategoryIcon(getCategoryIconName(skill.category_name))}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <motion.div 
-                              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
-                              animate={{ scale: [1, 1.5, 1] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            />
-                            <span className="text-xs text-primary dark:text-primary-dark font-medium">
-                              {skill.proficiency_level}/5
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <h3 className="text-text-primary dark:text-text-primary-dark font-medium text-sm mb-1 line-clamp-1 group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
-                          {skill.name}
-                        </h3>
-                        
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-text-secondary dark:text-text-secondary-dark">
-                            {skill.years_of_experience}y exp
-                          </span>
-                          <span 
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ 
-                              backgroundColor: `${skill.category_color}15`,
-                              color: skill.category_color 
-                            }}
-                          >
-                            {skill.category_name.split(' ')[0]}
-                          </span>
-                        </div>
-                        
-                        {/* Animated progress bar */}
-                        <div className="h-1 bg-background-tertiary/50 dark:bg-background-tertiary-dark/50 rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full rounded-full relative"
-                            style={{ backgroundColor: skill.category_color }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
-                            transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                          >
-                            {/* Shimmer effect */}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                              animate={{ x: ['-100%', '100%'] }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                repeatDelay: 3,
-                                ease: "easeInOut"
-                              }}
-                            />
-                          </motion.div>
-                        </div>
-                      </div>
-                    </div>
+                      skill={skill}
+                      index={index}
+                      onSelect={handleSkillSelect}
+                    />
                   ))}
                 </motion.div>
               </div>
@@ -519,7 +503,7 @@ const Skills: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Compact Controls */}
+        {/* Optimized Controls */}
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -534,8 +518,8 @@ const Skills: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search skills..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={localSearchQuery}
+                onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2 bg-background-secondary/50 dark:bg-background-secondary-dark/50 
                          border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg
                          text-text-primary dark:text-text-primary-dark placeholder-text-tertiary dark:placeholder-text-tertiary-dark text-sm
@@ -582,11 +566,11 @@ const Skills: React.FC = () => {
             </button>
           </div>
 
-          {/* Category Pills - Desktop Only */}
+          {/* Optimized Category Pills */}
           {displayCategories.length > 0 && (
             <div className="hidden md:flex flex-wrap gap-2 mb-4">
               <button
-                onClick={() => setSelectedCategory('')}
+                onClick={() => handleCategorySelect('')}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   selectedCategory === ''
                     ? 'bg-primary dark:bg-primary-dark text-white'
@@ -605,21 +589,13 @@ const Skills: React.FC = () => {
                 ).length;
                 
                 return (
-                  <button
+                  <CategoryButton
                     key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                      isSelected
-                        ? 'text-white shadow-md'
-                        : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-primary dark:text-text-primary-dark hover:text-primary dark:hover:text-primary-dark border border-border-primary/20 dark:border-border-primary-dark/20'
-                    }`}
-                    style={isSelected ? { backgroundColor: category.color } : {}}
-                  >
-                    <div className="w-3 h-3">
-                      {getCategoryIcon(category.icon)}
-                    </div>
-                    {category.name} ({categorySkillCount})
-                  </button>
+                    category={category}
+                    skillCount={categorySkillCount}
+                    isSelected={isSelected}
+                    onClick={handleCategorySelect}
+                  />
                 );
               })}
             </div>
@@ -645,7 +621,7 @@ const Skills: React.FC = () => {
                     </label>
                     <select
                       value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      onChange={(e) => handleCategorySelect(e.target.value)}
                       className="w-full px-3 py-2 bg-background-primary dark:bg-background-primary-dark 
                                border border-border-primary/20 dark:border-border-primary-dark/20 rounded-md
                                text-text-primary dark:text-text-primary-dark text-sm
@@ -692,7 +668,7 @@ const Skills: React.FC = () => {
                     
                     <div className="flex items-end">
                       <button
-                        onClick={clearFilters}
+                        onClick={handleClearFilters}
                         className="flex items-center gap-1 px-3 py-2 text-text-secondary dark:text-text-secondary-dark 
                                  hover:text-text-primary dark:hover:text-text-primary-dark transition-colors duration-200 text-sm"
                       >
@@ -724,7 +700,7 @@ const Skills: React.FC = () => {
                   {displayCategories.find(cat => cat.id === selectedCategory)?.name}
                 </span>
                 <button
-                  onClick={() => setSelectedCategory('')}
+                  onClick={() => handleCategorySelect('')}
                   className="text-text-tertiary dark:text-text-tertiary-dark hover:text-text-primary dark:hover:text-text-primary-dark"
                 >
                   <X className="w-3 h-3" />
@@ -734,7 +710,7 @@ const Skills: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Mobile-Optimized Skills Grid */}
+        {/* Optimized Skills Grid */}
         {skills.length > 0 && (
           <motion.div
             className="mb-40 mx-auto"
@@ -745,7 +721,7 @@ const Skills: React.FC = () => {
             {viewMode === 'grid' ? (
               /* Grid View */
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <AnimatePresence>
+                <AnimatePresence mode="popLayout">
                   {filteredAndSortedSkills.map((skill, index) => (
                     <motion.div
                       key={skill.id}
@@ -773,7 +749,7 @@ const Skills: React.FC = () => {
             ) : (
               /* List View - Mobile Optimized */
               <div className="space-y-2">
-                <AnimatePresence>
+                <AnimatePresence mode="popLayout">
                   {filteredAndSortedSkills.map((skill, index) => (
                     <motion.div
                       key={skill.id}
@@ -839,7 +815,7 @@ const Skills: React.FC = () => {
             <h3 className="text-lg font-medium text-white mb-2">No skills found</h3>
             <p className="text-gray-400 text-sm mb-4">Try adjusting your search or filters</p>
             <button
-              onClick={clearFilters}
+              onClick={handleClearFilters}
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 text-sm"
             >
               <X className="w-4 h-4" />
@@ -876,9 +852,7 @@ const Skills: React.FC = () => {
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${selectedSkill.category_color}20` }}
                     >
-                      <div className="w-5 h-5" style={{ color: selectedSkill.category_color }}>
-                        {getCategoryIcon(getCategoryIconName(selectedSkill.category_name))}
-                      </div>
+                      {renderCategoryIcon(selectedSkill.category_name, "w-5 h-5")}
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-text-primary dark:text-text-primary-dark">
@@ -909,9 +883,12 @@ const Skills: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
     </section>
   );
 };
 
-export default Skills;
+// Set display names for better debugging
+FeaturedSkillItem.displayName = 'FeaturedSkillItem';
+CategoryButton.displayName = 'CategoryButton';
+
+export default memo(Skills);
