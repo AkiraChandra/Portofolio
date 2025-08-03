@@ -21,7 +21,7 @@ export const useScrollRouter = (
   const { 
     threshold = 0.5, 
     rootMargin = '-20% 0px -20% 0px',
-    smoothScrollDuration = 1000
+    smoothScrollDuration = 50
   } = options;
   
   const router = useRouter();

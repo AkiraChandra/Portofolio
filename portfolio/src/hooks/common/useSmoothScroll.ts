@@ -36,7 +36,7 @@ export const useSmoothScroll = (threshold = 0.5) => {
             // Set a timeout to prevent scroll hijacking during the animation
             scrollTimeout.current = setTimeout(() => {
               setIsScrolling(false);
-            }, 1000);
+            }, 50);
           } else if (sectionProgress < (1 - threshold) && scrollDirection === 'up') {
             setIsScrolling(true);
             window.scrollTo({
@@ -50,7 +50,7 @@ export const useSmoothScroll = (threshold = 0.5) => {
             
             scrollTimeout.current = setTimeout(() => {
               setIsScrolling(false);
-            }, 1000);
+            }, 50);
           }
 
           lastScrollTop = currentScrollTop;
