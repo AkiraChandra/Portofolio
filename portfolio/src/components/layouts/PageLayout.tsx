@@ -199,7 +199,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         </motion.section>
         
         {/* Experience Section - Enhanced snap behavior for overflow content */}
-        <motion.section 
+        {/* <motion.section 
           id="experience"
           className="snap-start min-h-screen w-full"
           style={{
@@ -215,9 +215,9 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
         >
           <Experience />
         </motion.section>
-        
+         */}
         {/* Certifications Section */}
-        <motion.section 
+        {/* <motion.section 
           id="certifications"
           className="snap-start min-h-screen w-full"
           initial={{ opacity: 0 }}
@@ -226,7 +226,7 @@ export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps)
           viewport={{ once: true, margin: "-20%" }}
         >
           <Certifications />
-        </motion.section>
+        </motion.section> */}
         
       </div>
     </main>
