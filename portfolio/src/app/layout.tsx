@@ -19,7 +19,7 @@ const poppins = Poppins({
 // OPTIMIZATION 2: Enhanced metadata for SEO and performance
 export const metadata: Metadata = {
   title: {
-    default: "Akira Chandra - Full Stack Developer Portfolio",
+    default: "Akira Chandra Portfolio",
     template: "%s | Akira Chandra",
   },
   description:
@@ -112,26 +112,6 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
 
-        {/* OPTIMIZATION 4: Preload critical images for hero section */}
-        <link
-          rel="preload"
-          as="image"
-          href="/astronaut.png"
-          media="(min-width: 769px)"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/profile.jpg"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/planet2.png"
-          media="(min-width: 769px)"
-        />
 
         {/* CRITICAL CSS INLINE */}
         <style dangerouslySetInnerHTML={{

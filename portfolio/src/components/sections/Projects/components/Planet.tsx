@@ -321,8 +321,8 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               width={size}
               height={size}
               className="rounded-full object-cover transform transition-transform duration-300"
-              priority={index < 3} // Only prioritize first 3 planets
-              loading={index < 3 ? "eager" : "lazy"} // Lazy load non-priority planets
+              priority={false} 
+              loading="lazy" // Lazy load non-priority planets
             />
           </div>
 
