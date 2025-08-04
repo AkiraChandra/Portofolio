@@ -1,303 +1,271 @@
-import React, { useState, useMemo, useCallback, memo, useRef } from 'react';
-import { Award, AlertTriangle, X, Star, CheckCircle, ArrowDown } from 'lucide-react';
-import { useReducedMotion } from 'framer-motion';
-import CertificationsList from './CertificationList';
+// src/components/sections/Certifications/Certifications.tsx
+'use client';
+
+import React, { useState, useMemo, useCallback, memo, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Award, Search, Grid3X3, List, Filter, Star, X,
+  CheckCircle, AlertTriangle, Clock, Building2
+} from 'lucide-react';
 import { useCertifications } from '@/hooks/certifications/useCertifications';
+import { useReducedMotion } from '@/hooks/common/useMediaQuery';
 import { Certification } from '@/types/certification';
 import MovingStars from '@/components/ui/animations/Movingstars';
+import FeaturedCertifications from './components/FeaturedCertifications';
+import CertificationGrid from './components/CertificationGrid';
+import CertificationModal from './components/CertificationModal';
+import CertificationStats from './components/CertificationStats';
+import LoadingState from './components/LoadingState';
 
-// ✅ MEMOIZED STATS CARDS COMPONENT
-const StatsCards = memo(({ statsData }: { 
-  statsData: { 
-    totalCerts: number;
-    activeCerts: number;
-    featuredCerts: number;
-    expiringSoon: number;
-  }
-}) => (
-  <div className="hidden sm:grid sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-    <div className="bg-gray-900/50 rounded-lg p-3 sm:p-4 text-center border border-gray-700/50">
-      <Award className="w-5 h-5 sm:w-6 sm:h-6 text-primary dark:text-primary-dark mx-auto mb-1.5 sm:mb-2" />
-      <div className="text-lg sm:text-xl font-bold text-white">{statsData.totalCerts}</div>
-      <div className="text-xs text-gray-400">Total</div>
-    </div>
-    
-    <div className="bg-gray-900/50 rounded-lg p-3 sm:p-4 text-center border border-gray-700/50">
-      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 mx-auto mb-1.5 sm:mb-2" />
-      <div className="text-lg sm:text-xl font-bold text-white">{statsData.activeCerts}</div>
-      <div className="text-xs text-gray-400">Active</div>
-    </div>
-    
-    <div className="bg-gray-900/50 rounded-lg p-3 sm:p-4 text-center border border-gray-700/50">
-      <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 mx-auto mb-1.5 sm:mb-2" />
-      <div className="text-lg sm:text-xl font-bold text-white">{statsData.featuredCerts}</div>
-      <div className="text-xs text-gray-400">Featured</div>
-    </div>
-    
-    <div className="bg-gray-900/50 rounded-lg p-3 sm:p-4 text-center border border-gray-700/50">
-      <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 mx-auto mb-1.5 sm:mb-2" />
-      <div className="text-lg sm:text-xl font-bold text-white">{statsData.expiringSoon}</div>
-      <div className="text-xs text-gray-400">Expiring</div>
-    </div>
-  </div>
-));
-
-StatsCards.displayName = 'StatsCards';
-
-// ✅ MEMOIZED EXPIRING ALERT COMPONENT
-const ExpiringAlert = memo(({ expiringSoon }: { expiringSoon: number }) => {
-  if (expiringSoon === 0) return null;
-
-  return (
-    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg sm:rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
-      <div className="flex items-start space-x-3 sm:space-x-4">
-        <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1 flex-shrink-0" />
-        <div>
-          <h3 className="text-base sm:text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-1 sm:mb-2">
-            Action Required
-          </h3>
-          <p className="text-sm sm:text-base text-yellow-700 dark:text-yellow-300">
-            {expiringSoon} certification{expiringSoon > 1 ? 's' : ''} expiring soon. 
-            Review and renew to maintain your professional credentials.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-ExpiringAlert.displayName = 'ExpiringAlert';
-
-// ✅ MEMOIZED FEATURED CERTIFICATIONS COMPONENT
-const FeaturedCertifications = memo(({ 
-  featuredCerts, 
-  onCertificationSelect 
-}: { 
-  featuredCerts: Certification[];
-  onCertificationSelect: (cert: Certification | null) => void;
-}) => {
-  if (featuredCerts.length === 0) return null;
-
-  return (
-    <div className="hidden sm:block mb-12 sm:mb-16">
-      <div className="text-center mb-6 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3">
-          <span className="text-primary dark:text-primary-dark">Featured</span> Certifications
-        </h2>
-        <p className="text-gray-300 text-sm sm:text-base">
-          Highlighted achievements and key professional credentials
-        </p>
-      </div>
-      
-      <CertificationsList
-        certifications={featuredCerts}
-        loading={false}
-        showSearch={false}
-        showFilters={false}
-        showStats={false}
-        onCertificationSelect={onCertificationSelect}
-      />
-    </div>
-  );
-});
-
-FeaturedCertifications.displayName = 'FeaturedCertifications';
-
-// ✅ MEMOIZED MODAL COMPONENT
-const CertificationModal = memo(({ 
-  selectedCert, 
-  onClose 
-}: { 
-  selectedCert: Certification | null;
-  onClose: () => void;
-}) => {
-  const selectedCertArray = useMemo(() => 
-    selectedCert ? [selectedCert] : [], 
-    [selectedCert]
-  );
-
-  if (!selectedCert) return null;
-
-  return (
-    <div 
-      className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 sm:p-6 z-50"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-background-primary dark:bg-background-primary-dark rounded-xl sm:rounded-2xl shadow-2xl 
-                 w-full max-w-4xl max-h-[90vh] overflow-auto border border-border-primary/20 dark:border-border-primary-dark/20"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-4 sm:p-6 lg:p-8">
-          <div className="flex justify-between items-center mb-4 sm:mb-6 lg:mb-8">
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-text-primary dark:text-text-primary-dark">
-              Certification Details
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 sm:p-3 rounded-lg hover:bg-background-secondary dark:hover:bg-background-secondary-dark 
-                       text-text-secondary dark:text-text-secondary-dark transition-colors"
-            >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-          </div>
-          
-          <CertificationsList
-            certifications={selectedCertArray}
-            showSearch={false}
-            showFilters={false}
-            showStats={false}
-          />
-        </div>
-      </div>
-    </div>
-  );
-});
-
-CertificationModal.displayName = 'CertificationModal';
-
-// ✅ MAIN COMPONENT WITH OPTIMIZATIONS
 const Certifications = memo(() => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'featured' | 'expired'>('all');
   const [selectedCert, setSelectedCert] = useState<Certification | null>(null);
-  const allCertificationsRef = useRef<HTMLDivElement>(null);
+  const [selectedFeaturedCert, setSelectedFeaturedCert] = useState<Certification | null>(null);
   
   const { certifications, loading } = useCertifications();
   const shouldReduceMotion = useReducedMotion();
 
-  // ✅ MEMOIZED STATS CALCULATION
-  const statsData = useMemo(() => {
-    if (!certifications?.length) {
-      return {
-        totalCerts: 0,
-        activeCerts: 0,
-        featuredCerts: 0,
-        expiringSoon: 0
-      };
+  // ✅ MEMOIZED FEATURED CERTIFICATIONS (sama seperti Skills)
+  const featuredCertifications = useMemo(() => {
+    if (!certifications || certifications.length === 0) return [];
+    
+    let featured = certifications.filter(cert => cert.featured === true);
+    
+    if (featured.length === 0) {
+      // Fallback ke active certifications dengan status terbaik
+      featured = certifications
+        .filter(cert => !cert.isExpired)
+        .sort((a, b) => {
+          if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
+          return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+        })
+        .slice(0, 6);
     }
+    
+    return featured.slice(0, 6); // Max 6 untuk rotating
+  }, [certifications]);
 
+  // ✅ MEMOIZED FILTERED DATA
+  const filteredCertifications = useMemo(() => {
+    if (!certifications) return [];
+
+    return certifications.filter(cert => {
+      const matchesSearch = cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           cert.issuingOrganization.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesFilter = selectedFilter === 'all' ||
+                           (selectedFilter === 'active' && !cert.isExpired) ||
+                           (selectedFilter === 'featured' && cert.featured) ||
+                           (selectedFilter === 'expired' && cert.isExpired);
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [certifications, searchTerm, selectedFilter]);
+
+  // ✅ MEMOIZED STATS
+  const stats = useMemo(() => {
+    if (!certifications) return { total: 0, active: 0, featured: 0, expired: 0 };
+    
     return {
-      totalCerts: certifications.length,
-      activeCerts: certifications.filter(cert => !cert?.isExpired).length,
-      featuredCerts: certifications.filter(cert => cert?.featured).length,
-      expiringSoon: certifications.filter(cert => cert?.isExpiringSoon).length
+      total: certifications.length,
+      active: certifications.filter(cert => !cert.isExpired).length,
+      featured: certifications.filter(cert => cert.featured).length,
+      expired: certifications.filter(cert => cert.isExpired).length
     };
   }, [certifications]);
 
-  // ✅ MEMOIZED FEATURED CERTIFICATIONS
-  const featuredCerts = useMemo(() => 
-    certifications?.filter(cert => cert?.featured) || [], 
-    [certifications]
-  );
-
-  // ✅ OPTIMIZED SCROLL FUNCTION
-  const scrollToAllCertifications = useCallback(() => {
-    allCertificationsRef.current?.scrollIntoView({
-      behavior: shouldReduceMotion ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  }, [shouldReduceMotion]);
-
-  // ✅ MEMOIZED CLOSE MODAL FUNCTION
-  const closeModal = useCallback(() => {
-    setSelectedCert(null);
+  const handleCertificationClick = useCallback((cert: Certification) => {
+    setSelectedCert(cert);
   }, []);
 
-  // ✅ LOADING STATE
+  const handleFeaturedCertClick = useCallback((cert: Certification) => {
+    setSelectedFeaturedCert(cert);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedCert(null);
+    setSelectedFeaturedCert(null);
+  }, []);
+
   if (loading) {
-    return (
-      <section className="relative min-h-screen bg-black overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <MovingStars />
-        </div>
-        <div className="relative z-10 container mx-auto px-6 py-16">
-          <div className="text-center">
-            <div className="text-white text-xl">Loading certifications...</div>
-          </div>
-        </div>
-      </section>
-    );
+    return <LoadingState />;
   }
 
-
   return (
-    <section className="relative min-h-screen bg-black overflow-hidden">
-      {/* Moving Stars Background */}
+    <section className="relative bg-black overflow-hidden py-24">
+      {/* Moving Stars Background - sama seperti Skills */}
       <div className="absolute inset-0 z-0">
         <MovingStars />
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 py-8 sm:py-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6">
         
-        {/* Main Title Section */}
-        <div className="text-center mb-6 sm:mb-8 mt-4 sm:mt-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">
-            All <span className="text-primary dark:text-primary-dark">Certifications</span>
-          </h1>
-          <p className="text-base sm:text-lg text-gray-300 max-w-xl sm:max-w-2xl mx-auto mb-4 sm:mb-6 px-4">
-            Showcasing my continuous learning journey and professional expertise
-          </p>
+        {/* Header - sama style dengan Skills */}
+        <div className="text-center">
+          <motion.h1 
+            className="text-3xl sm:text-4xl font-bold text-white mb-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            My <span className="text-primary">Certifications</span>
+          </motion.h1>
+          <motion.p 
+            className="text-gray-300 max-w-2xl mx-auto mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            Professional certifications and achievements showcasing continuous learning and expertise
+          </motion.p>
 
-          {/* CTA Button */}
-          {statsData.totalCerts > 0 && (
-            <div className="hidden sm:inline-block">
-              <button
-                onClick={scrollToAllCertifications}
-                className="group relative inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white rounded-lg sm:rounded-xl bg-gradient-to-r from-primary to-primary-dark overflow-hidden transition-all duration-300 hover:scale-105"
-              >
-                <span className="relative z-10 flex items-center space-x-1.5 sm:space-x-2">
-                  <span>Explore All Certifications</span>
-                  <ArrowDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </span>
-              </button>
-
-              <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400">
-                🔍 Discover {statsData.totalCerts} certifications below
-              </p>
+          {/* Stats - sama seperti Skills */}
+          <motion.div 
+            className="flex items-center justify-center gap-6 text-sm text-gray-400 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-primary" />
+              <span><strong className="text-primary">{stats.total}</strong> Certifications</span>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span><strong className="text-green-400">{stats.active}</strong> Active</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-yellow-400" />
+              <span><strong className="text-yellow-400">{featuredCertifications.length}</strong> Featured</span>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Stats Cards */}
-        {statsData.totalCerts > 0 && (
-          <StatsCards statsData={statsData} />
+        {/* Featured Certifications Section - sama seperti Skills */}
+        {featuredCertifications.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mb-16"
+          >
+            <div className="flex items-center gap-2 mb-8">
+              <Star className="w-6 h-6 text-yellow-400 fill-current" />
+              <h2 className="text-xl font-bold text-white">Featured Certifications</h2>
+            </div>
+            
+            <FeaturedCertifications 
+              certifications={featuredCertifications}
+              onCertificationClick={handleFeaturedCertClick}
+            />
+          </motion.div>
         )}
 
-        {/* Expiring Alert */}
-        <ExpiringAlert expiringSoon={statsData.expiringSoon} />
-
-        {/* Featured Certifications */}
-        <FeaturedCertifications 
-          featuredCerts={featuredCerts}
-          onCertificationSelect={setSelectedCert}
-        />
-
-        {/* All Certifications Section */}
-        <div ref={allCertificationsRef} className="scroll-mt-16 sm:scroll-mt-20">
-          <div className="hidden sm:block text-center mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3">
-              <span className="text-primary dark:text-primary-dark">All</span> Certifications
-            </h2>
-            <p className="text-gray-300 text-sm sm:text-base">
-              Complete collection of professional certifications and achievements
-            </p>
+        {/* Search and Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-8"
+        >
+          {/* Search */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search certifications..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-primary/40 transition-colors"
+            />
           </div>
 
-          <CertificationsList
-            certifications={certifications}
-            loading={loading}
-            showSearch={true}
-            showFilters={true}
-            showStats={false}
-            onCertificationSelect={setSelectedCert}
+          <div className="flex items-center gap-3">
+            {/* Filter */}
+            <select
+              value={selectedFilter}
+              onChange={(e) => setSelectedFilter(e.target.value as any)}
+              className="px-4 py-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-xl text-white focus:outline-none focus:border-primary/40 transition-colors"
+            >
+              <option value="all">All ({stats.total})</option>
+              <option value="active">Active ({stats.active})</option>
+              <option value="featured">Featured ({stats.featured})</option>
+              <option value="expired">Expired ({stats.expired})</option>
+            </select>
+
+            {/* View Mode */}
+            <div className="flex bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Grid3X3 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* All Certifications Count */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mb-6"
+        >
+          <p className="text-gray-400 text-sm">
+            {filteredCertifications.length} of {stats.total} certifications
+          </p>
+        </motion.div>
+
+        {/* Certifications Grid/List */}
+        {filteredCertifications.length > 0 ? (
+          <CertificationGrid
+            certifications={filteredCertifications}
+            viewMode={viewMode}
+            onCertificationClick={handleCertificationClick}
+            shouldReduceMotion={shouldReduceMotion}
           />
-        </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <Award className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No certifications found
+            </h3>
+            <p className="text-gray-400">
+              {searchTerm || selectedFilter !== 'all' 
+                ? 'Try adjusting your search or filter criteria'
+                : 'No certifications available at the moment'
+              }
+            </p>
+          </motion.div>
+        )}
       </div>
 
       {/* Modal */}
       <CertificationModal 
-        selectedCert={selectedCert}
-        onClose={closeModal}
+        certification={selectedCert || selectedFeaturedCert} 
+        onClose={handleCloseModal} 
       />
     </section>
   );
