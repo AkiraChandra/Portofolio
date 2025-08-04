@@ -143,12 +143,6 @@ export default function RootLayout({
           `
         }} />
         
-        {/* NON-CRITICAL CSS - Load async */}
-        <link
-          rel="preload"
-          href="/_next/static/css/app/layout.css"
-          as="style"
-        />
         <noscript>
           <link rel="stylesheet" href="/_next/static/css/app/layout.css" />
         </noscript>
@@ -201,7 +195,6 @@ export default function RootLayout({
         {/* OPTIMIZATION 10: Prevent zoom on input focus (iOS) */}
         <meta name="format-detection" content="telephone=no" />
 
-        {/* OPTIMIZATION 11: Manifest for PWA capabilities */}
         <link rel="manifest" href="/manifest.json" />
 
         {/* OPTIMIZATION 12: Favicon optimizations */}
@@ -279,25 +272,6 @@ export default function RootLayout({
               // Prevent FOUC (Flash of Unstyled Content)
               document.documentElement.style.visibility = 'visible';
             `,
-          }}
-        />
-
-        {/* OPTIMIZATION 18: Service Worker registration for caching */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  })
-                  .catch(function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
-              });
-            }
-          `,
           }}
         />
       </body>
