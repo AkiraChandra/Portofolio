@@ -1,10 +1,10 @@
-// File: src/components/layouts/PageLayout.tsx - PROGRESSIVE VERSION
+// File: src/components/layouts/PageLayout.tsx - FIXED CACHE TRACKING
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/common/navigations/Navbar";
-import Hero from "@/components/sections/Hero/Hero"; // Always load immediately
+import Hero from "@/components/sections/Hero/Hero";
 import LazyComponentLoader from "@/components/common/LazyComponentLoader";
 
 interface PageLayoutProps {
@@ -24,10 +24,28 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 export default function PageLayout({ defaultSection = "home" }: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
-  const [cacheStats, setCacheStats] = useState({ loaded: 1, total: 5 }); // Home is pre-loaded
+  
+  // ✅ PROPER CACHE TRACKING
+  const [loadedSections, setLoadedSections] = useState<Set<string>>(new Set(['home'])); // Home is always loaded
+  const [cacheStats, setCacheStats] = useState({ loaded: 1, total: 5 });
+
+  // ✅ CALLBACK TO UPDATE CACHE STATS
+  const handleSectionLoaded = useCallback((sectionId: string) => {
+    setLoadedSections(prev => {
+      const newSet = new Set(prev);
+      if (!newSet.has(sectionId)) {
+        newSet.add(sectionId);
+        setCacheStats({ loaded: newSet.size, total: 5 });
+        
+        // ✅ LOG FOR DEBUGGING
+        console.log(`✅ Section loaded: ${sectionId} | Total: ${newSet.size}/5`);
+      }
+      return newSet;
+    });
+  }, []);
 
   // ✅ NAVIGATION FUNCTION
-  const navigateToSection = (sectionId: SectionId) => {
+  const navigateToSection = useCallback((sectionId: SectionId) => {
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({
@@ -41,7 +59,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
         setCurrentSection(sectionId);
       }
     }
-  };
+  }, []);
 
   // ✅ INITIALIZE
   useEffect(() => {
@@ -56,10 +74,10 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
 
     const timer = setTimeout(() => {
       navigateToSection(defaultSection);
-    }, 100); // Small delay to ensure components are mounted
+    }, 100);
 
     return () => clearTimeout(timer);
-  }, [defaultSection]);
+  }, [defaultSection, navigateToSection]);
 
   // ✅ SCROLL TRACKING
   useEffect(() => {
@@ -113,7 +131,6 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      {/* ✅ NAVBAR WITH CACHE INDICATOR */}
       <Navbar
         onNavigate={(path) => {
           const section = SECTIONS.find((s) => s.path === path);
@@ -123,10 +140,37 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
         }}
       />
 
-      {/* ✅ CACHE INDICATOR (Dev Mode Only) */}
+      {/* ✅ ENHANCED CACHE INDICATOR */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-20 right-4 z-50 bg-black/80 text-white p-2 rounded text-xs">
-          Cache: {cacheStats.loaded}/{cacheStats.total}
+        <div className="fixed top-20 right-4 z-50 bg-black/90 text-white p-3 rounded-lg text-xs font-mono shadow-lg border border-gray-600">
+          <div className="space-y-1">
+            <div className="text-green-400 font-semibold">
+              Cache: {cacheStats.loaded}/{cacheStats.total}
+            </div>
+            <div className="text-gray-300">
+              Current: <span className="text-yellow-400">{currentSection}</span>
+            </div>
+            <div className="space-y-0.5">
+              {SECTIONS.map(section => (
+                <div key={section.id} className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    loadedSections.has(section.id) 
+                      ? 'bg-green-400' 
+                      : 'bg-gray-600'
+                  }`} />
+                  <span className={`text-xs ${
+                    section.id === currentSection 
+                      ? 'text-yellow-400 font-semibold' 
+                      : loadedSections.has(section.id)
+                        ? 'text-green-400'
+                        : 'text-gray-500'
+                  }`}>
+                    {section.id}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -148,9 +192,6 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
         >
           <Hero />
         </motion.section>
@@ -163,22 +204,10 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <LazyComponentLoader
             sectionId="projects"
-            importPath="@/components/sections/Projects/Projects"
-            fallback={
-              <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
-                <div className="text-center space-y-4">
-                  <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
-                  <p className="text-text-primary dark:text-text-primary-dark">Loading Projects...</p>
-                </div>
-              </div>
-            }
+            onLoaded={() => handleSectionLoaded('projects')}
           />
         </motion.section>
 
@@ -191,25 +220,12 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
             scrollSnapStop: "always",
             contain: "layout style paint",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
-          {/* ✅ RESTORED NESTED SCROLL - But with better handling */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="experience"
-                importPath="@/components/sections/Experience/Experience"
-                fallback={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
-                      <p className="text-text-primary dark:text-text-primary-dark">Loading Experience...</p>
-                    </div>
-                  </div>
-                }
+                onLoaded={() => handleSectionLoaded('experience')}
               />
             </div>
           </div>
@@ -224,24 +240,12 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
             scrollSnapStop: "always",
             contain: "layout style paint",
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="certifications"
-                importPath="@/components/sections/Certifications/Certifications"
-                fallback={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
-                      <p className="text-text-primary dark:text-text-primary-dark">Loading Certifications...</p>
-                    </div>
-                  </div>
-                }
+                onLoaded={() => handleSectionLoaded('certifications')}
               />
             </div>
           </div>
@@ -257,24 +261,12 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
             contain: "layout style paint",
             zIndex: 1,
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="skills"
-                importPath="@/components/sections/Skills/Skills"
-                fallback={
-                  <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
-                      <p className="text-text-primary dark:text-text-primary-dark">Loading Skills...</p>
-                    </div>
-                  </div>
-                }
+                onLoaded={() => handleSectionLoaded('skills')}
               />
             </div>
           </div>
