@@ -35,7 +35,9 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
   // Image carousel states
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const autoSlideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  const handleBackToProjects = () => {
+    router.push('/projects');
+  };
   // Auto-slide functionality
   useEffect(() => {
     if (!project.images || project.images.length <= 1 || !isAutoSliding) {
@@ -122,7 +124,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-start">
               <button
-                onClick={() => router.back()}
+                onClick={handleBackToProjects}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-background-secondary/30 dark:bg-background-secondary-dark/30 
                          hover:bg-background-secondary/50 dark:hover:bg-background-secondary-dark/50 
                          border border-border-primary/20 dark:border-border-primary-dark/20 backdrop-blur-sm
