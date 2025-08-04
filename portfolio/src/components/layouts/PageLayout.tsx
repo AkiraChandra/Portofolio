@@ -140,7 +140,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {/* ✅ HOME SECTION - IMMEDIATE LOAD */}
+        {/* HOME SECTION */}
         <motion.section
           id="home"
           className="flex-shrink-0 h-screen"
@@ -155,7 +155,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           <Hero />
         </motion.section>
 
-        {/* ✅ PROJECTS SECTION - LAZY LOAD */}
+        {/* PROJECTS SECTION */}
         <motion.section
           id="projects"
           className="flex-shrink-0 h-screen"
@@ -182,7 +182,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           />
         </motion.section>
 
-        {/* ✅ EXPERIENCE SECTION - LAZY LOAD */}
+        {/* EXPERIENCE SECTION */}
         <motion.section
           id="experience"
           className="flex-shrink-0 relative h-screen"
@@ -196,8 +196,9 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
+          {/* ✅ RESTORED NESTED SCROLL - But with better handling */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="experience"
                 importPath="@/components/sections/Experience/Experience"
@@ -214,7 +215,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           </div>
         </motion.section>
 
-        {/* ✅ CERTIFICATIONS SECTION - LAZY LOAD */}
+        {/* CERTIFICATIONS SECTION */}
         <motion.section
           id="certifications"
           className="flex-shrink-0 relative h-screen"
@@ -229,7 +230,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="certifications"
                 importPath="@/components/sections/Certifications/Certifications"
@@ -246,7 +247,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           </div>
         </motion.section>
 
-        {/* ✅ SKILLS SECTION - LAZY LOAD */}
+        {/* SKILLS SECTION */}
         <motion.section
           id="skills"
           className="flex-shrink-0 relative h-screen"
@@ -262,7 +263,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
           viewport={{ once: true, margin: "-20%" }}
         >
           <div className="absolute inset-0 overflow-hidden bg-black">
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="skills"
                 importPath="@/components/sections/Skills/Skills"

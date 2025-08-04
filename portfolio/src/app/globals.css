@@ -368,3 +368,74 @@ body {
     scroll-margin-top: 6rem;
   }
 }
+
+/* File: src/app/globals.css - ADD SCROLL OPTIMIZATION */
+
+/* ✅ IMPROVE SCROLL PERFORMANCE */
+.scroll-section {
+  /* Contain layout to prevent reflows */
+  contain: layout style paint;
+  
+  /* Optimize scroll performance */
+  will-change: scroll-position;
+  
+  /* Better momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent scroll chaining */
+  overscroll-behavior: contain;
+  
+  /* Smooth scroll momentum */
+  scroll-behavior: smooth;
+}
+
+/* ✅ REDUCE SCROLL CONFLICT */
+.nested-scroll {
+  /* Prevent parent scroll while scrolling inside */
+  overscroll-behavior-y: contain;
+  
+  /* Optimize scroll performance */
+  transform: translateZ(0);
+  
+  /* Better scroll momentum */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ✅ SCROLL SNAP OPTIMIZATION */
+.scroll-snap-container {
+  scroll-snap-type: y mandatory;
+  scroll-snap-stop: always;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ✅ PREVENT LAYOUT SHIFT DURING SCROLL */
+.section-container {
+  position: relative;
+  height: 100vh;
+  contain: layout style paint;
+}
+
+/* ✅ LOADING STATE OPTIMIZATION */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, transparent 37%, #f0f0f0 63%);
+  background-size: 400% 100%;
+  animation: loading 1.4s ease infinite;
+}
+
+.dark .loading-skeleton {
+  background: linear-gradient(90deg, #374151 25%, transparent 37%, #374151 63%);
+  background-size: 400% 100%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
+}
