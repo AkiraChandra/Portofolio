@@ -1,4 +1,4 @@
-// src/components/sections/Skills/Skills.tsx - HIGH PERFORMANCE VERSION
+// src/components/sections/Skills/Skills.tsx - HIGH PERFORMANCE VERSION WITH MOBILE-FIRST VIEW
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect, memo } from 'react';
@@ -17,6 +17,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useSkills } from '@/hooks/skills/useSkills';
+import { useMediaQuery } from '@/hooks/common/useMediaQuery';
 import SkillCard from './components/SkillCard';
 import SkillPreviewCard from './components/SkillPreviewCard';
 import MovingStars from '@/components/ui/animations/Movingstars';
@@ -153,9 +154,12 @@ const CategoryButton = memo<{
 // ==========================================
 
 const Skills: React.FC = memo(() => {
-  // State
+  // Mobile detection
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  // State - viewMode will be set based on screen size
   const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid'); // Will be updated based on screen size
   const [sortBy, setSortBy] = useState<SortBy>('proficiency');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSkill, setSelectedSkill] = useState<SkillWithCategory | null>(null);
@@ -172,6 +176,11 @@ const Skills: React.FC = memo(() => {
     setSearchQuery,
     refetch
   } = useSkills();
+
+  // Set default view mode based on screen size
+  useEffect(() => {
+    setViewMode(isMobile ? 'list' : 'grid');
+  }, [isMobile]);
 
   // Memoized dynamic categories - expensive computation
   const dynamicCategories = useMemo(() => {
@@ -300,6 +309,11 @@ const Skills: React.FC = memo(() => {
     
     return () => clearTimeout(timeoutId);
   }, [setSearchQuery]);
+
+  // Enhanced view mode handler with mobile consideration
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+  }, []);
 
   // ==========================================
   // EFFECTS
@@ -521,26 +535,28 @@ const Skills: React.FC = memo(() => {
               />
             </div>
 
-            {/* View Mode */}
+            {/* View Mode - Enhanced for mobile preference */}
             <div className="flex bg-background-secondary/50 dark:bg-background-secondary-dark/50 
                           border border-border-primary/20 dark:border-border-primary-dark/20 rounded-lg p-0.5">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => handleViewModeChange('grid')}
                 className={`px-3 py-1.5 rounded-md transition-all duration-200 text-sm ${
                   viewMode === 'grid'
                     ? 'bg-primary dark:bg-primary-dark text-white'
                     : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
                 }`}
+                title={isMobile ? "Grid view (better on desktop)" : "Grid view"}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => handleViewModeChange('list')}
                 className={`px-3 py-1.5 rounded-md transition-all duration-200 text-sm ${
                   viewMode === 'list'
                     ? 'bg-primary dark:bg-primary-dark text-white'
                     : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
                 }`}
+                title={isMobile ? "List view (optimized for mobile)" : "List view"}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -558,6 +574,15 @@ const Skills: React.FC = memo(() => {
               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
             </button>
           </div>
+
+          {/* Mobile View Mode Indicator */}
+          {isMobile && (
+            <div className="mb-4 text-xs text-center">
+              <span className="text-text-tertiary dark:text-text-tertiary-dark">
+                💡 List view is optimized for mobile • Switch to grid view if preferred
+              </span>
+            </div>
+          )}
 
           {/* Optimized Category Pills */}
           {displayCategories.length > 0 && (
@@ -679,6 +704,9 @@ const Skills: React.FC = memo(() => {
           <div className="flex items-center justify-between mt-4 text-sm">
             <div className="text-text-secondary dark:text-text-secondary-dark">
               {filteredAndSortedSkills.length} of {skills.length} skills
+              {isMobile && viewMode === 'list' && (
+                <span className="ml-2 text-primary">• List view</span>
+              )}
             </div>
             {selectedCategory && (
               <div className="flex items-center gap-2">
