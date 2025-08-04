@@ -1,233 +1,284 @@
-// src/components/layouts/PageLayout.tsx (FIXED VERSION)
-'use client';
+// File: src/components/layouts/PageLayout.tsx - PROGRESSIVE VERSION
+"use client";
 
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import Navbar from '@/components/common/navigations/Navbar';
-import Hero from '@/components/sections/Hero/Hero';
-import Projects from '@/components/sections/Projects/Projects';
-import Experience from '@/components/sections/Experience';
-import Certifications from '@/components/sections/Certifications/Certifications';
-import { useSmoothScroll } from '@/hooks/common/useSmoothScroll';
+import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import Navbar from "@/components/common/navigations/Navbar";
+import Hero from "@/components/sections/Hero/Hero"; // Always load immediately
+import LazyComponentLoader from "@/components/common/LazyComponentLoader";
 
 interface PageLayoutProps {
-  defaultSection?: 'home' | 'projects' | 'experience' | 'certifications';
+  defaultSection?: "home" | "projects" | "experience" | "certifications" | "skills";
 }
 
 const SECTIONS = [
-  { id: 'home', path: '/' },
-  { id: 'projects', path: '/projects' },
-  { id: 'experience', path: '/experience' },
-  { id: 'certifications', path: '/certifications' },
+  { id: "home", path: "/" },
+  { id: "projects", path: "/projects" },
+  { id: "experience", path: "/experience" },
+  { id: "certifications", path: "/certifications" },
+  { id: "skills", path: "/skills" },
 ] as const;
 
-type SectionId = typeof SECTIONS[number]['id'];
+type SectionId = (typeof SECTIONS)[number]["id"];
 
-export default function PageLayout({ defaultSection = 'home' }: PageLayoutProps) {
-  const isScrolling = useSmoothScroll(0.3);
+export default function PageLayout({ defaultSection = "home" }: PageLayoutProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
+  const [cacheStats, setCacheStats] = useState({ loaded: 1, total: 5 }); // Home is pre-loaded
 
-  // Enhanced auto scroll logic with multiple attempts
-  useEffect(() => {
-    if (defaultSection !== 'home') {
-      const scrollToSection = (attempt = 0) => {
-        const targetSection = document.getElementById(defaultSection);
-        if (targetSection) {
-          // For experience section with overflow content, use different scroll behavior
-          if (defaultSection === 'experience') {
-            // Get the scroll container
-            const scrollContainer = document.querySelector('.h-screen.overflow-y-auto') as HTMLElement;
-            if (scrollContainer) {
-              // Calculate the exact scroll position for experience section
-              const rect = targetSection.getBoundingClientRect();
-              const containerRect = scrollContainer.getBoundingClientRect();
-              const currentScrollTop = scrollContainer.scrollTop;
-              
-              // Calculate target scroll position (top of experience section)
-              const targetScrollTop = currentScrollTop + rect.top - containerRect.top;
-              
-              // Smooth scroll to the calculated position
-              scrollContainer.scrollTo({
-                top: targetScrollTop,
-                behavior: 'smooth'
-              });
-            }
-          } else {
-            // For other sections, use normal scroll behavior
-            targetSection.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
-          }
-        } else if (attempt < 5) {
-          // Retry if element not found (DOM might not be ready)
-          setTimeout(() => scrollToSection(attempt + 1), 100 * (attempt + 1));
-        }
-      };
+  // ✅ NAVIGATION FUNCTION
+  const navigateToSection = (sectionId: SectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
 
-      // Initial attempt with delay
-      const timer = setTimeout(() => scrollToSection(), 100);
-      return () => clearTimeout(timer);
+      const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
+      if (sectionConfig) {
+        window.history.replaceState(null, "", sectionConfig.path);
+        setCurrentSection(sectionId);
+      }
     }
-  }, [defaultSection]);
+  };
 
-  // FIXED: More robust URL updates with better viewport detection
+  // ✅ INITIALIZE
   useEffect(() => {
-    let currentActiveSection: SectionId = defaultSection;
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Sort entries by intersection ratio to get the most visible section
-        const visibleEntries = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-          
-        if (visibleEntries.length > 0) {
-          const mostVisibleEntry = visibleEntries[0];
-          const sectionId = mostVisibleEntry.target.id as SectionId;
-          const section = SECTIONS.find(s => s.id === sectionId);
-          
-          // Only update if it's actually a different section and has significant visibility
-          if (section && 
-              section.id !== currentActiveSection && 
-              mostVisibleEntry.intersectionRatio > 0.1) {
-            currentActiveSection = section.id;
-            window.history.replaceState(null, '', section.path);
-          }
-        }
-      },
-      {
-        // FIXED: Better threshold and margin settings
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0], // Multiple thresholds for better detection
-        rootMargin: '-20px 0px -20px 0px', // Smaller margin to avoid conflicts
-      }
-    );
-
-    // FIXED: Add a small delay to ensure DOM is ready
-    const initializeObserver = setTimeout(() => {
-      SECTIONS.forEach(section => {
-        const element = document.getElementById(section.id);
-        if (element) {
-          observer.observe(element);
-        }
-      });
-    }, 200); // Increased delay
-
-    return () => {
-      clearTimeout(initializeObserver);
-      observer.disconnect();
-    };
-  }, [defaultSection]);
-
-  // FIXED: Additional viewport-based detection as fallback
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollContainer = document.querySelector('.h-screen.overflow-y-auto') as HTMLElement;
-      if (!scrollContainer) return;
-
-      const scrollTop = scrollContainer.scrollTop;
-      const windowHeight = scrollContainer.clientHeight;
-      
-      const sectionElements = SECTIONS.map(section => ({
-        ...section,
-        element: document.getElementById(section.id),
-      })).filter(s => s.element);
-
-      let mostVisibleSection = sectionElements[0];
-      let maxVisibleArea = 0;
-
-      sectionElements.forEach(section => {
-        if (!section.element) return;
-        
-        const rect = section.element.getBoundingClientRect();
-        const containerRect = scrollContainer.getBoundingClientRect();
-        
-        const top = Math.max(0, rect.top - containerRect.top);
-        const bottom = Math.min(windowHeight, rect.bottom - containerRect.top);
-        const visibleHeight = Math.max(0, bottom - top);
-        
-        if (visibleHeight > maxVisibleArea) {
-          maxVisibleArea = visibleHeight;
-          mostVisibleSection = section;
-        }
-      });
-
-      const currentPath = window.location.pathname;
-      if (mostVisibleSection.path !== currentPath && maxVisibleArea > windowHeight * 0.3) {
-        window.history.replaceState(null, '', mostVisibleSection.path);
-      }
-    };
-
-    const scrollContainer = document.querySelector('.h-screen.overflow-y-auto');
-    if (scrollContainer) {
-      // Throttle scroll handler
-      let scrollTimeout: NodeJS.Timeout;
-      const throttledScrollHandler = () => {
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(handleScroll, 100);
-      };
-      
-      scrollContainer.addEventListener('scroll', throttledScrollHandler, { passive: true });
-      
-      return () => {
-        scrollContainer.removeEventListener('scroll', throttledScrollHandler);
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-      };
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
     }
   }, []);
 
+  // ✅ HANDLE INITIAL NAVIGATION
+  useEffect(() => {
+    if (defaultSection === "home") return;
+
+    const timer = setTimeout(() => {
+      navigateToSection(defaultSection);
+    }, 100); // Small delay to ensure components are mounted
+
+    return () => clearTimeout(timer);
+  }, [defaultSection]);
+
+  // ✅ SCROLL TRACKING
+  useEffect(() => {
+    let scrollTimer: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      if (scrollTimer) clearTimeout(scrollTimer);
+
+      scrollTimer = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const scrollTop = container.scrollTop;
+        const viewportHeight = container.clientHeight;
+        const scrollCenter = scrollTop + viewportHeight * 0.5;
+
+        let activeSection: SectionId = "home";
+
+        for (const section of SECTIONS) {
+          const element = document.getElementById(section.id);
+          if (!element) continue;
+
+          const sectionTop = element.offsetTop;
+          const sectionBottom = sectionTop + element.offsetHeight;
+
+          if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
+            activeSection = section.id;
+            break;
+          }
+        }
+
+        if (activeSection !== currentSection) {
+          setCurrentSection(activeSection);
+          const section = SECTIONS.find((s) => s.id === activeSection);
+          if (section) {
+            window.history.replaceState(null, "", section.path);
+          }
+        }
+      }, 100);
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll, { passive: true });
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+        if (scrollTimer) clearTimeout(scrollTimer);
+      };
+    }
+  }, [currentSection]);
+
   return (
     <main className="min-h-screen overflow-x-hidden">
-      <Navbar />
-      
-      <div className="h-screen overflow-y-auto snap-y snap-mandatory">
-        
-        {/* Hero Section */}
-        <section id="home" className="snap-start h-screen w-full">
-          <Hero />
-        </section>
-        
-        {/* Projects Section */}
-        {/* <motion.section 
-          id="projects"
-          className="snap-start h-screen w-full"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-20%" }}
-        >
-          <Projects />
-        </motion.section> */}
-        
-        {/* Experience Section - Enhanced snap behavior for overflow content */}
-        {/* <motion.section 
-          id="experience"
-          className="snap-start min-h-screen w-full"
+      {/* ✅ NAVBAR WITH CACHE INDICATOR */}
+      <Navbar
+        onNavigate={(path) => {
+          const section = SECTIONS.find((s) => s.path === path);
+          if (section) {
+            navigateToSection(section.id);
+          }
+        }}
+      />
+
+      {/* ✅ CACHE INDICATOR (Dev Mode Only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-20 right-4 z-50 bg-black/80 text-white p-2 rounded text-xs">
+          Cache: {cacheStats.loaded}/{cacheStats.total}
+        </div>
+      )}
+
+      <div
+        ref={scrollContainerRef}
+        className="h-screen overflow-y-auto"
+        style={{
+          scrollSnapType: "y mandatory",
+          scrollBehavior: "smooth",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {/* HOME SECTION */}
+        <motion.section
+          id="home"
+          className="flex-shrink-0 h-screen"
           style={{
-            // Add specific scroll margin for better positioning on reload
-            scrollMarginTop: '0px',
-            scrollSnapAlign: 'start',
-            scrollSnapStop: 'always'
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Hero />
+        </motion.section>
+
+        {/* PROJECTS SECTION */}
+        <motion.section
+          id="projects"
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
-          <Experience />
+          <LazyComponentLoader
+            sectionId="projects"
+            importPath="@/components/sections/Projects/Projects"
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
+                <div className="text-center space-y-4">
+                  <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                  <p className="text-text-primary dark:text-text-primary-dark">Loading Projects...</p>
+                </div>
+              </div>
+            }
+          />
         </motion.section>
-         */}
-        {/* Certifications Section */}
-        {/* <motion.section 
-          id="certifications"
-          className="snap-start min-h-screen w-full"
+
+        {/* EXPERIENCE SECTION */}
+        <motion.section
+          id="experience"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
-          <Certifications />
-        </motion.section> */}
-        
+          {/* ✅ RESTORED NESTED SCROLL - But with better handling */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="experience"
+                importPath="@/components/sections/Experience/Experience"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Experience...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* CERTIFICATIONS SECTION */}
+        <motion.section
+          id="certifications"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="certifications"
+                importPath="@/components/sections/Certifications/Certifications"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Certifications...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* SKILLS SECTION */}
+        <motion.section
+          id="skills"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+            zIndex: 1,
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="skills"
+                importPath="@/components/sections/Skills/Skills"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Skills...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
       </div>
     </main>
   );

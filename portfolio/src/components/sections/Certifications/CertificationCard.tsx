@@ -18,13 +18,11 @@ import PlaceholderImage from "@/components/common/PlaceholderImage";
 interface CertificationCardProps {
   certification: Certification;
   onViewDetails?: (certification: Certification) => void;
-  isAdmin?: boolean;
 }
 
 const CertificationCard: React.FC<CertificationCardProps> = ({
   certification,
   onViewDetails,
-  isAdmin = false,
 }) => {
   const [imageError, setImageError] = useState(false);
 

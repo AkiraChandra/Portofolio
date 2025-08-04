@@ -18,7 +18,6 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   project,
   isActive,
   index,
-  totalPlanets,
   size,
   onHoverStart,
   onHoverEnd,
@@ -124,29 +123,6 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
       scale: 0,
       opacity: 0,
       y: isMobile ? 10 : 20,
-      transition: { duration: 0.3 }
-    }
-  });
-
-  // Mobile-optimized ring animations
-  const getMobileRingVariants = () => ({
-    initial: { opacity: 0, scale: 0.8 },
-    animate: { 
-      opacity: isActive ? 1 : 0,
-      scale: 1,
-      transition: { duration: isMobile ? 0.4 : 0.6 }
-    },
-    exit: isSelected ? {
-      scale: isMobile ? [1, 1.5, 2, 2.5, 3] : [1, 2, 3, 4, 5],
-      opacity: [1, 0.8, 0.6, 0.3, 0],
-      rotate: isMobile ? [0, 45, 90, 135, 180] : [0, 90, 180, 270, 360],
-      transition: {
-        duration: isMobile ? 1.5 : 2,
-        times: [0, 0.2, 0.4, 0.6, 1]
-      }
-    } : {
-      opacity: 0,
-      scale: 0.8,
       transition: { duration: 0.3 }
     }
   });
@@ -290,7 +266,6 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   };
 
   const planetVariants = getMobileOptimizedVariants();
-  const ringVariants = getMobileRingVariants();
   const glowVariants = getMobileGlowVariants();
 
   return (
@@ -346,9 +321,8 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               width={size}
               height={size}
               className="rounded-full object-cover transform transition-transform duration-300"
-              priority={index < 3} // Only prioritize first 3 planets
-              loading={index < 3 ? "eager" : "lazy"} // Lazy load non-priority planets
-              quality={isMobile ? 75 : 90} // Lower quality on mobile
+              priority={false} 
+              loading="lazy" // Lazy load non-priority planets
             />
           </div>
 

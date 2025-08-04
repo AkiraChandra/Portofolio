@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==============================================
+   BASE THEME VARIABLES
+   ============================================== */
 @layer base {
   :root {
     /* Light theme colors */
@@ -40,9 +43,9 @@
     --color-primary: 246 176 13;
     --color-primary-dark: 229 160 12;
     /* Dark theme colors - Deep Purple Cosmic Theme */
-    --color-background-primary: 36 8 50; /* Deep cosmic void with more purple */
-    --color-background-secondary: 25 12 61; /* Deep purple celestial backdrop */
-    --color-background-tertiary: 35 18 82; /* Rich purple stellar accent */
+    --color-background-primary: 36 8 50;
+    --color-background-secondary: 25 12 61;
+    --color-background-tertiary: 35 18 82;
 
     --color-text-primary: 237 237 237;
     --color-text-secondary: 209 213 219;
@@ -68,12 +71,202 @@
   }
 }
 
-@layer utilities {
-  .animate-star {
-    opacity: 0;
-    animation: none;
+/* ==============================================
+   UNIFIED SCROLL SYSTEM - SIMPLIFIED & CLEAN
+   ============================================== */
+
+/* Base - Only one source of truth */
+html {
+  scroll-behavior: auto; /* Start with auto for all devices */
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  /* Remove any default margins/padding that could cause double scroll */
+  margin: 0;
+  padding: 0;
+}
+
+/* ==============================================
+   MOBILE-FIRST SCROLL APPROACH
+   ============================================== */
+
+/* Mobile (0-768px) - Natural scrolling, no snap */
+/* Fix untuk bug mobile scroll timeout */
+@media (max-width: 768px) {
+  /* Ganti overscroll-behavior untuk menghindari delay */
+  .mobile-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+    touch-action: pan-y;
+    scroll-behavior: auto;
+    
+    /* Tambahkan properti untuk mencegah stuck scroll */
+    overflow-anchor: none;
+    scroll-snap-type: none;
+  }
+  
+  /* Fix khusus untuk timeline container */
+  .h-full.overflow-y-auto {
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Prevent momentum scroll conflicts */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Tambahkan smooth transition tanpa delay */
+  .mobile-scroll-smooth {
+    transition: scroll-behavior 0s;
+    scroll-behavior: auto;
+  }
+  
+  /* iOS Safari specific fix */
+  .ios-scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    overscroll-behavior: auto;
+  }
+}
+
+/* ==============================================
+   TABLET SCROLL (769px-1024px)
+   ============================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+/* Ganti overscroll-behavior untuk menghindari delay */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto; /* Ubah dari 'contain' ke 'auto' */
+  touch-action: pan-y;
+  scroll-behavior: auto;
+  
+  /* Tambahkan properti untuk mencegah stuck scroll */
+  overflow-anchor: none;
+  scroll-snap-type: none;
+}
+
+/* Fix khusus untuk timeline container */
+.h-full.overflow-y-auto {
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent momentum scroll conflicts */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Tambahkan smooth transition tanpa delay */
+.mobile-scroll-smooth {
+  transition: scroll-behavior 0s;
+  scroll-behavior: auto;
+}
+
+/* iOS Safari specific fix */
+.ios-scroll-fix {
+  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  overscroll-behavior: auto;
+}
+}
+
+/* ==============================================
+   DESKTOP SCROLL (1025px+)
+   ============================================== */
+
+@media (min-width: 1025px) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  .desktop-scroll-container {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+  
+  .desktop-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
+/* ==============================================
+   CUSTOM SCROLLBAR (DESKTOP ONLY)
+   ============================================== */
+
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 6px;
   }
 
+  ::-webkit-scrollbar-track {
+    @apply bg-background-tertiary dark:bg-background-tertiary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary dark:bg-primary-dark;
+  }
+}
+
+/* ==============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================== */
+
+/* GPU acceleration for smooth performance */
+.scroll-optimized {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Container performance */
+.scroll-container {
+  will-change: scroll-position;
+  contain: layout style;
+}
+
+/* ==============================================
+   REDUCED MOTION SUPPORT
+   ============================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html, *, .scroll-container {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==============================================
+   UTILITY CLASSES
+   ============================================== */
+
+@layer utilities {
+  /* Clean utility for hiding scrollbars */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text glow effects */
   .text-glow {
     text-shadow: 0 0 3px rgb(var(--color-glow-primary) / 0.7),
       0 0 4px rgb(var(--color-glow-primary) / 0.7),
@@ -91,11 +284,11 @@
       0 0 20px rgb(var(--color-glow-primary) / 0.7),
       0 0 25px rgb(var(--color-glow-primary) / 0.7);
   }
-
-  .animate-star.start-animation {
-    animation: star 6s linear infinite;
-  }
 }
+
+/* ==============================================
+   ANIMATIONS - SIMPLIFIED FOR PERFORMANCE
+   ============================================== */
 
 @keyframes star {
   0% {
@@ -114,284 +307,6 @@
   }
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  @apply overflow-x-hidden;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary dark:bg-primary-dark;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;  /* Internet Explorer dan Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari dan Opera */
-}
-
-/* Jangan hapus custom scrollbar yang sudah ada untuk komponen lain */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-background-tertiary dark:bg-background-tertiary-dark;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/50 dark:bg-primary-dark/50 rounded-full;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary dark:bg-primary-dark;
-}
-/* Enhanced snap scrolling for experience section */
-#experience {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  scroll-margin-top: 0;
-}
-
-/* Better positioning for overflow sections */
-.experience-container {
-  position: relative;
-  min-height: 100vh;
-  scroll-snap-align: start;
-}
-
-/* Enhanced snap behavior */
-.snap-container .snap-start.min-h-screen {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-.gpu-accelerate {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: transform;
-}
-
-.gpu-accelerate-auto {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  will-change: auto;
-}
-
-/* Optimized animations dengan GPU acceleration */
-@keyframes star-optimized {
-  0% {
-    transform: translateX(-100px) translateZ(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100vw) translateZ(0);
-    opacity: 0;
-  }
-}
-
-@keyframes float-optimized {
-  0%, 100% {
-    transform: translateY(0px) translateZ(0);
-  }
-  50% {
-    transform: translateY(-10px) translateZ(0);
-  }
-}
-
-@keyframes spin-slow-optimized {
-  from {
-    transform: rotate(0deg) translateZ(0);
-  }
-  to {
-    transform: rotate(360deg) translateZ(0);
-  }
-}
-
-@keyframes pulse-optimized {
-  0%, 100% {
-    transform: scale(1) translateZ(0);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scale(1.05) translateZ(0);
-    opacity: 0.5;
-  }
-}
-
-/* Performance-optimized utility classes */
-.animate-star-optimized {
-  animation: star-optimized 10s linear infinite;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
-
-.animate-float-optimized {
-  animation: float-optimized 6s ease-in-out infinite;
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.animate-spin-slow-optimized {
-  animation: spin-slow-optimized 20s linear infinite;
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.animate-pulse-optimized {
-  animation: pulse-optimized 3s ease-in-out infinite;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
-
-/* Mobile-specific optimizations */
-@media (max-width: 768px) {
-  .animate-star-optimized {
-    animation-duration: 12s;
-  }
-  
-  .animate-float-optimized {
-    animation-duration: 8s;
-    transform: translateZ(0) scale(0.9);
-  }
-  
-  .animate-spin-slow-optimized {
-    animation-duration: 25s;
-  }
-  
-  .animate-pulse-optimized {
-    animation-duration: 4s;
-  }
-}
-
-/* Low-end device optimizations */
-@media (max-width: 768px) and (max-resolution: 150dpi) {
-  .animate-star-optimized {
-    animation-duration: 15s;
-  }
-  
-  .animate-float-optimized {
-    animation-duration: 10s;
-  }
-  
-  .animate-spin-slow-optimized {
-    animation-duration: 30s;
-  }
-  
-  /* Reduce blur effects on low-end devices */
-  .backdrop-blur-sm {
-    backdrop-filter: blur(2px);
-  }
-  
-  .backdrop-blur-md {
-    backdrop-filter: blur(4px);
-  }
-  
-  .backdrop-blur-lg {
-    backdrop-filter: blur(6px);
-  }
-  
-  .backdrop-blur-xl {
-    backdrop-filter: blur(8px);
-  }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .animate-star-optimized,
-  .animate-float-optimized,
-  .animate-spin-slow-optimized,
-  .animate-pulse-optimized {
-    animation: none;
-  }
-  
-  /* Static fallbacks */
-  .animate-star-optimized {
-    opacity: 0.3;
-    transform: translateX(0) translateZ(0);
-  }
-  
-  .animate-float-optimized {
-    transform: translateY(0) translateZ(0);
-  }
-  
-  .animate-spin-slow-optimized {
-    transform: rotate(0deg) translateZ(0);
-  }
-  
-  .animate-pulse-optimized {
-    opacity: 0.4;
-    transform: scale(1) translateZ(0);
-  }
-  
-  /* Disable all transitions and animations */
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Intersection-based animation pausing */
-.pause-animations {
-  animation-play-state: paused;
-}
-
-.resume-animations {
-  animation-play-state: running;
-}
-
-/* Optimized scrollbar untuk mobile */
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* Performance hints untuk browser */
-.performance-optimized {
-  contain: layout style paint;
-  content-visibility: auto;
-}
-
-/* Lazy loading placeholder */
-.lazy-placeholder {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite ease-in-out;
-}
-
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -401,96 +316,126 @@ body {
   }
 }
 
-.dark .lazy-placeholder {
-  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-  background-size: 200% 100%;
-}
-
-/* Optimized glow effects */
-.glow-optimized {
-  filter: drop-shadow(0 0 10px currentColor);
-  will-change: filter;
-}
-
-@media (max-width: 768px) {
-  .glow-optimized {
-    filter: drop-shadow(0 0 5px currentColor);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glow-optimized {
-    filter: none;
-  }
-}
-
-/* Memory optimization */
-.image-optimized {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: optimize-contrast;
+/* Animation classes with performance optimization */
+.animate-star {
+  opacity: 0;
+  animation: star 6s linear infinite;
+  will-change: transform, opacity;
   transform: translateZ(0);
 }
 
-/* Critical rendering path optimization */
-.above-fold {
-  content-visibility: visible;
-}
-
-.below-fold {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 400px;
-}
-
-/* Reduced complexity for low-end devices */
-@media (max-width: 768px) and (max-resolution: 150dpi) {
-  /* Disable expensive effects */
-  .backdrop-blur-xl,
-  .backdrop-blur-2xl,
-  .backdrop-blur-3xl {
-    backdrop-filter: none;
-    background-color: rgba(0, 0, 0, 0.8);
-  }
-  
-  /* Reduce gradient complexity */
-  .bg-gradient-to-r,
-  .bg-gradient-to-l,
-  .bg-gradient-to-t,
-  .bg-gradient-to-b,
-  .bg-gradient-to-br,
-  .bg-gradient-to-bl,
-  .bg-gradient-to-tr,
-  .bg-gradient-to-tl {
-    background-image: none;
-    background-color: var(--fallback-color, #1a1a1a);
-  }
-  
-  /* Simplify shadows */
-  .shadow-xl,
-  .shadow-2xl {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+/* Pause animations on mobile for better performance */
+@media (max-width: 768px) {
+  .animate-star {
+    animation-duration: 8s; /* Slower on mobile */
   }
 }
 
-/* Device-specific optimizations */
+/* ==============================================
+   DEVICE SPECIFIC FIXES
+   ============================================== */
+
+/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
-  /* iOS Safari optimizations */
-  .ios-optimized {
-    -webkit-transform: translateZ(0);
-    -webkit-backface-visibility: hidden;
-    -webkit-perspective: 1000px;
+  .ios-scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  
+  /* Fix iOS Safari 100vh issue */
+  .ios-viewport-fix {
+    height: -webkit-fill-available;
   }
 }
 
-/* Chrome mobile optimizations */
-@media screen and (max-width: 768px) {
-  .chrome-mobile-optimized {
-    will-change: auto;
-    transform: translateZ(0);
+/* ==============================================
+   LAYOUT UTILITIES
+   ============================================== */
+
+/* Section utilities */
+.section-spacing {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+/* Navbar offset for anchor scrolling */
+.section-offset {
+  scroll-margin-top: 5rem;
+}
+
+@media (min-width: 1024px) {
+  .section-offset {
+    scroll-margin-top: 6rem;
   }
 }
 
-/* Force repaint prevention */
-.prevent-repaint {
-  contain: strict;
-  content-visibility: auto;
+/* File: src/app/globals.css - ADD SCROLL OPTIMIZATION */
+
+/* ✅ IMPROVE SCROLL PERFORMANCE */
+.scroll-section {
+  /* Contain layout to prevent reflows */
+  contain: layout style paint;
+  
+  /* Optimize scroll performance */
+  will-change: scroll-position;
+  
+  /* Better momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent scroll chaining */
+  overscroll-behavior: contain;
+  
+  /* Smooth scroll momentum */
+  scroll-behavior: smooth;
+}
+
+/* ✅ REDUCE SCROLL CONFLICT */
+.nested-scroll {
+  /* Prevent parent scroll while scrolling inside */
+  overscroll-behavior-y: contain;
+  
+  /* Optimize scroll performance */
+  transform: translateZ(0);
+  
+  /* Better scroll momentum */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ✅ SCROLL SNAP OPTIMIZATION */
+.scroll-snap-container {
+  scroll-snap-type: y mandatory;
+  scroll-snap-stop: always;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ✅ PREVENT LAYOUT SHIFT DURING SCROLL */
+.section-container {
+  position: relative;
+  height: 100vh;
+  contain: layout style paint;
+}
+
+/* ✅ LOADING STATE OPTIMIZATION */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, transparent 37%, #f0f0f0 63%);
+  background-size: 400% 100%;
+  animation: loading 1.4s ease infinite;
+}
+
+.dark .loading-skeleton {
+  background: linear-gradient(90deg, #374151 25%, transparent 37%, #374151 63%);
+  background-size: 400% 100%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
 }

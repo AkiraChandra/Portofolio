@@ -192,7 +192,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                       </h3>
                     </div>
                     <p className="text-text-secondary dark:text-text-secondary-dark leading-relaxed">
-                      I'm <span className="font-semibold text-primary dark:text-primary-dark">Akira Chandra</span>, 
+                      I&apos;m <span className="font-semibold text-primary dark:text-primary-dark">Akira Chandra</span>, 
                       currently working as a Junior Programmer at Bina Nusantara IT Division while pursuing my studies in Information Systems 
                       at Bina Nusantara University, where I am now in my fifth semester. I am passionate about 
                       <span className="font-medium text-text-primary dark:text-text-primary-dark"> coding, system analysis, and UI/UX design</span>, 
@@ -229,7 +229,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                       While pursuing my degree, I prioritize maintaining strong academic performance, consistently striving for excellence in my coursework. 
                       I enjoy participating in competitions such as <span className="font-medium text-text-primary dark:text-text-primary-dark">
                       business case challenges, UI/UX contests, and hackathons</span>, which allow me to apply my skills in real-world scenarios 
-                      and collaborate with peers. I'm also a finalist in the Ignite Mini Case Challenge 2024.
+                      and collaborate with peers. I&apos;m also a finalist in the Ignite Mini Case Challenge 2024.
                     </p>
                   </motion.div>
 
@@ -275,7 +275,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                       I am committed to leveraging my technical expertise to make a positive impact in the tech industry 
                       while continuously seeking opportunities for growth and learning.
                       <br />
-                      <span className="text-primary dark:text-primary-dark">Let's connect and explore potential collaborations!</span>
+                      <span className="text-primary dark:text-primary-dark">Let&apos;s connect and explore potential collaborations!</span>
                     </p>
                   </motion.div>
                 </div>
@@ -300,7 +300,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span>Let's Connect</span>
+                    <span>Let&apos;s Connect</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"

@@ -1,10 +1,10 @@
-// src/components/sections/Experience/Experience.tsx (MOBILE PERFORMANCE OPTIMIZED)
 import React, {
   useState,
   useRef,
   useEffect,
   useMemo,
   useCallback,
+  memo,
 } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -17,10 +17,7 @@ import {
   Calendar,
   MapPin,
   Rocket,
-  Zap,
-  Target,
   Star,
-  ChevronRight,
   Eye,
 } from "lucide-react";
 import TimelinePoint from "./components/TimeLinePoint";
@@ -30,8 +27,6 @@ import type { Experience as ExperienceType } from "@/types/experience";
 import ResumeExport from "./components/ResumeExport";
 import { useExperienceVisibility } from "@/hooks/experience/useExperienceVisibility";
 import { useExperience } from "@/hooks/experience/useExperience";
-import SmartImage from "@/components/common/SmartImage";
-import PlaceholderImage from "@/components/common/PlaceholderImage";
 
 // Add CSS for hiding scrollbar
 const scrollbarHideStyles = `
@@ -44,17 +39,14 @@ const scrollbarHideStyles = `
   }
 `;
 
-// Mobile detection hook with better performance
+// ✅ FIXED: Mobile detection hook dengan memo yang benar
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-
-    // Check immediately
     checkMobile();
 
-    // Throttled resize handler
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(timeoutId);
@@ -71,189 +63,22 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-const Experience: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const { isExperienceVisible, experienceSectionRef } =
-    useExperienceVisibility();
-  const headerRef = useRef<HTMLDivElement>(null);
-  const infoRef = useRef<HTMLDivElement>(null);
-  const timelineContainerRef = useRef<HTMLDivElement>(null);
-  const [shouldScroll, setShouldScroll] = useState(false);
-  const [scrollTarget, setScrollTarget] = useState<"info" | "top" | null>(null);
-
-  // Performance optimizations
-  const isMobile = useIsMobile();
-  const shouldReduceMotion = useReducedMotion();
-
-  // Use the new hook instead of hardcoded data
-  const { experiences, loading, error, refetch } = useExperience();
-
-  // Memoized calculations to avoid recalculation on every render
-  const statsData = useMemo(() => {
-    if (!experiences?.length)
-      return { experienceCount: 0, techCount: 0, achievementCount: 0 };
-
-    return {
-      experienceCount: experiences.length,
-      techCount: experiences.reduce(
-        (acc, exp) => acc + (exp.technologies?.length || 0),
-        0
-      ),
-      achievementCount: experiences.reduce(
-        (acc, exp) => acc + (exp.achievements?.length || 0),
-        0
-      ),
-    };
-  }, [experiences]);
-
-  const scrollToInfo = useCallback(() => {
-    if (isMobile) {
-      const timelineSection = experienceSectionRef.current;
-      if (timelineSection) {
-        const timelineMainDiv = timelineSection.querySelector(
-          ".bg-background-secondary\\/30"
-        );
-        if (timelineMainDiv) {
-          setTimeout(() => {
-            (timelineMainDiv as HTMLElement).scrollIntoView({
-              behavior: shouldReduceMotion ? "auto" : "smooth",
-              block: "start",
-            });
-          }, 150);
-        }
-      }
-    } else {
-      // Desktop: scroll to info panel
-      if (!infoRef.current) return;
-      infoRef.current.scrollIntoView({
-        behavior: shouldReduceMotion ? "auto" : "smooth",
-        block: "start",
-      });
-    }
-  }, [isMobile, shouldReduceMotion]);
-
-  const scrollToTop = useCallback(() => {
-    // Same behavior for both mobile and desktop - scroll to header
-    if (!headerRef.current) return;
-    headerRef.current.scrollIntoView({
-      behavior: shouldReduceMotion ? "auto" : "smooth",
-      block: "start",
-    });
-  }, [shouldReduceMotion]);
-
-  // Optimized mobile scroll function with better performance
-  const scrollToActiveTimelineItem = useCallback(
-    (index: number) => {
-      if (!isMobile || !timelineContainerRef.current) return;
-
-      const container = timelineContainerRef.current;
-      const activeElement = container.querySelector(
-        `[data-timeline-index="${index}"]`
-      ) as HTMLElement;
-
-      if (!activeElement) return;
-
-      // Use immediate scroll on reduced motion
-      if (shouldReduceMotion) {
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = activeElement.getBoundingClientRect();
-        const containerCenter = containerRect.height / 2;
-        const elementCenter = elementRect.height / 2;
-        const currentScrollTop = container.scrollTop;
-        const elementTopRelativeToContainer =
-          elementRect.top - containerRect.top;
-        const targetScrollTop =
-          currentScrollTop +
-          elementTopRelativeToContainer -
-          containerCenter +
-          elementCenter;
-
-        container.scrollTop = Math.max(0, targetScrollTop);
-        return;
-      }
-
-      // Use requestAnimationFrame for smooth performance
-      requestAnimationFrame(() => {
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = activeElement.getBoundingClientRect();
-
-        const containerCenter = containerRect.height / 2;
-        const elementCenter = elementRect.height / 2;
-        const currentScrollTop = container.scrollTop;
-        const elementTopRelativeToContainer =
-          elementRect.top - containerRect.top;
-
-        // Calculate target position to center the clicked item
-        const targetScrollTop =
-          currentScrollTop +
-          elementTopRelativeToContainer -
-          containerCenter +
-          elementCenter;
-
-        container.scrollTo({
-          top: Math.max(0, targetScrollTop),
-          behavior: "smooth",
-        });
-      });
-    },
-    [isMobile, shouldReduceMotion]
-  );
-
-  useEffect(() => {
-    if (shouldScroll) {
-      console.log("Scroll triggered:", { scrollTarget, activeIndex, isMobile }); // Debug log
-
-      if (scrollTarget === "info" && activeIndex !== null) {
-        // Both mobile and desktop: scroll to info section when item is clicked
-        console.log("Scrolling to info..."); // Debug log
-        scrollToInfo();
-      } else if (scrollTarget === "top") {
-        // Both mobile and desktop: scroll to top when item is unclicked
-        console.log("Scrolling to top..."); // Debug log
-        scrollToTop();
-      }
-      setShouldScroll(false);
-      setScrollTarget(null);
-    }
-  }, [shouldScroll, scrollTarget, activeIndex, scrollToInfo, scrollToTop]);
-
-  const handleExperienceClick = useCallback(
-    (index: number) => {
-      console.log("Experience clicked:", { index, currentActive: activeIndex }); // Debug log
-
-      setActiveIndex((prev) => {
-        const newIndex = prev === index ? null : index;
-
-        console.log("Setting new index:", newIndex); // Debug log
-
-        // Always trigger scroll behavior
-        setShouldScroll(true);
-
-        if (newIndex !== null) {
-          // When opening/selecting an item, scroll to show info
-          console.log("Setting scroll target to info"); // Debug log
-          setScrollTarget("info");
-        } else {
-          // When closing/deselecting an item, scroll to top
-          console.log("Setting scroll target to top"); // Debug log
-          setScrollTarget("top");
-        }
-
-        return newIndex;
-      });
-    },
-    [activeIndex]
-  );
-
-  // Performance optimized Floating Animation Elements
-  const FloatingElements = React.memo(() => {
+// ✅ FIXED: FloatingElements sebagai komponen terpisah dengan memo
+const FloatingElements = memo(
+  ({
+    isExperienceVisible,
+    isMobile,
+    shouldReduceMotion,
+  }: {
+    isExperienceVisible: boolean;
+    isMobile: boolean;
+    shouldReduceMotion: boolean;
+  }) => {
     if (!isExperienceVisible) return null;
 
-    // Skip heavy animations on mobile or reduced motion
     if (isMobile || shouldReduceMotion) {
       return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Static Grid Pattern for mobile */}
           <div className="absolute inset-0 opacity-3 dark:opacity-5">
             <div
               className="w-full h-full"
@@ -269,7 +94,6 @@ const Experience: React.FC = () => {
 
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-3 dark:opacity-5">
           <div
             className="w-full h-full"
@@ -280,7 +104,6 @@ const Experience: React.FC = () => {
           />
         </div>
 
-        {/* Reduced floating particles - Desktop only */}
         {[...Array(4)].map((_, i) => (
           <motion.div
             key={i}
@@ -303,7 +126,6 @@ const Experience: React.FC = () => {
           />
         ))}
 
-        {/* Minimal tech orbit animations - Desktop only */}
         {[Code2, Briefcase, Trophy].map((Icon, i) => (
           <motion.div
             key={i}
@@ -327,10 +149,26 @@ const Experience: React.FC = () => {
         ))}
       </div>
     );
-  });
+  }
+);
 
-  // Memoized Stats Cards Component with performance optimizations
-  const StatsCards = React.memo(() => {
+FloatingElements.displayName = "FloatingElements";
+
+// ✅ FIXED: StatsCards sebagai komponen terpisah dengan memo
+const StatsCards = memo(
+  ({
+    statsData,
+    shouldReduceMotion,
+    isMobile,
+  }: {
+    statsData: {
+      experienceCount: number;
+      techCount: number;
+      achievementCount: number;
+    };
+    shouldReduceMotion: boolean;
+    isMobile: boolean;
+  }) => {
     const statsConfig = useMemo(
       () => [
         {
@@ -409,9 +247,107 @@ const Experience: React.FC = () => {
         ))}
       </motion.div>
     );
-  });
+  }
+);
 
-  // Optimized Loading State
+StatsCards.displayName = "StatsCards";
+
+// ✅ FIXED: Main component dengan memo yang benar
+const Experience = memo(function Experience() {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const { isExperienceVisible, experienceSectionRef } =
+    useExperienceVisibility();
+  const headerRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
+  const [scrollTarget, setScrollTarget] = useState<"info" | "top" | null>(null);
+
+  const isMobile = useIsMobile();
+  const shouldReduceMotion = useReducedMotion();
+  const { experiences, loading, error, refetch } = useExperience();
+
+  const statsData = useMemo(() => {
+    if (!experiences?.length)
+      return { experienceCount: 0, techCount: 0, achievementCount: 0 };
+
+    return {
+      experienceCount: experiences.length,
+      techCount: experiences.reduce(
+        (acc, exp) => acc + (exp.technologies?.length || 0),
+        0
+      ),
+      achievementCount: experiences.reduce(
+        (acc, exp) => acc + (exp.achievements?.length || 0),
+        0
+      ),
+    };
+  }, [experiences]);
+
+  const scrollToInfo = useCallback(() => {
+    if (isMobile) {
+      const timelineSection = experienceSectionRef.current;
+      if (timelineSection) {
+        const timelineMainDiv = timelineSection.querySelector(
+          ".bg-background-secondary\\/30"
+        );
+        if (timelineMainDiv) {
+          setTimeout(() => {
+            (timelineMainDiv as HTMLElement).scrollIntoView({
+              behavior: shouldReduceMotion ? "auto" : "smooth",
+              block: "start",
+            });
+          }, 150);
+        }
+      }
+    } else {
+      if (!infoRef.current) return;
+      infoRef.current.scrollIntoView({
+        behavior: shouldReduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    }
+  }, [isMobile, shouldReduceMotion, experienceSectionRef]);
+
+  const scrollToTop = useCallback(() => {
+    if (!headerRef.current) return;
+    headerRef.current.scrollIntoView({
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [shouldReduceMotion]);
+
+  useEffect(() => {
+    if (shouldScroll) {
+      if (scrollTarget === "info" && activeIndex !== null) {
+        scrollToInfo();
+      } else if (scrollTarget === "top") {
+        scrollToTop();
+      }
+      setShouldScroll(false);
+      setScrollTarget(null);
+    }
+  }, [shouldScroll, scrollTarget, activeIndex, scrollToInfo, scrollToTop]);
+
+  const handleExperienceClick = useCallback(
+    (index: number) => {
+      setActiveIndex((prev) => {
+        const newIndex = prev === index ? null : index;
+        setShouldScroll(true);
+
+        if (newIndex !== null) {
+          setScrollTarget("info");
+        } else {
+          setScrollTarget("top");
+        }
+
+        return newIndex;
+      });
+    },
+    [activeIndex]
+  );
+
+  // Loading state
   if (loading) {
     return (
       <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
@@ -445,7 +381,7 @@ const Experience: React.FC = () => {
     );
   }
 
-  // Simplified Error State
+  // Error state
   if (error) {
     return (
       <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
@@ -502,17 +438,20 @@ const Experience: React.FC = () => {
       ref={experienceSectionRef}
       className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark px-4"
     >
-      {/* Add inline styles for scrollbar hiding */}
       <style dangerouslySetInnerHTML={{ __html: scrollbarHideStyles }} />
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
       <div className="absolute inset-0 overflow-hidden">
         <MovingStars />
       </div>
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
-      <div ref={headerRef} className={`mb-0 ${isMobile ? "pb-60" : "pb-0"}`}>
-        <FloatingElements />
+
+      <div ref={headerRef} className={`mb-0 ${isMobile ? "pb-20" : "pb-0"}`}>
+        <FloatingElements
+          isExperienceVisible={isExperienceVisible}
+          isMobile={isMobile}
+          shouldReduceMotion={Boolean(shouldReduceMotion)}
+        />
+
         <div className="relative z-10 max-w-7xl mx-auto min-h-screen">
           <div className="pt-16 lg:pt-20">
             {/* Header */}
@@ -529,7 +468,11 @@ const Experience: React.FC = () => {
             </div>
 
             {/* Stats Cards */}
-            <StatsCards />
+            <StatsCards
+              statsData={statsData}
+              shouldReduceMotion={Boolean(shouldReduceMotion)}
+              isMobile={isMobile}
+            />
 
             {/* Main Timeline Section */}
             <motion.div
@@ -544,10 +487,8 @@ const Experience: React.FC = () => {
                        border border-border-primary/20 dark:border-border-primary-dark/20 
                        shadow-xl relative overflow-hidden"
             >
-              {/* Background pattern */}
               <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/2 to-transparent dark:via-primary-dark/2" />
 
-              {/* Timeline Content */}
               <div className="relative z-10 flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Timeline Points Container */}
                 <motion.div
@@ -582,10 +523,10 @@ const Experience: React.FC = () => {
                   )}
 
                   {/* Timeline Container */}
-                  <div className={`${isMobile ? "h-[80vh]" : "h-[70vh]"}`}>
+                  <div className={`${isMobile ? "h-[90vh]" : "h-[70vh]"}`}>
                     <div
                       ref={timelineContainerRef}
-                      className="h-full overflow-y-auto pr-2 scrollbar-hide"
+                      className="h-full overflow-y-auto pr-2 scrollbar-hide mobile-scroll-smooth ios-scroll-fix"
                       style={{
                         scrollBehavior: shouldReduceMotion ? "auto" : "smooth",
                       }}
@@ -741,7 +682,6 @@ const Experience: React.FC = () => {
                   className="hidden lg:block flex-1"
                   ref={infoRef}
                 >
-                  {/* Info Header */}
                   <motion.div className="bg-gradient-to-r from-blue-500/5 to-purple-500/5 backdrop-blur-sm rounded-xl p-4 mb-6 border border-blue-500/10">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
@@ -821,6 +761,6 @@ const Experience: React.FC = () => {
       )}
     </section>
   );
-};
+});
 
 export default Experience;

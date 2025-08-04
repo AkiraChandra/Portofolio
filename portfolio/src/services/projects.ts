@@ -1,6 +1,6 @@
 // src/services/projects.ts
 import { supabase } from '@/lib/supabase';
-import { Project, ProjectDB, ProjectImage } from '@/types/projects';
+import { Project, ProjectDB } from '@/types/projects';
 
 const DEFAULT_SIZE = {
   desktop: 200,

@@ -486,3 +486,5 @@ export const useProjectSizes = () => {
     ...mobileOptimizations
   };
 };
+
+export const useReducedMotion = () => useMediaQuery("(prefers-reduced-motion: reduce)");

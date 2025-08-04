@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useEffect, useState } from "react";
-import { useTheme } from "@/hooks/theme/useTheme";
 
 interface TypeWriterProps {
   words: string[];
@@ -14,7 +13,6 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   const [reverse, setReverse] = useState(false);
   const [blink, setBlink] = useState(true);
   const [text, setText] = useState("");
-  const { theme } = useTheme();
 
   useEffect(() => {
     const timeout2 = setTimeout(() => {

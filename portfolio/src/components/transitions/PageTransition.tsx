@@ -8,7 +8,6 @@ import { usePathname } from 'next/navigation';
 
 interface PageTransitionProps {
   children: React.ReactNode;
-  currentSection: 'home' | 'projects' | 'experience' | 'certifications';
 }
 
 const SECTIONS = ['home', 'projects', 'experience', 'certifications'];
@@ -36,7 +35,7 @@ const getTransitionDirection = (currentPath: string, previousPath?: string) => {
   return { y: 0 };
 };
 
-export default function PageTransition({ children, currentSection }: PageTransitionProps) {
+export default function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname();
   const [previousPath, setPreviousPath] = React.useState<string>('');
   

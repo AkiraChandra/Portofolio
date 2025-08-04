@@ -22,7 +22,8 @@ export const config = {
           title: "Certifications",
           href: "#certifications",
           path: "/certifications",
-        }, // Updated from "Skills"
+        },
+        { title: "Skills", href: "#skills", path: "/skills" },
       ],
     },
   },
@@ -263,97 +264,154 @@ export const config = {
       },
     },
     profile: {
+      // 🚀 MAIN CONTAINER ANIMATION - Cinema Quality
       container: (fromLeft: boolean): Variants => ({
         initial: {
-          x: fromLeft ? -200 : 200,
+          x: fromLeft ? -350 : 350,    // More dramatic distance
+          y: fromLeft ? -100 : 100,    // Arc trajectory  
           opacity: 0,
-          scale: 0.5,
-          rotate: fromLeft ? -180 : 180,
+          scale: 0.2,                  // Start tiny for impact
+          rotate: fromLeft ? -60 : 60, // More rotation for drama
+          filter: "blur(15px)",        // Heavy blur start
+          transformOrigin: "center",
         },
         animate: {
           x: 0,
+          y: 0,
           opacity: 1,
           scale: 1,
           rotate: 0,
+          filter: "blur(0px)",
           transition: {
-            duration: 1.2,
-            ease: [0.68, -0.6, 0.32, 1.6],
-            opacity: { duration: 0.3, delay: 0.5 },
+            // 🎭 CINEMATIC TIMING - Hollywood-grade smoothness
+            duration: 2.2,              // Longer for epic feel
+            ease: [0.16, 1, 0.3, 1],    // Apple's signature easing
+            
+            // 🎪 CHOREOGRAPHED SEQUENCE
+            opacity: {
+              duration: 1.5,
+              ease: [0.25, 0.46, 0.45, 0.94],
+              delay: 0.2
+            },
             scale: {
-              duration: 0.8,
-              ease: "easeOut",
-              delay: 0.4,
+              duration: 2.0,
+              ease: [0.34, 1.56, 0.64, 1],  // Slight overshoot
+              delay: 0.3
             },
             rotate: {
-              duration: 1,
-              ease: "easeOut",
-              delay: 0.3,
+              duration: 1.8,
+              ease: [0.23, 1, 0.32, 1],     // Smooth settle
+              delay: 0.25
             },
-            delay: 0.2,
+            filter: {
+              duration: 1.3,
+              ease: "easeOut",
+              delay: 0.4
+            },
+            x: {
+              duration: 2.2,
+              ease: [0.16, 1, 0.3, 1],      // Perfect deceleration
+            },
+            y: {
+              duration: 2.0,
+              ease: [0.19, 1, 0.22, 1],     // Gentle arc landing
+            },
+            delay: 0.6  // Wait for page setup
           },
         },
       }),
 
-      wave: {
-        variants: {
-          initial: {
-            opacity: 0,
-            scale: 1,
-          },
-          animate: {
-            scale: [1, 1.3, 1.3],
-            opacity: [0.5, 0.1, 0],
-          },
-        },
-        transition: (delay: number = 0) => ({
-          duration: 2.5,
-          repeat: Infinity,
-          delay: 0.8 + delay,
-          ease: "easeOut",
-          times: [0, 0.8, 1],
-          repeatDelay: 0.5,
-          repeatType: "loop" as const,
-        }),
-      },
-
-      ring: {
-        initial: { opacity: 0 },
-        animate: {
-          opacity: 1,
-          transition: {
-            delay: 1,
-            duration: 0.5,
-          },
-        },
-      },
-
-      gradient: {
-        variants: {
-          initial: { x: "-100%" },
-          animate: {
-            x: ["200%"],
-          },
-        },
-        transition: {
-          duration: 3,
-          repeat: Infinity,
-          ease: "linear",
-          repeatType: "loop" as const,
-          delay: 1.2,
-        },
-      },
-
+      // 🌟 ENHANCED HOVER STATES
       hover: {
-        initial: { rotate: 0 },
-        hover: {
-          rotate: [0, -5, 5, 0],
-          transition: {
-            duration: 0.6,
-            ease: "easeInOut",
-            times: [0, 0.3, 0.6, 1],
-          },
+        initial: {
+          y: 0,
+          scale: 1,
+          rotate: 0,
+          filter: "brightness(1) saturate(1)"
         },
+        animate: {
+          y: -12,                           // More lift
+          scale: 1.08,                      // Bigger scale
+          rotate: 3,                        // Playful tilt
+          filter: "brightness(1.1) saturate(1.2)", // Enhanced colors
+          transition: {
+            type: "spring",
+            stiffness: 300,
+            damping: 25,
+            mass: 0.8
+          }
+        }
       },
+
+      // 💫 FLOATING RING ANIMATION
+      ring: {
+        initial: {
+          scale: 0.7,
+          opacity: 0,
+          rotate: 0
+        },
+        animate: {
+          scale: 1,
+          opacity: 0.8,
+          rotate: 360,
+          transition: {
+            scale: {
+              duration: 1.8,
+              ease: "easeOut",
+              delay: 1.2
+            },
+            opacity: {
+              duration: 1.2,
+              ease: "easeOut",
+              delay: 1.2
+            },
+            rotate: {
+              duration: 25,      // Slow rotation
+              repeat: Infinity,
+              ease: "linear",
+              delay: 2.5
+            }
+          }
+        }
+      },
+
+      // 🔮 GLOW EFFECT ANIMATION
+      glow: {
+        initial: {
+          opacity: 0,
+          scale: 0.8
+        },
+        animate: {
+          opacity: [0, 0.6, 0.4, 0.7, 0.5], // Breathing effect
+          scale: [0.8, 1.1, 0.9, 1.2, 1.0],
+          transition: {
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5
+          }
+        }
+      },
+
+      // ✨ PARTICLE SYSTEM
+      particles: {
+        initial: {
+          y: 0,
+          opacity: 0,
+          scale: 0
+        },
+        animate: {
+          y: [-8, -20, -8],
+          opacity: [0, 1, 0],
+          scale: [0, 1.2, 0],
+          transition: {
+            duration: 2.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.4, 1]  // Control animation timing points
+          }
+        }
+      }
     },
   },
   projects: {

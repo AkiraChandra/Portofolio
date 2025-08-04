@@ -81,7 +81,7 @@ export const useProjectTransition = ({
     const nextIndex = (activeIndex + 1) % totalProjects;
     setActiveIndex(nextIndex);
     
-    // Don't animate line for the last project or if reduced motion
+    // Don&apos;t animate line for the last project or if reduced motion
     if (activeIndex < totalProjects - 1 && !prefersReducedMotion) {
       startLineAnimation();
     }

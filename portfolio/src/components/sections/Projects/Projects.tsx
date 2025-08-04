@@ -1,7 +1,7 @@
 // src/components/sections/Projects/Projects.tsx (MOBILE OPTIMIZED)
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Planet from "./components/Planet";
 import ProjectPreview from "./components/ProjectPreview";
@@ -12,9 +12,8 @@ import { useProjectSizes } from "@/hooks/common/useMediaQuery";
 import { useProjects } from "@/hooks/projects/useProjects";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 import { Loader } from "lucide-react";
-import { debounce } from "lodash";
-
-const Projects = () => {
+import { debounce } from "@/utils/helpers/debounce";
+const Projects = memo(() => {
   const { projects, loading, error, refetch } = useProjects();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
@@ -27,7 +26,6 @@ const Projects = () => {
     activeIndex,
     progress,
     isLineAnimating,
-    isPaused,
     jumpToProject,
     pausePreview,
     resumePreview,
@@ -39,7 +37,6 @@ const Projects = () => {
 
   const { planetSize, spacing } = useProjectSizes();
   const containerRef = useRef(null);
-  const [dragStart, setDragStart] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [lastHoverTime, setLastHoverTime] = useState(0);
@@ -88,7 +85,7 @@ const Projects = () => {
     setIsDragging(true);
   };
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
 
     if (isMobile) {
@@ -296,7 +293,6 @@ const Projects = () => {
                           <ProjectPreview
                             project={project}
                             isVisible={true}
-                            containerWidth={isMobile ? 300 : 500}
                           />
                         </motion.div>
                       )
@@ -496,6 +492,8 @@ const Projects = () => {
       </AnimatePresence>
     </section>
   );
-};
+});
+
+Projects.displayName = "Projects";
 
 export default Projects;

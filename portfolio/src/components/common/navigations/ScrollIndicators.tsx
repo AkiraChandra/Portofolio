@@ -54,6 +54,18 @@ const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({
     right: 'right-4 lg:right-8'
   };
 
+  // Helper function to get display name for sections
+  const getSectionDisplayName = (sectionId: string): string => {
+    const sectionNames: Record<string, string> = {
+      'home': 'Home',
+      'projects': 'Projects',
+      'experience': 'Experience',
+      'certifications': 'Certifications',
+      'skills': 'Skills'
+    };
+    return sectionNames[sectionId] || sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+  };
+
   return (
     <div 
       className={`fixed top-1/2 transform -translate-y-1/2 z-40 ${positionClasses[position]} ${className}`}
@@ -62,6 +74,7 @@ const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({
         {SECTIONS.map((section, index) => {
           const isActive = activeSection === section.id;
           const isNavigating = isScrolling && activeSection === section.id;
+          const sectionDisplayName = getSectionDisplayName(section.id);
           
           return (
             <motion.div
@@ -75,26 +88,35 @@ const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({
               <AnimatePresence>
                 {showLabels && (
                   <motion.div
-                    className={`absolute ${position === 'right' ? 'right-full mr-4' : 'left-full ml-4'} 
-                               bg-background-secondary/90 dark:bg-background-secondary-dark/90 
-                               backdrop-blur-sm rounded-lg px-3 py-1 border border-border-primary/20 dark:border-border-primary-dark/20
-                               opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
+                    className={`absolute ${position === 'right' 
+                      ? 'right-full mr-4' 
+                      : 'left-full ml-4'
+                    } bg-background-secondary dark:bg-background-secondary-dark 
+                                   px-3 py-1.5 rounded-md shadow-lg border border-border-primary/20 dark:border-border-primary-dark/20
+                                   whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 
+                                   transition-opacity duration-200`}
+                    style={{
+                      fontSize: sizeClasses[size].container === 'gap-3' ? '12px' : sizeClasses[size].container === 'gap-4' ? '16px' : '20px'
+                    }}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ delay: index * 0.1 + 0.2 }}
                   >
                     <span className={`${sizeClasses[size].label} text-text-primary dark:text-text-primary-dark font-medium whitespace-nowrap`}>
-                      {section.title}
+                      {sectionDisplayName}
                     </span>
                     
                     {/* Arrow */}
-                    <div 
-                      className={`absolute top-1/2 transform -translate-y-1/2 
-                                 ${position === 'right' ? 'left-full' : 'right-full'} 
-                                 w-2 h-2 bg-background-secondary/90 dark:bg-background-secondary-dark/90 
-                                 border-r border-b border-border-primary/20 dark:border-border-primary-dark/20 
-                                 ${position === 'right' ? 'rotate-45' : '-rotate-45'}`}
-                    />
+                    <div className={`absolute top-1/2 transform -translate-y-1/2 
+                                   ${position === 'right' ? 'left-full' : 'right-full'}`}>
+                      <div 
+                        className={`w-0 h-0 border-t-4 border-b-4 border-transparent 
+                                   ${position === 'right' 
+                                     ? 'border-l-4 border-l-background-secondary dark:border-l-background-secondary-dark' 
+                                     : 'border-r-4 border-r-background-secondary dark:border-r-background-secondary-dark'
+                                   }`}
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -109,7 +131,7 @@ const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({
                            }`}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
-                aria-label={`Navigate to ${section.title} section`}
+                aria-label={`Navigate to ${sectionDisplayName} section`}
               >
                 {/* Active indicator glow */}
                 {isActive && (
@@ -133,24 +155,39 @@ const ScrollIndicators: React.FC<ScrollIndicatorsProps> = ({
 
                 {/* Tooltip on hover */}
                 <motion.div
-                  className={`absolute ${position === 'right' ? 'right-full mr-2' : 'left-full ml-2'} 
-                             top-1/2 transform -translate-y-1/2 
-                             bg-text-primary dark:bg-text-primary-dark text-background-primary dark:text-background-primary-dark 
-                             px-2 py-1 rounded text-xs font-medium whitespace-nowrap
-                             opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
+                  className={`absolute ${position === 'right' 
+                    ? 'right-full mr-2' 
+                    : 'left-full ml-2'
+                  } bg-text-primary dark:bg-text-primary-dark text-background-primary dark:text-background-primary-dark
+                             px-2 py-1 rounded text-xs font-medium opacity-0 group-hover:opacity-100 
+                             transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ opacity: 1, scale: 1 }}
                 >
-                  {section.title}
+                  {sectionDisplayName}
+                  
+                  {/* Tooltip arrow */}
+                  <div className={`absolute top-1/2 transform -translate-y-1/2 
+                                 ${position === 'right' ? 'left-full' : 'right-full'}`}>
+                    <div 
+                      className={`w-0 h-0 border-t-2 border-b-2 border-transparent 
+                                 ${position === 'right' 
+                                   ? 'border-l-2 border-l-text-primary dark:border-l-text-primary-dark' 
+                                   : 'border-r-2 border-r-text-primary dark:border-r-text-primary-dark'
+                                 }`}
+                    />
+                  </div>
                 </motion.div>
               </motion.button>
 
-              {/* Connection line to next dot */}
+              {/* Connection line between dots */}
               {index < SECTIONS.length - 1 && (
                 <motion.div
-                  className="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 
-                           w-px bg-border-primary/20 dark:bg-border-primary-dark/20"
-                  style={{ height: sizeClasses[size].container === 'gap-3' ? '12px' : sizeClasses[size].container === 'gap-4' ? '16px' : '20px' }}
+                  className="absolute top-full left-1/2 transform -translate-x-1/2 w-px bg-text-tertiary/20 dark:bg-text-tertiary-dark/20"
+                  style={{
+                    height: sizeClasses[size].container === 'gap-3' ? '12px' : sizeClasses[size].container === 'gap-4' ? '16px' : '20px'
+                  }}
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ delay: index * 0.1 + 0.2 }}

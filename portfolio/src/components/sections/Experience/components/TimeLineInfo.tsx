@@ -1,21 +1,7 @@
 // src/components/sections/Experience/components/TimeLineInfo.tsx (Updated)
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import {
-  Building2,
-  MapPin,
-  Calendar,
-  ExternalLink,
-  ChevronRight,
-  Award,
-  Code,
-  Briefcase,
-  PictureInPicture,
-  Camera,
-  Layers,
-  Sparkles
-} from "lucide-react";
+import { ExternalLink, Award, Code, Briefcase, Camera } from "lucide-react";
 import { TimelineInfoProps } from "@/types/experience";
 import SmartImage from "@/components/common/SmartImage";
 import PlaceholderImage from "@/components/common/PlaceholderImage";
@@ -25,23 +11,6 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
   isVisible,
 }) => {
   const [activeTab, setActiveTab] = useState<"overview" | "photos">("overview");
-
-  // Helper function to get proper image source
-  const getImageSrc = (
-    imageUrl?: string,
-    fallback: string = "/images/default-company.png"
-  ) => {
-    if (!imageUrl) return fallback;
-
-    // If it's already a full URL (like Supabase bucket URL), use it directly
-    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-      return imageUrl;
-    }
-
-    // If it's a relative path, assume it's a local asset
-    return imageUrl;
-  };
-
   const TabButton = ({
     tab,
     label,
@@ -49,7 +18,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
   }: {
     tab: typeof activeTab;
     label: string;
-    icon: any;
+    icon: React.ElementType;
   }) => (
     <motion.button
       onClick={() => setActiveTab(tab)}
@@ -149,48 +118,52 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
                   </p>
 
                   {/* Technologies Used - New Design */}
-                  {experience.technologies && experience.technologies.length > 0 && (
-                    <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Code className="w-5 h-5 text-primary dark:text-primary-dark" />
-                        <h4 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">
-                          Technologies Used
-                        </h4>
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {experience.technologies.map((tech, index) => (
-                          <motion.div
-                            key={tech}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="group relative"
-                          >
-                            <div className="relative overflow-hidden rounded-xl p-3 bg-gradient-to-br from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 border border-primary/10 dark:border-primary-dark/10 backdrop-blur-sm hover:from-primary/10 hover:to-yellow-400/10 dark:hover:from-primary-dark/10 dark:hover:to-yellow-400/10 transition-all duration-300">
-                              {/* Subtle glow effect */}
-                              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                              
-                              {/* Tech name */}
-                              <div className="relative z-10 flex items-center justify-between">
-                                <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
-                                  {tech}
-                                </span>
-                                <div className="w-2 h-2 rounded-full bg-primary/30 dark:bg-primary-dark/30 group-hover:bg-primary dark:group-hover:bg-primary-dark transition-colors" />
+                  {experience.technologies &&
+                    experience.technologies.length > 0 && (
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Code className="w-5 h-5 text-primary dark:text-primary-dark" />
+                          <h4 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">
+                            Technologies Used
+                          </h4>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {experience.technologies.map((tech, index) => (
+                            <motion.div
+                              key={tech}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.05 }}
+                              className="group relative"
+                            >
+                              <div className="relative overflow-hidden rounded-xl p-3 bg-gradient-to-br from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 border border-primary/10 dark:border-primary-dark/10 backdrop-blur-sm hover:from-primary/10 hover:to-yellow-400/10 dark:hover:from-primary-dark/10 dark:hover:to-yellow-400/10 transition-all duration-300">
+                                {/* Subtle glow effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-yellow-400/5 dark:from-primary-dark/5 dark:to-yellow-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                {/* Tech name */}
+                                <div className="relative z-10 flex items-center justify-between">
+                                  <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark group-hover:text-primary dark:group-hover:text-primary-dark transition-colors">
+                                    {tech}
+                                  </span>
+                                  <div className="w-2 h-2 rounded-full bg-primary/30 dark:bg-primary-dark/30 group-hover:bg-primary dark:group-hover:bg-primary-dark transition-colors" />
+                                </div>
+
+                                {/* Animated underline */}
+                                <motion.div
+                                  className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-yellow-400 dark:from-primary-dark dark:to-yellow-400"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: "100%" }}
+                                  transition={{
+                                    delay: index * 0.1 + 0.2,
+                                    duration: 0.5,
+                                  }}
+                                />
                               </div>
-                              
-                              {/* Animated underline */}
-                              <motion.div
-                                className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-yellow-400 dark:from-primary-dark dark:to-yellow-400"
-                                initial={{ width: 0 }}
-                                animate={{ width: "100%" }}
-                                transition={{ delay: index * 0.1 + 0.2, duration: 0.5 }}
-                              />
-                            </div>
-                          </motion.div>
-                        ))}
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Achievements */}
                   <div>
@@ -270,7 +243,7 @@ const TimelineInfo: React.FC<TimelineInfoProps> = ({
 
                             {/* Hover overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            
+
                             {/* Image caption */}
                             {image.caption && (
                               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
