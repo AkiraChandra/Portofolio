@@ -125,8 +125,6 @@ const LazyComponentLoader: React.FC<LazyComponentLoaderProps> = ({
         </Suspense>
       );
     }
-
-    // Fallback
     return children;
   };
 
