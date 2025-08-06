@@ -186,7 +186,7 @@ const Certifications = () => {
         scale: [1, 1.2, 1],
           }}
           transition={{
-        duration: 15,
+        duration: 8,
         repeat: Infinity,
         ease: "easeInOut"
           }}
@@ -204,7 +204,7 @@ const Certifications = () => {
         scale: [1, 0.9, 1],
           }}
           transition={{
-        duration: 12,
+        duration: 8,
         repeat: Infinity,
         ease: "easeInOut",
         delay: 2
