@@ -18,7 +18,7 @@ import EmptyState from './components/EmptyState';
 import MovingStars from "@/components/ui/animations/Movingstars";
 
 type ViewMode = 'grid' | 'list';
-type FilterType = 'all' | 'valid' | 'expiring' | 'expired' | 'lifetime' | 'featured' | 'verified';
+type FilterType = 'all' | 'valid' | 'expiring' | 'expired' | 'lifetime' | 'featured' | 'verified' | 'active';
 type SortType = 'newest' | 'oldest' | 'name' | 'organization' | 'status';
 
 const Certifications = () => {
