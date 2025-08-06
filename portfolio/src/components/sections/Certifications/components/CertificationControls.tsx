@@ -7,7 +7,7 @@ import { Search, Grid3X3, List, Filter, SortAsc } from 'lucide-react';
 import type { Certification } from '@/types/certification';
 
 type ViewMode = 'grid' | 'list';
-type FilterType = 'all' | 'valid' | 'expiring' | 'expired' | 'lifetime' | 'featured' | 'verified';
+type FilterType = 'all' | 'active' | 'featured' | 'expired' | 'valid' | 'expiring' | 'lifetime' | 'verified';
 type SortType = 'newest' | 'oldest' | 'name' | 'organization' | 'status';
 
 interface CertificationControlsProps {

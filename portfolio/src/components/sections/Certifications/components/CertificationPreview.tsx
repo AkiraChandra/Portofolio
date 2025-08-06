@@ -308,7 +308,7 @@ const CertificationPreview: React.FC<CertificationPreviewProps> = memo(({
               )}
 
               {/* Rating */}
-              {certification.rating && (
+              {/* {certification.rating && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-text-tertiary dark:text-text-tertiary-dark">Rating</label>
                   <div className="flex items-center gap-2">
@@ -329,7 +329,7 @@ const CertificationPreview: React.FC<CertificationPreviewProps> = memo(({
                     </span>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>
