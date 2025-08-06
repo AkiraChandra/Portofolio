@@ -1,87 +1,89 @@
-// src/components/sections/Certifications/Certifications.tsx (Enhanced Integration)
+// src/components/sections/Certifications/Certifications.tsx
 'use client';
 
-import React, { memo, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award } from 'lucide-react';
-import CertificationCard from './components/CertificationCard';
-import CertificationPreview from './components/CertificationPreview';
-import CertificationControls from './components/CertificationControls';
-import FeaturedCertifications from './components/FeaturedCertifications';
-import { useCertifications } from '@/hooks/certifications/useCertifications';
 import { useMediaQuery } from '@/hooks/common/useMediaQuery';
-import { filterCertificationsByStatus } from './utils/certificationUtils';
+import { useCertifications } from '@/hooks/certifications/useCertifications';
 import type { Certification } from '@/types/certification';
+
+// Components
+import CertificationStats from './components/CertificationStats';
+import CertificationControls from './components/CertificationControls';
+import CertificationGrid from './components/CertificationGrid';
+import FeaturedCertifications from './components/FeaturedCertifications';
+import CertificationModal from './components/CertificationModal';
+import LoadingState from './components/LoadingState';
+import EmptyState from './components/EmptyState';
+import MovingStars from "@/components/ui/animations/Movingstars";
 
 type ViewMode = 'grid' | 'list';
 type FilterType = 'all' | 'valid' | 'expiring' | 'expired' | 'lifetime' | 'featured' | 'verified';
-type SortBy = 'date' | 'name' | 'organization' | 'status';
+type SortType = 'newest' | 'oldest' | 'name' | 'organization' | 'status';
 
-const Certifications: React.FC = memo(() => {
-  // Responsive Detection
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const isTablet = useMediaQuery("(max-width: 1024px)");
-  
-  // Enhanced State Management
+const Certifications = () => {
+  // Hooks
+  const { certifications, loading, error } = useCertifications();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 1024px)');
+  const shouldReduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+  // State Management
+  const [viewMode, setViewMode] = useState<ViewMode>('grid'); // DEFAULT TO GRID
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [sortBy, setSortBy] = useState<SortBy>('date');
-  const [selectedCertification, setSelectedCertification] = useState<Certification | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
+  const [sortBy, setSortBy] = useState<SortType>('newest');
+  const [selectedCertification, setSelectedCertification] = useState<Certification | null>(null);
   const [showFeatured, setShowFeatured] = useState(true);
 
-  // Data Acquisition
-  const { certifications, loading, error, refetch } = useCertifications();
+  // Featured certifications
+  const featuredCertifications = useMemo(() => 
+    certifications.filter(cert => cert.featured),
+    [certifications]
+  );
 
-  // Strategic Data Processing: Featured Certifications Extraction
-  const featuredCertifications = useMemo(() => {
-    if (!certifications || certifications.length === 0) return [];
-    
-    // Primary: Extract explicitly featured certifications
-    let featured = certifications.filter(cert => cert.featured === true);
-    
-    // Fallback Strategy: Auto-select high-value certifications
-    if (featured.length === 0) {
-      featured = certifications
-        .filter(cert => !cert.isExpired)
-        .sort((a, b) => {
-          // Priority Algorithm: Verified > Recent
-          if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
-          // If both are the same, sort by issueDate (most recent first)
-          return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
-        })
-        .slice(0, 6); // Optimal carousel size
-    }
-    
-    return featured.slice(0, 8); // Maximum featured items
-  }, [certifications]);
-
-  // Enhanced Filtering Logic
-  const filteredAndSortedCertifications = useMemo(() => {
+  // Filter and Search Logic
+  const filteredCertifications = useMemo(() => {
     let filtered = certifications.filter(cert => {
+      // Search filter
       const matchesSearch = !searchQuery || 
         cert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         cert.issuingOrganization.toLowerCase().includes(searchQuery.toLowerCase()) ||
         cert.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesSearch;
+      if (!matchesSearch) return false;
+
+      // Category filter
+      switch (selectedFilter) {
+        case 'valid':
+          return !cert.expirationDate || new Date(cert.expirationDate) > new Date();
+        case 'expired':
+          return cert.expirationDate && new Date(cert.expirationDate) <= new Date();
+        case 'active':
+          return !cert.expirationDate || new Date(cert.expirationDate) > new Date();
+        case 'lifetime':
+          return !cert.expirationDate;
+        case 'featured':
+          return cert.featured;
+        case 'verified':
+          return cert.isVerified;
+        default:
+          return true;
+      }
     });
 
-    // Apply status-based filtering
-    filtered = filterCertificationsByStatus(filtered, selectedFilter);
-
-    // Intelligent Sorting Algorithm
+    // Sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'date':
+        case 'newest':
           return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+        case 'oldest':
+          return new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime();
         case 'name':
           return a.name.localeCompare(b.name);
         case 'organization':
           return a.issuingOrganization.localeCompare(b.issuingOrganization);
         case 'status':
-          // Multi-criteria sorting: Featured > Verified > Valid > Recent
           if (a.featured !== b.featured) return a.featured ? -1 : 1;
           if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
           return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
@@ -93,7 +95,7 @@ const Certifications: React.FC = memo(() => {
     return filtered;
   }, [certifications, searchQuery, selectedFilter, sortBy]);
 
-  // Comprehensive Statistics Calculation
+  // Enhanced Statistics Calculation
   const stats = useMemo(() => {
     const now = new Date();
     return {
@@ -115,7 +117,7 @@ const Certifications: React.FC = memo(() => {
     };
   }, [certifications]);
 
-  // Enhanced Event Handlers
+  // Event Handlers
   const handleCertificationClick = useCallback((certification: Certification) => {
     setSelectedCertification(certification);
   }, []);
@@ -128,62 +130,35 @@ const Certifications: React.FC = memo(() => {
     setSelectedCertification(certification);
   }, []);
 
-  // Responsive Layout Adjustments
+  // Responsive adjustments - KEEP GRID AS DEFAULT
   useEffect(() => {
-    if (isMobile) {
+    // Only force list on very small mobile screens
+    if (isMobile && window.innerWidth < 480) {
       setViewMode('list');
-      setShowFeatured(true); // Always show featured on mobile for better UX
+    }
+    // Always show featured on mobile for better UX
+    if (isMobile) {
+      setShowFeatured(true);
     }
   }, [isMobile]);
 
-  // Loading State Management
+  // Loading State
   if (loading) {
-    return (
-      <section className="py-20 relative overflow-hidden">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-          >
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-background-secondary dark:bg-background-secondary-dark rounded w-64 mx-auto"></div>
-              <div className="h-4 bg-background-secondary dark:bg-background-secondary-dark rounded w-96 mx-auto"></div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-32 bg-background-secondary dark:bg-background-secondary-dark rounded-xl"></div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-    );
+    return <LoadingState />;
   }
 
-  // Error State Management
+  // Error State
   if (error) {
     return (
       <section className="py-20 relative overflow-hidden">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="text-red-500"
           >
-            <Award className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-2">
-              Error Loading Certifications
-            </h3>
-            <p className="text-red-500 mb-4">Unable to load certifications. Please try again.</p>
-            <motion.button 
-              onClick={refetch}
-              className="px-6 py-3 bg-primary dark:bg-primary-dark text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Retry Loading
-            </motion.button>
+            <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
+            <p className="text-text-secondary dark:text-text-secondary-dark">{error}</p>
           </motion.div>
         </div>
       </section>
@@ -191,61 +166,134 @@ const Certifications: React.FC = memo(() => {
   }
 
   return (
-    <section id="certifications" className="py-20 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 dark:bg-primary-dark/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 dark:bg-secondary-dark/5 rounded-full blur-3xl"></div>
+    <section className="py-8 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
+      {/* Modern Glow Background Effects - Like Skills Page */}
+      {/* Glow Orbs & Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+        {/* Primary glow orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 dark:opacity-30"
+          style={{
+        background: 'radial-gradient(circle, rgba(246, 176, 13, 0.3) 0%, rgba(246, 176, 13, 0.1) 50%, transparent 100%)',
+        filter: 'blur(60px)'
+          }}
+          animate={{
+        x: [0, 100, 0],
+        y: [0, -50, 0],
+        scale: [1, 1.2, 1],
+          }}
+          transition={{
+        duration: 15,
+        repeat: Infinity,
+        ease: "easeInOut"
+          }}
+        />
+        
+        <motion.div
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 dark:opacity-25"
+          style={{
+        background: 'radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(147, 51, 234, 0.1) 50%, transparent 100%)',
+        filter: 'blur(50px)'
+          }}
+          animate={{
+        x: [0, -80, 0],
+        y: [0, 60, 0],
+        scale: [1, 0.9, 1],
+          }}
+          transition={{
+        duration: 12,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: 2
+          }}
+        />
+
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-10 dark:opacity-20">
+          <div
+        className="w-full h-full"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(var(--color-primary), 0.15) 1px, transparent 0)`,
+          backgroundSize: "80px 80px",
+        }}
+          />
+        </div>
+
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+        key={i}
+        className="absolute w-2 h-2 bg-primary/20 dark:bg-primary-dark/30 rounded-full"
+        style={{
+          left: `${10 + i * 15}%`,
+          top: `${20 + (i % 3) * 30}%`,
+        }}
+        animate={{
+          y: [0, -100, 0],
+          opacity: [0, 0.6, 0],
+          scale: [0.5, 1, 0.5]
+        }}
+        transition={{
+          duration: 8 + i,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: i * 1.5,
+        }}
+          />
+        ))}
+        {/* Moving Stars - placed above orbs */}
+        <div className="absolute inset-0 pointer-events-none z-10">
+          <MovingStars />
+        </div>
       </div>
+      {/* Remove or lower opacity of dark overlays to make effects visible */}
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/20 dark:to-black z-1" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Enhanced Header Section */}
+        {/* Minimalist Header - Like Skills */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12 md:mb-12"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary dark:text-text-primary-dark mb-6">
-            Professional Certifications
-          </h2>
-          <p className="text-lg md:text-xl text-text-secondary dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
-            Validated expertise and continuous learning achievements that demonstrate my commitment to professional excellence and industry best practices.
-          </p>
+          <motion.h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <span className="text-text-primary dark:text-text-primary-dark">My </span>
+            <span className="text-primary dark:text-primary-dark text-glow-sm">Certifications</span>
+          </motion.h1>
           
-          {/* Enhanced Statistics Display */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-10">
-            {[
-              { label: 'Total', value: stats.total, color: 'text-primary dark:text-primary-dark' },
-              { label: 'Valid', value: stats.valid, color: 'text-green-500' },
-              { label: 'Featured', value: stats.featured, color: 'text-yellow-400' },
-              ...(stats.expiring > 0 ? [{ label: 'Expiring', value: stats.expiring, color: 'text-orange-500' }] : [])
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-                className="text-center min-w-[80px]"
-              >
-                <div className={`text-2xl md:text-3xl font-bold ${stat.color} mb-1`}>
-                  {stat.value}
-                </div>
-                <div className="text-sm text-text-tertiary dark:text-text-tertiary-dark font-medium uppercase tracking-wide">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <motion.p 
+            className="text-base md:text-lg text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            Validated expertise and continuous learning achievements that demonstrate my commitment to excellence.
+          </motion.p>
+          
+          {/* Stats - Enhanced */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <CertificationStats stats={stats} />
+          </motion.div>
         </motion.div>
 
-        {/* Strategic Integration: Featured Certifications Section */}
+        {/* Featured Certifications Section */}
         {showFeatured && featuredCertifications.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-20"
+            className="mb-16"
           >
             <FeaturedCertifications
               certifications={featuredCertifications}
@@ -254,23 +302,31 @@ const Certifications: React.FC = memo(() => {
           </motion.div>
         )}
 
-        {/* Enhanced Controls Section */}
+        {/* Minimalist Controls and Grid Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-8"
+          className="space-y-4"
         >
-          {/* Toggle Featured Section */}
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark">
+          {/* Simple Section Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <h3 className="text-xl md:text-2xl font-bold text-text-primary dark:text-text-primary-dark">
               All Certifications
             </h3>
             
             {featuredCertifications.length > 0 && (
               <motion.button
                 onClick={() => setShowFeatured(!showFeatured)}
-                className="px-4 py-2 rounded-lg bg-background-secondary/50 dark:bg-background-secondary-dark/50 border border-border-primary/20 dark:border-border-primary-dark/20 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors text-sm font-medium"
+                className={`
+                  px-3 py-1.5 rounded-lg transition-all duration-300
+                  border border-border-primary/20 dark:border-border-primary-dark/20
+                  text-sm font-medium
+                  ${showFeatured 
+                    ? 'bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark' 
+                    : 'bg-background-secondary/50 dark:bg-background-secondary-dark/50 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark'
+                  }
+                `}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -279,118 +335,58 @@ const Certifications: React.FC = memo(() => {
             )}
           </div>
 
+          {/* Controls */}
           <CertificationControls
             searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
+            onSearchChange={setSearchQuery}
             viewMode={viewMode}
-            setViewMode={setViewMode}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            stats={stats}
+            onViewModeChange={setViewMode}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            certifications={certifications}
+            isMobile={isMobile}
           />
+
+          {/* Results */}
+          <AnimatePresence mode="wait">
+            {filteredCertifications.length === 0 ? (
+              <EmptyState 
+                searchTerm={searchQuery} 
+                selectedFilter={selectedFilter} 
+              />
+            ) : (
+              <motion.div
+                key={`${viewMode}-${selectedFilter}-${searchQuery}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CertificationGrid
+                  certifications={filteredCertifications}
+                  viewMode={viewMode}
+                  onCertificationClick={handleCertificationClick}
+                  shouldReduceMotion={shouldReduceMotion}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
-        {/* Enhanced Certifications Display */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          {filteredAndSortedCertifications.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center py-16"
-            >
-              <Award className="w-20 h-20 text-text-tertiary dark:text-text-tertiary-dark mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-text-primary dark:text-text-primary-dark mb-3">
-                No Certifications Found
-              </h3>
-              <p className="text-text-secondary dark:text-text-secondary-dark max-w-md mx-auto">
-                {searchQuery || selectedFilter !== 'all' 
-                  ? 'Try adjusting your search criteria or filters to find what you\'re looking for.'
-                  : 'No certifications are currently available to display.'}
-              </p>
-              
-              {(searchQuery || selectedFilter !== 'all') && (
-                <motion.button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedFilter('all');
-                  }}
-                  className="mt-4 px-4 py-2 bg-primary/20 dark:bg-primary-dark/20 text-primary dark:text-primary-dark rounded-lg hover:bg-primary/30 dark:hover:bg-primary-dark/30 transition-colors font-medium"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Clear Filters
-                </motion.button>
-              )}
-            </motion.div>
-          ) : (
-            <div className={`
-              ${viewMode === 'grid' 
-                ? 'grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3' 
-                : 'space-y-4'
-              }
-            `}>
-              <AnimatePresence mode="popLayout">
-                {filteredAndSortedCertifications.map((certification, index) => (
-                  <motion.div
-                    key={certification.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ 
-                      duration: 0.4, 
-                      delay: Math.min(index * 0.05, 0.5),
-                      layout: { duration: 0.3 }
-                    }}
-                  >
-                    <CertificationCard
-                      certification={certification}
-                      viewMode={viewMode}
-                      isActive={selectedCertification?.id === certification.id}
-                      isFeatured={certification.featured}
-                      onClick={() => handleCertificationClick(certification)}
-                      className="w-full"
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Enhanced Preview Modal */}
+        {/* Modal */}
         <AnimatePresence>
           {selectedCertification && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              onClick={handleClosePreview}
-            >
-              <div onClick={(e) => e.stopPropagation()}>
-                <CertificationPreview
-                  certification={selectedCertification}
-                  isVisible={true}
-                  onClose={handleClosePreview}
-                />
-              </div>
-            </motion.div>
+            <CertificationModal
+              certification={selectedCertification}
+              onClose={handleClosePreview}
+            />
           )}
         </AnimatePresence>
       </div>
     </section>
   );
-});
-
-Certifications.displayName = 'Certifications';
+};
 
 export default Certifications;

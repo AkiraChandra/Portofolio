@@ -31,82 +31,71 @@ const FeaturedCertifications = memo(({
 }: FeaturedCertificationsProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
+  const [lastManualAction, setLastManualAction] = useState(0);
   
   // Enhanced Responsive Detection
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(max-width: 1024px)");
 
-  // Intelligent Visible Items Calculation
+  // Intelligent Visible Items Calculation with Optimized Spacing
   const visibleConfiguration = useMemo(() => {
     if (isMobile) return { visible: 1, spacing: 0 };
-    if (isTablet) return { visible: 1, spacing: 120 };
-    return { visible: 3, spacing: 100 };
+    if (isTablet) return { visible: 3, spacing: 90 }; // Slightly closer for tablet
+    return { visible: 3, spacing: 110 }; // More compact for desktop
   }, [isMobile, isTablet]);
 
-  // Enhanced Auto-Rotation
+  // Auto-play functionality - respects manual actions
   useEffect(() => {
-    if (!isAutoPlaying || isPaused || certifications.length <= 1) return;
+    if (!isAutoPlaying || certifications.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % certifications.length);
-    }, 5000);
+      const now = Date.now();
+      // Only auto-advance if no recent manual action (within 4 seconds)
+      if (now - lastManualAction > 4000) {
+        setCurrentIndex((prev) => (prev + 1) % certifications.length);
+      }
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, isPaused, certifications.length]);
+  }, [isAutoPlaying, certifications.length, lastManualAction]);
 
-  // Navigation Handlers
-  const navigateToIndex = useCallback((newIndex: number) => {
-    setCurrentIndex(newIndex);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 8000);
-  }, []);
+  // Navigation handlers - Reset auto-scroll timer on manual action
+  const handlePrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + certifications.length) % certifications.length);
+    setLastManualAction(Date.now()); // Mark manual action timestamp
+  }, [certifications.length]);
 
-  const goToNext = useCallback(() => {
-    navigateToIndex((currentIndex + 1) % certifications.length);
-  }, [currentIndex, certifications.length, navigateToIndex]);
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % certifications.length);
+    setLastManualAction(Date.now()); // Mark manual action timestamp
+  }, [certifications.length]);
 
-  const goToPrevious = useCallback(() => {
-    navigateToIndex((currentIndex - 1 + certifications.length) % certifications.length);
-  }, [currentIndex, certifications.length, navigateToIndex]);
-
-  // Interaction State Management
-  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
-  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
-
-  if (!certifications.length) return null;
+  if (certifications.length === 0) return null;
 
   return (
-    <section className="relative mb-20">
-      {/* Section Header - Aligned with Skills Section Typography */}
+    <section className="mb-4 mb:mb-10">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-12"
+        className="text-center mb-0"
       >
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Star className="w-6 h-6 text-primary dark:text-primary-dark" />
-          <h3 className="text-2xl md:text-3xl font-bold text-text-primary dark:text-text-primary-dark">
+        <div className="flex items-center justify-center gap-3 mb-0">
+          <Star className="w-5 h-5 text-primary dark:text-primary-dark" />
+          <h3 className="text-xl md:text-2xl font-bold text-text-primary dark:text-text-primary-dark">
             Featured Certifications
           </h3>
-          <Star className="w-6 h-6 text-primary dark:text-primary-dark" />
+          <Star className="w-5 h-5 text-primary dark:text-primary-dark" />
         </div>
-        <p className="text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto">
-          Showcasing premier professional achievements and industry-recognized expertise
-        </p>
       </motion.div>
 
-      {/* Carousel Container - Proper Spacing */}
-      <div 
-        className="relative px-4 md:px-8"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* Card Display System - Fixed Positioning */}
-        <div className="flex justify-center items-center py-8">
+      {/* Carousel Container - Auto-scrolling with Focus on Hover */}
+      <div className="relative px-0 md:px-0">
+        {/* Card Display System */}
+        <div className="flex justify-center items-center py-4">
           <div className="relative w-full max-w-6xl">
-            <div className="flex items-center justify-center min-h-[200px]">
+            <div className="flex items-center justify-center min-h-[160px] overflow-hidden">
               {certifications.map((cert, index) => {
                 const position = index - currentIndex;
                 const isCenter = position === 0;
@@ -123,6 +112,7 @@ const FeaturedCertifications = memo(({
                     onClick={() => onCertificationClick(cert)}
                     isMobile={isMobile}
                     isTablet={isTablet}
+                    spacing={visibleConfiguration.spacing}
                   />
                 );
               })}
@@ -130,71 +120,67 @@ const FeaturedCertifications = memo(({
           </div>
         </div>
 
-        {/* Navigation Controls - Skills Section Style */}
-        <div className="absolute top-1/2 left-0 transform -translate-y-1/2">
+        {/* Navigation Controls */}
+        <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
           <motion.button
-            onClick={goToPrevious}
-            className="p-3 rounded-full bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 text-text-primary dark:text-text-primary-dark hover:border-primary/30 dark:hover:border-primary-dark/30 hover:bg-background-secondary dark:hover:bg-background-secondary-dark transition-all duration-300 shadow-lg"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            disabled={certifications.length <= 1}
+            onClick={handlePrevious}
+            className="p-2 md:p-3 rounded-full bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-sm border border-border-primary/30 dark:border-border-primary-dark/30 text-text-primary dark:text-text-primary-dark hover:bg-primary/10 dark:hover:bg-primary-dark/10 transition-all duration-300"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
           </motion.button>
         </div>
 
-        <div className="absolute top-1/2 right-0 transform -translate-y-1/2">
+        <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
           <motion.button
-            onClick={goToNext}
-            className="p-3 rounded-full bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-sm border border-border-primary/20 dark:border-border-primary-dark/20 text-text-primary dark:text-text-primary-dark hover:border-primary/30 dark:hover:border-primary-dark/30 hover:bg-background-secondary dark:hover:bg-background-secondary-dark transition-all duration-300 shadow-lg"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            disabled={certifications.length <= 1}
+            onClick={handleNext}
+            className="p-2 md:p-3 rounded-full bg-background-secondary/80 dark:bg-background-secondary-dark/80 backdrop-blur-sm border border-border-primary/30 dark:border-border-primary-dark/30 text-text-primary dark:text-text-primary-dark hover:bg-primary/10 dark:hover:bg-primary-dark/10 transition-all duration-300"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
           </motion.button>
         </div>
       </div>
 
-      {/* Indicator System - Skills Section Alignment */}
-      <div className="flex items-center justify-center gap-6 mt-8">
+      {/* Indicators - Reduced spacing */}
+      <div className="flex justify-center items-center gap-4 mt-2">
         <div className="flex gap-2">
           {certifications.map((_, index) => (
-            <motion.button
+            <button
               key={index}
-              onClick={() => navigateToIndex(index)}
-              className={`rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? 'bg-primary dark:bg-primary-dark w-8 h-2'
-                  : 'bg-background-tertiary dark:bg-background-tertiary-dark hover:bg-background-secondary dark:hover:bg-background-secondary-dark w-2 h-2'
+              onClick={() => {
+                setCurrentIndex(index);
+                setLastManualAction(Date.now()); // Mark manual action timestamp
+              }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentIndex 
+                  ? 'bg-primary dark:bg-primary-dark w-6' 
+                  : 'bg-text-tertiary/30 dark:bg-text-tertiary-dark/30'
               }`}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
             />
           ))}
         </div>
-
+        
         <div className="flex items-center gap-2 text-xs text-text-tertiary dark:text-text-tertiary-dark">
-          <div className={`w-2 h-2 rounded-full ${
-            isAutoPlaying && !isPaused ? 'bg-green-400' : 'bg-background-tertiary dark:bg-background-tertiary-dark'
-          } transition-colors duration-300`} />
-          <span>
-            {isPaused ? 'Paused' : isAutoPlaying ? 'Auto-rotating' : 'Manual'}
-          </span>
+          <div className={`w-2 h-2 rounded-full bg-green-400 transition-colors duration-300`} />
+          <span>Auto-rotating</span>
         </div>
       </div>
     </section>
   );
 });
 
-// Enhanced Horizontal Card - Skills Section Design Language
+// Enhanced Horizontal Card with Better Spacing
 const HorizontalCertificationCard = memo(({ 
   certification, 
   position,
   isCenter,
   onClick,
   isMobile,
-  isTablet
+  isTablet,
+  spacing
 }: {
   certification: Certification;
   position: number;
@@ -202,10 +188,11 @@ const HorizontalCertificationCard = memo(({
   onClick: () => void;
   isMobile: boolean;
   isTablet: boolean;
+  spacing: number;
 }) => {
   const [imageError, setImageError] = useState(false);
 
-  // Status Calculation - Skills Section Pattern
+  // Status Calculation
   const getStatusInfo = () => {
     if (certification.expirationDate) {
       const now = new Date();
@@ -225,11 +212,20 @@ const HorizontalCertificationCard = memo(({
 
   const statusInfo = getStatusInfo();
 
-  // Transform Calculation - Mathematical Precision
+  // Transform Calculation with Compact Spacing
   const getTransformStyles = () => {
-    const baseScale = isCenter ? 1 : 0.88;
+    const baseScale = isCenter ? 1 : 0.85;
     const baseOpacity = isCenter ? 1 : 0.6;
-    const translateX = position * (isMobile ? 300 : isTablet ? 320 : 320);
+    
+    // Optimized spacing calculation for tighter layout
+    let translateX = position * spacing;
+    if (isMobile) {
+      translateX = position * 300;
+    } else if (isTablet) {
+      translateX = position * 340;
+    } else {
+      translateX = position * 360;
+    }
     
     return {
       scale: baseScale,
@@ -245,10 +241,10 @@ const HorizontalCertificationCard = memo(({
     <motion.div
       className="absolute cursor-pointer"
       style={{
-        width: isMobile ? '280px' : '400px',
-        height: '180px',
+        width: isMobile ? '280px' : isTablet ? '320px' : '350px',
+        height: '160px',
         left: '50%',
-        marginLeft: isMobile ? '-140px' : '-200px',
+        marginLeft: isMobile ? '-140px' : isTablet ? '-160px' : '-175px',
       }}
       animate={transformStyles}
       transition={{ 
@@ -260,7 +256,7 @@ const HorizontalCertificationCard = memo(({
       onClick={onClick}
       whileHover={isCenter ? { y: -4, scale: 1.02 } : { scale: transformStyles.scale * 1.05 }}
     >
-      {/* Skills Section Card Styling */}
+      {/* Skills Section Card Styling - Simplified */}
       <div className={`
         relative h-full rounded-xl overflow-hidden
         bg-background-secondary/50 dark:bg-background-secondary-dark/50 
@@ -270,13 +266,12 @@ const HorizontalCertificationCard = memo(({
         hover:border-primary/30 dark:hover:border-primary-dark/30
         transition-all duration-300
         hover:shadow-lg hover:shadow-primary/5 dark:hover:shadow-primary-dark/5
-        ${isCenter 
-          ? 'ring-1 ring-primary/30 dark:ring-primary-dark/30 shadow-md shadow-primary/10 dark:shadow-primary-dark/10' 
+        ${isCenter
+          ? 'ring-1 ring-primary/20 dark:ring-primary-dark/20 shadow-lg shadow-primary/10 dark:shadow-primary-dark/10' 
           : ''
         }
       `}>
-        
-        {/* Background Gradient - Skills Section Pattern */}
+        {/* Subtle background gradient - Skills style */}
         <div 
           className="absolute inset-0 opacity-[0.01] dark:opacity-[0.02]"
           style={{
@@ -284,96 +279,61 @@ const HorizontalCertificationCard = memo(({
           }}
         />
 
-        {/* Badge System - Skills Section Style */}
-        <div className="absolute top-3 right-3 z-30">
-          <motion.div 
-            className="w-7 h-7 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center shadow-lg"
-            whileHover={{ scale: 1.1, rotate: 180 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
-            <Star className="w-3.5 h-3.5 text-white fill-current" />
-          </motion.div>
-        </div>
-
-        <div className="absolute top-3 left-3 z-30">
-          <div 
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm"
-            style={{ 
-              backgroundColor: `${statusInfo.color}15`,
-              color: statusInfo.color,
-              border: `1px solid ${statusInfo.color}30`
-            }}
-          >
-            <statusInfo.icon className="w-3 h-3" />
-            <span>{statusInfo.label}</span>
-          </div>
-        </div>
-
-        {/* Content Layout - Skills Section Structure */}
-        <div className="relative z-20 h-full flex items-center p-4">
-          {/* Certificate Image - Compact */}
-          <div className={`relative flex-shrink-0 rounded-lg overflow-hidden bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 ${
-            isMobile ? 'w-16 h-12' : 'w-20 h-16'
-          }`}>
-            {!imageError && certification.certificateImage ? (
-              <SmartImage
-                src={certification.certificateImage}
-                alt={`${certification.name} certificate`}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={() => setImageError(true)}
-                priority={isCenter}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Award className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-text-tertiary dark:text-text-tertiary-dark`} />
-              </div>
-            )}
-            
-            {/* Organization Logo */}
-            {certification.organizationLogo && (
-              <div className={`absolute bottom-0.5 right-0.5 bg-white/90 rounded-sm p-0.5 ${
-                isMobile ? 'w-3 h-3' : 'w-4 h-4'
-              }`}>
+        {/* Content Layout - More compact */}
+        <div className="flex gap-3 h-full p-3">
+          {/* Image Section - Smaller */}
+          <div className="relative w-14 h-14 flex-shrink-0 mt-1">
+            <div className="w-full h-full rounded-lg overflow-hidden bg-background-tertiary/30 dark:bg-background-tertiary-dark/30 border border-border-primary/10 dark:border-border-primary-dark/10">
+              {certification.certificateImage && !imageError ? (
                 <SmartImage
-                  src={certification.organizationLogo}
-                  alt={certification.issuingOrganization}
+                  src={certification.certificateImage}
+                  alt={`${certification.name} certificate`}
                   fill
-                  className="object-contain"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={() => setImageError(true)}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Award className="w-5 h-5 text-text-tertiary dark:text-text-tertiary-dark" />
+                </div>
+              )}
+            </div>
+            
+            {/* Status Badge - Smaller */}
+            <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ backgroundColor: statusInfo.color }}>
+              <statusInfo.icon className="w-2 h-2 text-white" />
+            </div>
           </div>
 
-          {/* Content Area - Skills Section Typography */}
-          <div className="flex-1 min-w-0 ml-3">
-            <div className="mb-2">
+          {/* Content Section - More compact */}
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="mb-1.5">
               <h3 className={`font-bold text-text-primary dark:text-text-primary-dark leading-tight transition-colors duration-300 ${
-                isMobile ? 'text-sm' : 'text-base'
+                isMobile ? 'text-xs' : 'text-sm'
               } line-clamp-2 group-hover:text-primary dark:group-hover:text-primary-dark`}>
                 {certification.name}
               </h3>
               
-              <div className="flex items-center gap-1.5 mt-1">
-                <Building2 className={`${isMobile ? 'w-3 h-3' : 'w-3.5 h-3.5'} text-text-tertiary dark:text-text-tertiary-dark flex-shrink-0`} />
-                <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-text-secondary dark:text-text-secondary-dark truncate`}>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Building2 className={`${isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} text-text-tertiary dark:text-text-tertiary-dark flex-shrink-0`} />
+                <span className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-text-secondary dark:text-text-secondary-dark truncate`}>
                   {certification.issuingOrganization}
                 </span>
               </div>
             </div>
 
-            {/* Enhanced Content for Center Card */}
+            {/* Enhanced Content for Center Card - More compact */}
             {isCenter && !isMobile && certification.description && (
-              <p className="text-xs text-text-tertiary dark:text-text-tertiary-dark line-clamp-2 mb-2 leading-relaxed">
+              <p className="text-[10px] text-text-tertiary dark:text-text-tertiary-dark line-clamp-1 mb-1.5 leading-relaxed">
                 {certification.description}
               </p>
             )}
 
-            {/* Footer - Skills Section Pattern */}
+            {/* Footer - More compact */}
             <div className="flex items-center justify-between mt-auto">
-              <div className="flex items-center gap-1.5 text-text-tertiary dark:text-text-tertiary-dark">
-                <Calendar className="w-3 h-3" />
-                <span className="text-xs font-medium">
+              <div className="flex items-center gap-1 text-text-tertiary dark:text-text-tertiary-dark">
+                <Calendar className="w-2.5 h-2.5" />
+                <span className="text-[10px] font-medium">
                   {certification.issueDate.getFullYear()}
                   {certification.expirationDate && (
                     <span> - {certification.expirationDate.getFullYear()}</span>
@@ -381,11 +341,11 @@ const HorizontalCertificationCard = memo(({
                 </span>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {certification.isVerified && (
-                  <div className="flex items-center gap-1 text-green-400">
-                    <CheckCircle className="w-3 h-3" />
-                    {!isMobile && <span className="text-xs">Verified</span>}
+                  <div className="flex items-center gap-0.5 text-green-400">
+                    <CheckCircle className="w-2.5 h-2.5" />
+                    {!isMobile && <span className="text-[9px]">Verified</span>}
                   </div>
                 )}
                 
@@ -394,12 +354,12 @@ const HorizontalCertificationCard = memo(({
                     href={certification.credentialUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1 rounded-md bg-primary/15 dark:bg-primary-dark/15 text-primary dark:text-primary-dark hover:bg-primary/25 dark:hover:bg-primary-dark/25 transition-colors"
+                    className="p-0.5 rounded-md bg-primary/15 dark:bg-primary-dark/15 text-primary dark:text-primary-dark hover:bg-primary/25 dark:hover:bg-primary-dark/25 transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-2.5 h-2.5" />
                   </motion.a>
                 )}
               </div>
@@ -411,7 +371,6 @@ const HorizontalCertificationCard = memo(({
   );
 });
 
-HorizontalCertificationCard.displayName = 'HorizontalCertificationCard';
 FeaturedCertifications.displayName = 'FeaturedCertifications';
 
 export default FeaturedCertifications;

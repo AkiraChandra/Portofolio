@@ -14,6 +14,9 @@ import {
   Clock,
   AlertCircle,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Download
 } from 'lucide-react';
 import SmartImage from '@/components/common/SmartImage';
 import type { Certification } from '@/types/certification';
@@ -305,7 +308,7 @@ const CertificationPreview: React.FC<CertificationPreviewProps> = memo(({
               )}
 
               {/* Rating */}
-              {/* {certification.rating && (
+              {certification.rating && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-text-tertiary dark:text-text-tertiary-dark">Rating</label>
                   <div className="flex items-center gap-2">
@@ -314,7 +317,7 @@ const CertificationPreview: React.FC<CertificationPreviewProps> = memo(({
                         <Star
                           key={i}
                           className={`w-4 h-4 ${
-                            i < certification.! 
+                            i < certification.rating! 
                               ? 'text-yellow-400 fill-current' 
                               : 'text-text-tertiary dark:text-text-tertiary-dark'
                           }`}
@@ -326,7 +329,7 @@ const CertificationPreview: React.FC<CertificationPreviewProps> = memo(({
                     </span>
                   </div>
                 </div>
-              )} */}
+              )}
             </div>
           </div>
         </div>

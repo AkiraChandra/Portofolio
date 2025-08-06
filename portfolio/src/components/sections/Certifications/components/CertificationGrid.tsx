@@ -30,24 +30,58 @@ const CertificationGrid = memo(({
     }
   };
 
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: shouldReduceMotion ? 0 : 20,
+      scale: shouldReduceMotion ? 1 : 0.95
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  // Enhanced grid classes for better responsiveness
   const gridClasses = viewMode === 'grid'
-    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-    : 'space-y-4';
+    ? `grid gap-4 md:gap-6 lg:gap-8
+       grid-cols-1
+       sm:grid-cols-2 
+       lg:grid-cols-2
+       xl:grid-cols-3
+       2xl:grid-cols-4`
+    : 'space-y-3 md:space-y-4 lg:space-y-6';
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className={gridClasses}
+      className={`${gridClasses} w-full`}
     >
-      {certifications.map((certification) => (
-        <CertificationCard
+      {certifications.map((certification, index) => (
+        <motion.div
           key={certification.id}
-          certification={certification}
-          viewMode={viewMode}
-          onClick={onCertificationClick}
-        />
+          variants={itemVariants}
+          className="w-full"
+          style={{
+            // Stagger delay for smoother animation
+            animationDelay: shouldReduceMotion ? '0ms' : `${index * 50}ms`
+          }}
+        >
+          <CertificationCard
+            certification={certification}
+            viewMode={viewMode}
+            onClick={() => onCertificationClick(certification)}
+            isFeatured={certification.featured}
+            className="h-full" // Ensure cards fill container height in grid
+          />
+        </motion.div>
       ))}
     </motion.div>
   );
