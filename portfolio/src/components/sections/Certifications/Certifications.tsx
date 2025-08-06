@@ -169,7 +169,7 @@ const Certifications = () => {
   }
 
   return (
-    <section className="py-8 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
+    <section className="py-16 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
       {/* Modern Glow Background Effects - Like Skills Page */}
       {/* Glow Orbs & Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
@@ -259,7 +259,7 @@ const Certifications = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12 md:mb-12"
+          className="text-center mb-6 md:mb-6"
         >
           <motion.h1 
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3"
@@ -268,11 +268,11 @@ const Certifications = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <span className="text-text-primary dark:text-text-primary-dark">My </span>
-            <span className="text-primary dark:text-primary-dark text-glow-sm">Certifications</span>
+            <span className="text-primary dark:text-primary-dark">Certifications</span>
           </motion.h1>
           
           <motion.p 
-            className="text-base md:text-lg text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto mb-8"
+            className="text-base md:text-lg text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -296,7 +296,7 @@ const Certifications = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-16"
+            className="mb-0"
           >
             <FeaturedCertifications
               certifications={featuredCertifications}
