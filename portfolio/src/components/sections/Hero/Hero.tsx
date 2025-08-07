@@ -11,47 +11,47 @@ import ProfilePicture from "@/components/sections/Hero/components/ProfilePicture
 import AboutModal from "@/components/sections/Hero/components/AboutModal";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
+import { useHeroActivity } from "@/hooks/common/useSectionActivity";
 
-// ✅ FIXED: Activity Hook dengan proper dependency
-const useHeroActivity = () => {
-  const [isActive, setIsActive] = useState(true);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+// const useHeroActivity = () => {
+//   const [isActive, setIsActive] = useState(true);
+//   const observerRef = useRef<IntersectionObserver | null>(null);
   
-  useEffect(() => {
-    // ✅ FIXED: Remove isActive from dependency to prevent loop
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target.id === 'home') {
-            const newIsActive = entry.intersectionRatio > 0.5;
+//   useEffect(() => {
+//     // ✅ FIXED: Remove isActive from dependency to prevent loop
+//     observerRef.current = new IntersectionObserver(
+//       (entries) => {
+//         entries.forEach((entry) => {
+//           if (entry.target.id === 'home') {
+//             const newIsActive = entry.intersectionRatio > 0.5;
             
-            setIsActive((prevIsActive) => {
-              if (newIsActive !== prevIsActive) {
-                console.log(`🏠 Hero: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
-              }
-              return newIsActive;
-            });
-          }
-        });
-      },
-      { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
-    );
+//             setIsActive((prevIsActive) => {
+//               if (newIsActive !== prevIsActive) {
+//                 console.log(`🏠 Hero: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
+//               }
+//               return newIsActive;
+//             });
+//           }
+//         });
+//       },
+//       { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
+//     );
 
-    // ✅ FIXED: Immediate observation without setTimeout
-    const heroElement = document.getElementById('home');
-    if (heroElement && observerRef.current) {
-      observerRef.current.observe(heroElement);
-    }
+//     // ✅ FIXED: Immediate observation without setTimeout
+//     const heroElement = document.getElementById('home');
+//     if (heroElement && observerRef.current) {
+//       observerRef.current.observe(heroElement);
+//     }
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []); // ✅ FIXED: Empty dependency array
+//     return () => {
+//       if (observerRef.current) {
+//         observerRef.current.disconnect();
+//       }
+//     };
+//   }, []); // ✅ FIXED: Empty dependency array
 
-  return { isActive };
-};
+//   return { isActive };
+// };
 
 const Hero: React.FC = memo(() => {
   Hero.displayName = "Hero";

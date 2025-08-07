@@ -1,9 +1,7 @@
-// File: src/components/sections/Hero/components/TypeWritter.tsx - UPDATED WITH CONTEXT
 "use client";
 
-import React from "react";
-import { useEffect, useState } from "react";
-import { useActiveTimeout, useAnimationState } from '@/contexts/SectionActivityContext'; // ✅ IMPORT CONTEXT
+import React, { useEffect, useState, useRef } from "react";
+import { useSectionActivity, useActiveTimeout } from '@/contexts/SectionActivityContext';
 
 interface TypeWriterProps {
   words: string[];
@@ -15,18 +13,19 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   const [reverse, setReverse] = useState(false);
   const [blink, setBlink] = useState(true);
   const [text, setText] = useState("");
+  
+  // Get activity status
+  const { isActive } = useSectionActivity();
+  const isHomeActive = isActive('home');
 
-  // ✅ GUNAKAN CONTEXT - CHECK APAKAH HOME SECTION AKTIF
-  const { shouldPause } = useAnimationState('home');
-
-  // ✅ BLINK ANIMATION - GANTI useEffect dengan useActiveTimeout
+  // Blink animation dengan useActiveTimeout
   useActiveTimeout(() => {
     setBlink((prev) => !prev);
   }, 500, 'home');
 
-  // ✅ TYPING ANIMATION - TAMBAH CHECK shouldPause
+  // Typing animation
   useEffect(() => {
-    if (!words.length || !words[index] || shouldPause) return; // ✅ TAMBAH shouldPause CHECK
+    if (!words.length || !words[index] || !isHomeActive) return;
 
     if (subIndex === words[index].length + 1 && !reverse) {
       setReverse(true);
@@ -45,7 +44,7 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
     }, Math.max(reverse ? 75 : 150, Math.random() * 350));
 
     return () => clearTimeout(timeout);
-  }, [subIndex, index, reverse, words, shouldPause]); // ✅ TAMBAH shouldPause DI DEPENDENCY
+  }, [subIndex, index, reverse, words, isHomeActive]);
 
   if (!words.length) return null;
 

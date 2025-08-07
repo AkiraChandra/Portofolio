@@ -13,52 +13,20 @@ import { useProjects } from "@/hooks/projects/useProjects";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 import { Loader } from "lucide-react";
 import { debounce } from "@/utils/helpers/debounce";
+import { useProjectsActivity } from "@/hooks/common/useSectionActivity"; // ✅ IMPORT REUSABLE
 
 
 
 const Projects = memo(() => {
-
-  // ✅ TAMBAH 2: Activity Hook (setelah imports, sebelum Projects component)
-const useProjectsActivity = () => {
-  const [isActive, setIsActive] = useState(true);
-  
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target.id === 'projects') {
-            const newIsActive = entry.intersectionRatio > 0.5;
-            
-            setIsActive((prevIsActive) => {
-              if (newIsActive !== prevIsActive) {
-                console.log(`🚀 Projects: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
-              }
-              return newIsActive;
-            });
-          }
-        });
-      },
-      { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
-    );
-
-    const projectsElement = document.getElementById('projects');
-    if (projectsElement) {
-      observer.observe(projectsElement);
-    }
-
-    return () => {
-      if (observer) {
-        observer.disconnect();
+const { isActive } = useProjectsActivity({
+    onActiveChange: (isActive) => {
+      if (isActive) {
+        console.log('🚀 Projects animations resumed');
+      } else {
+        console.log('🚀 Projects animations paused');
       }
-    };
-  }, []);
-
-  return { isActive };
-};
-  const { isActive } = useProjectsActivity();
-
-
-
+    }
+  });
   const { projects, loading, error, refetch } = useProjects();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
