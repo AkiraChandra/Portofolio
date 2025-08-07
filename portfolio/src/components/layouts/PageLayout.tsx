@@ -1,4 +1,4 @@
-// File: src/components/layouts/PageLayout.tsx - PROGRESSIVE VERSION
+// File: src/components/layouts/PageLayout.tsx - UPDATE MINIMAL TANPA UBAH STYLE
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/common/navigations/Navbar";
 import Hero from "@/components/sections/Hero/Hero"; // Always load immediately
 import LazyComponentLoader from "@/components/common/LazyComponentLoader";
+import { SectionActivityProvider, useSectionActivity } from '@/contexts/SectionActivityContext';
 
 interface PageLayoutProps {
   defaultSection?: "home" | "projects" | "experience" | "certifications" | "skills";
@@ -21,12 +22,16 @@ const SECTIONS = [
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
-export default function PageLayout({ defaultSection = "home" }: PageLayoutProps) {
+// ✅ BUAT INNER COMPONENT UNTUK GUNAKAN CONTEXT
+function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
   const [cacheStats, setCacheStats] = useState({ loaded: 1, total: 5 }); // Home is pre-loaded
 
-  // ✅ NAVIGATION FUNCTION
+  // ✅ TAMBAHAN BARU - GUNAKAN CONTEXT
+  const { setActiveSection } = useSectionActivity();
+
+  // ✅ NAVIGATION FUNCTION - TAMBAH 1 LINE SAJA
   const navigateToSection = (sectionId: SectionId) => {
     const section = document.getElementById(sectionId);
     if (section) {
@@ -39,18 +44,19 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
       if (sectionConfig) {
         window.history.replaceState(null, "", sectionConfig.path);
         setCurrentSection(sectionId);
+        setActiveSection(sectionId); // ✅ TAMBAHAN 1 LINE INI
       }
     }
   };
 
-  // ✅ INITIALIZE
+  // ✅ INITIALIZE - TETAP SAMA
   useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
   }, []);
 
-  // ✅ HANDLE INITIAL NAVIGATION
+  // ✅ HANDLE INITIAL NAVIGATION - TETAP SAMA
   useEffect(() => {
     if (defaultSection === "home") return;
 
@@ -61,7 +67,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
     return () => clearTimeout(timer);
   }, [defaultSection]);
 
-  // ✅ SCROLL TRACKING
+  // ✅ SCROLL TRACKING - TAMBAH 1 LINE SAJA
   useEffect(() => {
     let scrollTimer: NodeJS.Timeout;
 
@@ -93,6 +99,7 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
 
         if (activeSection !== currentSection) {
           setCurrentSection(activeSection);
+          setActiveSection(activeSection); // ✅ TAMBAHAN 1 LINE INI
           const section = SECTIONS.find((s) => s.id === activeSection);
           if (section) {
             window.history.replaceState(null, "", section.path);
@@ -109,8 +116,14 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
         if (scrollTimer) clearTimeout(scrollTimer);
       };
     }
-  }, [currentSection]);
+  }, [currentSection, setActiveSection]); // ✅ TAMBAH setActiveSection DI DEPENDENCY
 
+  // ✅ SYNC INITIAL SECTION - TAMBAHAN BARU
+  useEffect(() => {
+    setActiveSection(defaultSection);
+  }, [defaultSection, setActiveSection]);
+
+  // ✅ SEMUA RETURN STATEMENT TETAP SAMA PERSIS
   return (
     <main className="min-h-screen overflow-x-hidden">
       {/* ✅ NAVBAR WITH CACHE INDICATOR */}
@@ -127,6 +140,8 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed top-20 right-4 z-50 bg-black/80 text-white p-2 rounded text-xs">
           Cache: {cacheStats.loaded}/{cacheStats.total}
+          <br />
+          Section: {currentSection} {/* ✅ TAMBAHAN DEBUG INFO */}
         </div>
       )}
 
@@ -281,5 +296,13 @@ export default function PageLayout({ defaultSection = "home" }: PageLayoutProps)
         </motion.section>
       </div>
     </main>
+  );
+}
+// ✅ EXPORT DENGAN PROVIDER WRAPPER - INI SAJA YANG BERUBAH
+export default function PageLayout({ defaultSection = "home" }: PageLayoutProps) {
+  return (
+    <SectionActivityProvider initialSection={defaultSection}>
+      <PageLayoutInner defaultSection={defaultSection} />
+    </SectionActivityProvider>
   );
 }
