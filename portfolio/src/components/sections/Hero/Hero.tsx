@@ -1,4 +1,6 @@
-// src/components/sections/Hero/Hero.tsx - ENHANCED PERFORMANCE (Design Unchanged)
+// File: src/components/sections/Hero/Hero.tsx - REPLACE EXISTING
+// Enhanced Hero Component dengan Activity Lifecycle Management
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
@@ -11,405 +13,366 @@ import ProfilePicture from "@/components/sections/Hero/components/ProfilePicture
 import AboutModal from "@/components/sections/Hero/components/AboutModal";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
+import { 
+  useActivityLifecycle, 
+  useActiveEffect, 
+  useActiveTimeout 
+} from "@/contexts/ActivityLifecycleContext";
+
+// ===============================================================
+// ENHANCED HERO COMPONENT
+// ===============================================================
 
 const Hero: React.FC = memo(() => {
-Hero.displayName = "Hero";
-  // 🚀 OPTIMIZATION 1: Simplified media queries
+  // Section ID for activity management
+  const SECTION_ID = 'home';
+  
+  // Activity Lifecycle hooks
+  const { isActive, isVisible, addSuspendCallback, addResumeCallback } = useActivityLifecycle();
+  
+  // Media queries - optimized
   const isMobile = useMediaQuery("(max-width: 768px)");
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const astronautSize = useAstronautSize();
   
-  // 🚀 OPTIMIZATION 2: Minimized state
-  const [isVisible, setIsVisible] = useState(false);
+  // Local state
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
-  
-  // 🚀 OPTIMIZATION 3: Memoized constants
-  const words = useMemo(() => 
-    ["Web Developer", "UI/UX Designer", "Full Stack Developer", "System Analyst", "Data Analyst"], 
-    []
-  );
-  
-  const { width, height } = useAstronautSize();
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [animationPhase, setAnimationPhase] = useState<'loading' | 'entering' | 'active'>('loading');
 
-  // 🚀 OPTIMIZATION 4: Optimized intersection observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { 
-        threshold: 0.1,
-        rootMargin: '50px' // Start animation earlier
-      }
-    );
+  // ===============================================================
+  // OPTIMIZED ANIMATION VARIANTS
+  // ===============================================================
 
-    const heroElement = document.getElementById('hero-section');
-    if (heroElement) observer.observe(heroElement);
+  const optimizedAnimations = useMemo(() => {
+    if (prefersReducedMotion) {
+      return {
+        leftContent: { initial: {}, animate: {}, transition: { duration: 0 } },
+        rightContent: { initial: {}, animate: {}, transition: { duration: 0 } },
+        scroll: { initial: {}, animate: {}, transition: { duration: 0 } }
+      };
+    }
 
-    return () => observer.disconnect();
-  }, []);
+    const baseAnimation = {
+      duration: isMobile ? 0.4 : 0.8,
+      ease: "easeOut" as const
+    };
 
-  // 🚀 OPTIMIZATION 5: Memoized handlers
-  const handleAboutClick = useCallback(() => setIsAboutModalOpen(true), []);
-  const closeAboutModal = useCallback(() => setIsAboutModalOpen(false), []);
-
-  // 🚀 OPTIMIZATION 6: Memoized animation variants with hardware acceleration
-  const optimizedAnimations = useMemo(() => ({
-    hero: {
+    return {
       leftContent: {
-        hidden: { 
-          opacity: 0, 
-          x: prefersReducedMotion ? 0 : (isMobile ? -20 : -50),
-          y: prefersReducedMotion ? 0 : 20
-        },
-        visible: {
-          opacity: 1,
-          x: 0,
-          y: 0,
-          transition: {
-            duration: isMobile ? 0.4 : 0.8,
-            ease: "easeOut",
-            staggerChildren: isMobile ? 0.1 : 0.15,
-            delayChildren: isMobile ? 0.1 : 0.2,
-          },
-        },
+        initial: { opacity: 0, x: isMobile ? -20 : -50, y: 20 },
+        animate: { opacity: 1, x: 0, y: 0 },
+        transition: baseAnimation
       },
       rightContent: {
-        hidden: { 
-          opacity: 0, 
-          x: prefersReducedMotion ? 0 : (isMobile ? 20 : 50),
-          scale: prefersReducedMotion ? 1 : 0.9
-        },
-        visible: {
-          opacity: 1,
-          x: 0,
-          scale: 1,
-          transition: {
-            duration: isMobile ? 0.4 : 0.8,
-            ease: "easeOut",
-            delay: isMobile ? 0.2 : 0.3,
-          },
-        },
+        initial: { opacity: 0, x: isMobile ? 20 : 50, scale: 0.9 },
+        animate: { opacity: 1, x: 0, scale: 1 },
+        transition: { ...baseAnimation, delay: isMobile ? 0.1 : 0.2 }
       },
-      child: {
-        hidden: { 
-          opacity: 0, 
-          y: prefersReducedMotion ? 0 : 20 
-        },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: isMobile ? 0.3 : 0.5,
-            ease: "easeOut"
-          },
-        },
-      },
-    },
-    astronaut: {
-      float: {
-        animate: prefersReducedMotion ? {} : {
-          y: isMobile ? [-3, 3, -3] : [-10, 10, -10],
-          transition: {
-            duration: isMobile ? 4 : 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        },
-      },
-    },
-    scroll: {
-      indicator: {
-        initial: { opacity: 0, y: prefersReducedMotion ? 0 : 10 },
-        animate: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: isMobile ? 0.8 : 1.2,
-            duration: isMobile ? 0.3 : 0.5,
-          },
-        },
-      },
-      arrow: {
-        animate: prefersReducedMotion ? {} : {
-          y: [0, 5, 0],
-          transition: {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        },
-      },
-    },
-  }), [isMobile, prefersReducedMotion]);
+      scroll: {
+        initial: { opacity: 0, y: 10 },
+        animate: { opacity: 1, y: 0 },
+        transition: { ...baseAnimation, delay: isMobile ? 0.2 : 0.4 }
+      }
+    };
+  }, [isMobile, prefersReducedMotion]);
 
-  // 🚀 OPTIMIZATION 7: Memoized button style for consistency
-  const buttonBaseClasses = useMemo(() => 
-    "inline-flex items-center gap-2 bg-gradient-to-r from-primary/80 to-yellow-400/80 " +
-    "dark:from-primary-dark/80 dark:to-yellow-400/80 text-black rounded-lg backdrop-blur-sm font-medium " +
-    "hover:from-primary hover:to-yellow-400 dark:hover:from-primary-dark dark:hover:to-yellow-400 " +
-    "transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/25 dark:hover:shadow-primary-dark/25",
-    []
-  );
+  // ===============================================================
+  // ACTIVITY-AWARE EFFECTS
+  // ===============================================================
 
-  // 🚀 OPTIMIZATION 8: Memoized hover animations
-  const hoverAnimation = useMemo(() => 
-    prefersReducedMotion ? {} : { scale: 1.02, y: -1 },
-    [prefersReducedMotion]
-  );
+  // Load animation sequence - only when active
+  useActiveEffect(() => {
+    if (!isActive(SECTION_ID)) return;
+
+    const loadTimer = setTimeout(() => {
+      setHasLoaded(true);
+      setAnimationPhase('entering');
+    }, 100);
+
+    const enterTimer = setTimeout(() => {
+      setAnimationPhase('active');
+    }, isMobile ? 800 : 1200);
+
+    return () => {
+      clearTimeout(loadTimer);
+      clearTimeout(enterTimer);
+    };
+  }, [isActive(SECTION_ID), isMobile], SECTION_ID);
+
+  // Auto-scroll hint animation - only when active
+  useActiveTimeout(() => {
+    if (!isMobile && isActive(SECTION_ID) && animationPhase === 'active') {
+      // Trigger scroll hint animation
+      const scrollHint = document.querySelector('.scroll-hint');
+      if (scrollHint) {
+        scrollHint.classList.add('animate-bounce');
+      }
+    }
+  }, 3000, SECTION_ID);
+
+  // ===============================================================
+  // SUSPEND/RESUME CALLBACKS
+  // ===============================================================
+
+  useEffect(() => {
+    // Add suspend callback
+    addSuspendCallback(SECTION_ID, () => {
+      console.log('🛑 Hero: Suspending activities');
+      setAnimationPhase('loading');
+      
+      // Pause any ongoing animations
+      const heroElement = document.getElementById('home');
+      if (heroElement) {
+        heroElement.style.animationPlayState = 'paused';
+      }
+    });
+
+    // Add resume callback
+    addResumeCallback(SECTION_ID, () => {
+      console.log('▶️ Hero: Resuming activities');
+      setAnimationPhase('active');
+      
+      // Resume animations
+      const heroElement = document.getElementById('home');
+      if (heroElement) {
+        heroElement.style.animationPlayState = 'running';
+      }
+    });
+  }, [addSuspendCallback, addResumeCallback, SECTION_ID]);
+
+  // ===============================================================
+  // EVENT HANDLERS
+  // ===============================================================
+
+  const handleAboutClick = useCallback(() => {
+    if (isActive(SECTION_ID)) {
+      setIsAboutModalOpen(true);
+    }
+  }, [isActive, SECTION_ID]);
+
+  const handleCloseModal = useCallback(() => {
+    setIsAboutModalOpen(false);
+  }, []);
+
+  // ===============================================================
+  // CONDITIONAL RENDERING LOGIC
+  // ===============================================================
+
+  // Only render MovingStars when section is active for performance
+  const shouldRenderStars = isActive(SECTION_ID) && !prefersReducedMotion;
   
-  const tapAnimation = useMemo(() => 
-    prefersReducedMotion ? {} : { scale: 0.98 },
-    [prefersReducedMotion]
-  );
+  // Only render complex animations when visible
+  const shouldRenderAnimations = isVisible(SECTION_ID) && hasLoaded;
 
-  const buttonHoverAnimation = useMemo(() => 
-    prefersReducedMotion ? {} : { scale: 1.05 },
-    [prefersReducedMotion]
-  );
-
-  const buttonTapAnimation = useMemo(() => 
-    prefersReducedMotion ? {} : { scale: 0.95 },
-    [prefersReducedMotion]
-  );
+  // ===============================================================
+  // RENDER
+  // ===============================================================
 
   return (
-    <>
-      <section 
-        id="hero-section"
-        className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden lg:px-24"
-        style={{ 
-          contain: 'layout style paint',
-          willChange: 'auto' // Only animate when needed
-        }}
-      >
-        {/* 🚀 OPTIMIZATION 9: Conditional stars rendering */}
-        {(!isMobile || !prefersReducedMotion) && (
-          <div className="absolute inset-0 z-0">
-            <MovingStars />
-          </div>
-        )}
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background-primary via-background-secondary to-background-tertiary dark:from-background-primary-dark dark:via-background-secondary-dark dark:to-background-tertiary-dark">
+      
+      {/* Background Stars - Only when active */}
+      {shouldRenderStars && (
+        <div className="absolute inset-0 z-0">
+          <MovingStars />
+        </div>
+      )}
 
-        {/* Simplified Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 z-1" />
-
-        {/* Main Content */}
-        <div className="container mx-auto px-4 relative z-10 h-full min-h-screen flex items-center">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10 lg:py-0 xl:py-0">
-            {/* Left Column - Text Content */}
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[80vh]">
+          
+          {/* Left Content */}
+          <motion.div
+            className="text-center lg:text-left space-y-6 lg:space-y-8"
+            {...(shouldRenderAnimations ? optimizedAnimations.leftContent : {})}
+          >
+            {/* Greeting */}
             <motion.div
-              id="hero-content-left"
-              variants={optimizedAnimations.hero.leftContent}
-              initial="hidden"
-              animate={isVisible ? "visible" : "hidden"}
-              className="relative z-10 lg:col-span-6 xl:col-span-6 lg:flex lg:items-center xl:flex xl:items-center"
-              style={{ willChange: 'transform, opacity' }}
+              className="space-y-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: shouldRenderAnimations ? 1 : 0 }}
+              transition={{ delay: 0.1 }}
             >
-              <div className="md:flex md:items-center">
-                {/* Profile Picture - Tablet */}
-                <div className="hidden md:block lg:hidden mr-4">
-                  <ProfilePicture
-                    src="/profile.jpg"
-                    className="w-[160px] h-[160px] sm:w-[160px] sm:h-[160px]"
-                    fromLeft={false}
-                  />
-                </div>
-
-                {/* Profile Picture - Mobile */}
-                <div className="md:hidden mb-4 flex justify-center">
-                  <ProfilePicture
-                    src="/profile.jpg"
-                    className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px]"
-                    fromLeft={true}
-                  />
-                </div>
-
-                <div className="flex-1 max-w-[560px] xl:max-w-[640px]">
-                  {/* About Me Button - Mobile & Tablet */}
-                  <motion.div
-                    variants={optimizedAnimations.hero.child}
-                    className="lg:hidden mb-3"
-                  >
-                    <motion.button
-                      onClick={handleAboutClick}
-                      className={`${buttonBaseClasses} px-4 py-1.5 sm:px-5 sm:py-2 text-sm sm:text-base`}
-                      whileHover={hoverAnimation}
-                      whileTap={tapAnimation}
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                      </svg>
-                      <span>About Me</span>
-                    </motion.button>
-                  </motion.div>
-
-                  {/* Desktop Layout */}
-                  <div className="hidden lg:block">
-                    <div className="inline-flex flex-col items-center mb-4">
-                      <ProfilePicture
-                        src="/profile.jpg"
-                        className="w-[220px] h-[220px] lg:mb-8"
-                        fromLeft={true}
-                      />
-                      <motion.div
-                        variants={optimizedAnimations.hero.child}
-                        className="w-[220px]"
-                      >
-                        <motion.button
-                          onClick={handleAboutClick}
-                          className={`${buttonBaseClasses} px-6 py-2.5 text-[0.9rem] justify-center w-full font-poppins`}
-                          whileHover={hoverAnimation}
-                          whileTap={tapAnimation}
-                        >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                          </svg>
-                          <span>About Me</span>
-                        </motion.button>
-                      </motion.div>
-                    </div>
-                  </div>
-
-                  <motion.h1 variants={optimizedAnimations.hero.child} className="mb-3">
-                    <div className="flex items-baseline space-x-2 font-poppins font-bold text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark lg:space-x-4 lg:mb-1">
-                      <span className="whitespace-nowrap">Hi! I&apos;m</span>
-                      <span className="dark:text-yellow-400 text-glow whitespace-nowrap">
-                        {config.site.author}
-                      </span>
-                    </div>
-                    <div className="max-w-60 sm:max-w-none lg:max-w-none xl:max-w-none mb-2 overflow-visible space-x-1 lg:space-x-2 font-poppins font-bold leading-none sm:leading-none lg:leading-none text-[1.5rem] sm:text-4xl lg:text-5xl xl:text-[3.5rem] text-text-primary dark:text-text-primary-dark">
-                      <span className="whitespace-nowrap">I&apos;m a </span>
-                      <TypeWriter words={words} />
-                    </div>
-                  </motion.h1>
-
-                  <motion.p
-                    variants={optimizedAnimations.hero.child}
-                    className="font-poppins text-[0.8rem] dark:text-text-secondary-dark mb-4 sm:text-[1.1rem] xl:text-[1.1rem] lg:leading-6"
-                  >
-                    {config.site.description}
-                  </motion.p>
-
-                  <motion.div
-                    variants={optimizedAnimations.hero.child}
-                    className="flex flex-wrap gap-3 sm:gap-4"
-                  >
-                    <motion.a
-                      href={config.site.social.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={buttonHoverAnimation}
-                      whileTap={buttonTapAnimation}
-                      className="px-6 sm:px-8 py-2.5 sm:py-3 lg:px-8 xl:px-10 lg:py-3 xl:py-4 bg-yellow-500 text-black rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2 text-sm sm:text-base lg:text-lg"
-                    >
-                      Let&apos;s Connect
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M14 5l7 7m0 0l-7 7m7-7H3"
-                        />
-                      </svg>
-                    </motion.a>
-
-                    <motion.button
-                      whileHover={buttonHoverAnimation}
-                      whileTap={buttonTapAnimation}
-                      className="px-6 sm:px-8 py-2.5 sm:py-3 lg:px-8 xl:px-10 lg:py-3 xl:py-4 border border-white/20 text-yellow-400 rounded-lg hover:bg-white/10 transition-colors text-sm sm:text-base lg:text-lg"
-                    >
-                      Download CV
-                    </motion.button>
-                  </motion.div>
-                </div>
-              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-text-primary dark:text-text-primary-dark leading-tight">
+                Hi! I'm{" "}
+                <span className="text-primary dark:text-primary-dark bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark bg-clip-text text-transparent">
+                  Akira Chandra
+                </span>
+              </h1>
             </motion.div>
 
-            {/* Right Column - Astronaut */}
+            {/* Typewriter Effect - Only when active */}
             <motion.div
-              id="hero-content-right"
-              variants={optimizedAnimations.hero.rightContent}
-              initial="hidden"
-              animate={isVisible ? "visible" : "hidden"}
-              className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6 lg:flex lg:items-center xl:flex xl:items-center"
-              style={{ willChange: 'transform, opacity' }}
+              className="text-xl md:text-2xl lg:text-3xl text-text-secondary dark:text-text-secondary-dark"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: shouldRenderAnimations ? 1 : 0 }}
+              transition={{ delay: 0.3 }}
             >
-              {/* Container for both glow and astronaut */}
-              <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10">
-                {/* 🚀 OPTIMIZATION 10: Conditional glow rendering */}
-                {!isMobile && !prefersReducedMotion && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="absolute w-full max-w-[500px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-75 opacity-30" />
-                    <div className="absolute w-full max-w-[350px] aspect-square rounded-full bg-[var(--glow-middle)] blur-2xl scale-75 opacity-40" />
-                    <div className="absolute w-full max-w-[250px] aspect-square rounded-full bg-[var(--glow-inner)] blur-xl scale-75 opacity-50" />
-                  </div>
-                )}
+              I'm a{" "}
+              {isActive(SECTION_ID) ? (
+                <TypeWriter
+                  words={[
+                    "Full Stack Developer",
+                    "UI/UX Designer", 
+                    "System Analyst",
+                    "Problem Solver"
+                  ]}
+                  sectionId={SECTION_ID}
+                />
+              ) : (
+                <span className="text-primary dark:text-primary-dark font-semibold">
+                  Full Stack Developer
+                </span>
+              )}
+            </motion.div>
 
-                {/* 🚀 OPTIMIZATION 11: Optimized astronaut with hardware acceleration */}
-                <motion.div
-                  animate={optimizedAnimations.astronaut.float.animate}
-                  className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
-                  style={{
-                    willChange: prefersReducedMotion ? 'auto' : 'transform',
-                    transform: 'translateZ(0)' // Force hardware acceleration
-                  }}
+            {/* Description */}
+            <motion.p
+              className="text-lg md:text-xl text-text-tertiary dark:text-text-tertiary-dark max-w-2xl leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: shouldRenderAnimations ? 1 : 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              Passionate about creating innovative solutions and bringing ideas to life through code. 
+              Currently working as a Junior Programmer while pursuing Information Systems at Bina Nusantara University.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: shouldRenderAnimations ? 1 : 0,
+                y: shouldRenderAnimations ? 0 : 20
+              }}
+              transition={{ delay: 0.7 }}
+            >
+              <button
+                onClick={handleAboutClick}
+                className="px-8 py-4 bg-primary hover:bg-primary/90 dark:bg-primary-dark dark:hover:bg-primary-dark/90 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                disabled={!isActive(SECTION_ID)}
+              >
+                About Me
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (isActive(SECTION_ID)) {
+                    const projectsSection = document.getElementById('projects');
+                    projectsSection?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="px-8 py-4 border-2 border-primary dark:border-primary-dark text-primary dark:text-primary-dark hover:bg-primary hover:text-white dark:hover:bg-primary-dark dark:hover:text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                disabled={!isActive(SECTION_ID)}
+              >
+                View Projects
+              </button>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Content - Profile Picture */}
+          <motion.div
+            className="flex justify-center lg:justify-end"
+            {...(shouldRenderAnimations ? optimizedAnimations.rightContent : {})}
+          >
+            <div className="relative">
+              {/* Profile Picture with Activity-aware loading */}
+              {isVisible(SECTION_ID) ? (
+                <ProfilePicture
+                  size={astronautSize}
+                  className="relative z-10"
+                  priority={isActive(SECTION_ID)}
+                />
+              ) : (
+                <div 
+                  className={`${astronautSize} bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse flex items-center justify-center`}
                 >
-                  <Image
-                    src="/astronaut.png"
-                    alt="Astronaut"
-                    width={width}
-                    height={height}
-                    className="w-full h-full object-contain"
-                    priority={true}
-                    loading="eager"
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Qc7bk/wANVdVzBZFmgjmTM080OoKCKu0HS0T41LbZVPdS/I0gTthV"
+                  <div className="w-1/2 h-1/2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                </div>
+              )}
+
+              {/* Floating Elements - Only when active */}
+              {isActive(SECTION_ID) && !isMobile && (
+                <>
+                  <motion.div
+                    className="absolute -top-4 -right-4 w-8 h-8 bg-primary dark:bg-primary-dark rounded-full opacity-80"
+                    animate={shouldRenderAnimations ? {
+                      y: [0, -10, 0],
+                      scale: [1, 1.1, 1],
+                    } : {}}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
                   />
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
+                  <motion.div
+                    className="absolute -bottom-6 -left-6 w-6 h-6 bg-secondary dark:bg-secondary-dark rounded-full opacity-60"
+                    animate={shouldRenderAnimations ? {
+                      y: [0, 10, 0],
+                      scale: [1, 0.9, 1],
+                    } : {}}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          variants={optimizedAnimations.scroll.indicator}
-          initial="initial"
-          animate="animate"
-          className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white/50"
-        >
-          <span className="text-xs sm:text-sm mb-2">Scroll to explore</span>
+        {/* Scroll Indicator - Only on desktop and when active */}
+        {!isMobile && isActive(SECTION_ID) && (
           <motion.div
-            animate={optimizedAnimations.scroll.arrow.animate}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center scroll-hint"
+            {...optimizedAnimations.scroll}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 sm:h-6 sm:w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <p className="text-text-tertiary dark:text-text-tertiary-dark text-sm mb-2">
+              Scroll to explore
+            </p>
+            <motion.div
+              className="w-6 h-10 border-2 border-text-tertiary dark:border-text-tertiary-dark rounded-full flex justify-center"
+              animate={shouldRenderAnimations ? {
+                y: [0, 5, 0],
+              } : {}}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              <motion.div
+                className="w-1 h-3 bg-text-tertiary dark:bg-text-tertiary-dark rounded-full mt-2"
+                animate={shouldRenderAnimations ? {
+                  opacity: [1, 0.3, 1],
+                } : {}}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
               />
-            </svg>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </section>
+        )}
+      </div>
 
       {/* About Modal */}
-      <AboutModal 
+      <AboutModal
         isOpen={isAboutModalOpen}
-        onClose={closeAboutModal}
+        onClose={handleCloseModal}
+        sectionId={SECTION_ID}
       />
-    </>
+    </div>
   );
 });
+
+Hero.displayName = "Hero";
 
 export default Hero;
