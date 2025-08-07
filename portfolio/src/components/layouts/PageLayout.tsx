@@ -1,10 +1,10 @@
-// File: src/components/layouts/PageLayout.tsx - REPLACE EXISTING
+// File: src/components/layouts/PageLayout.tsx - FIXED ANIMATEPRESENCE
 // Enhanced PageLayout dengan Activity Lifecycle Management
 
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion"; // Removed AnimatePresence - causing issues
 import Navbar from "@/components/common/navigations/Navbar";
 import Hero from "@/components/sections/Hero/Hero";
 import { ActivityLifecycleProvider, useActivityLifecycle } from "@/contexts/ActivityLifecycleContext";
@@ -101,7 +101,7 @@ const SectionLoadingFallback: React.FC<{ sectionId: string }> = ({ sectionId }) 
 );
 
 // ===============================================================
-// ENHANCED SECTION WRAPPER
+// ENHANCED SECTION WRAPPER - SIMPLIFIED
 // ===============================================================
 
 interface EnhancedSectionProps {
@@ -117,27 +117,12 @@ const EnhancedSection: React.FC<EnhancedSectionProps> = ({
 }) => {
   const Component = sectionConfig.component;
 
-  // Only render if visible or if it's a high priority section
-  const shouldRender = isVisible || sectionConfig.priority === 'high';
-
-  if (!shouldRender) {
-    return (
-      <section 
-        id={sectionConfig.id}
-        className="flex-shrink-0 h-screen"
-        style={{
-          scrollSnapAlign: "start",
-          scrollSnapStop: "always",
-        }}
-      >
-        <SectionLoadingFallback sectionId={sectionConfig.id} />
-      </section>
-    );
-  }
+  // Always render high priority sections, lazy load others
+  const shouldRender = sectionConfig.priority === 'high' || isVisible;
 
   return (
-    <ActiveSection
-      sectionId={sectionConfig.id}
+    <section 
+      id={sectionConfig.id}
       className="flex-shrink-0 h-screen"
       style={{
         scrollSnapAlign: "start",
@@ -145,26 +130,39 @@ const EnhancedSection: React.FC<EnhancedSectionProps> = ({
         contain: "layout style paint",
         zIndex: isActive ? 10 : 1,
       }}
-      fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}
+      data-section={sectionConfig.id}
+      data-active={isActive}
+      data-visible={isVisible}
     >
-      <motion.div
-        className="h-full relative"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isVisible ? 1 : 0 }}
-        transition={{ 
-          duration: 0.4, 
-          ease: "easeOut" 
-        }}
-      >
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="h-full overflow-y-auto scroll-smooth">
-            <React.Suspense fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}>
-              <Component />
-            </React.Suspense>
-          </div>
-        </div>
-      </motion.div>
-    </ActiveSection>
+      {shouldRender ? (
+        <ActiveSection
+          sectionId={sectionConfig.id}
+          className="h-full w-full"
+          fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}
+          priority={sectionConfig.priority}
+        >
+          <motion.div
+            className="h-full relative"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isVisible ? 1 : 0.3 }}
+            transition={{ 
+              duration: 0.3, 
+              ease: "easeOut" 
+            }}
+          >
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="h-full overflow-y-auto scroll-smooth">
+                <React.Suspense fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}>
+                  <Component />
+                </React.Suspense>
+              </div>
+            </div>
+          </motion.div>
+        </ActiveSection>
+      ) : (
+        <SectionLoadingFallback sectionId={sectionConfig.id} />
+      )}
+    </section>
   );
 };
 
@@ -183,13 +181,35 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // ===============================================================
+  // MOUNT TRACKING
+  // ===============================================================
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   // ===============================================================
   // NAVIGATION FUNCTION
   // ===============================================================
 
-  const navigateToSection = useCallback((sectionId: SectionId) => {
-    const section = document.getElementById(sectionId);
+  const navigateToSection = useCallback((sectionIdOrPath: string) => {
+    if (!isMounted) return;
+
+    // Handle both section ID and path navigation
+    let targetSectionId: string;
+    
+    if (sectionIdOrPath.startsWith('/')) {
+      const sectionConfig = SECTIONS.find((s) => s.path === sectionIdOrPath);
+      targetSectionId = sectionConfig?.id || 'home';
+    } else {
+      targetSectionId = sectionIdOrPath;
+    }
+
+    const section = document.getElementById(targetSectionId);
     if (section && scrollContainerRef.current) {
       // Smooth scroll to section
       section.scrollIntoView({
@@ -198,15 +218,15 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
       });
 
       // Update URL without page reload
-      const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
+      const sectionConfig = SECTIONS.find((s) => s.id === targetSectionId);
       if (sectionConfig) {
         window.history.replaceState(null, "", sectionConfig.path);
       }
 
       // Set as active section
-      setActiveSection(sectionId);
+      setActiveSection(targetSectionId);
     }
-  }, [setActiveSection]);
+  }, [setActiveSection, isMounted]);
 
   // ===============================================================
   // SCROLL HANDLING
@@ -214,17 +234,15 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container || !isMounted) return;
 
     const handleScroll = () => {
       setIsScrolling(true);
 
-      // Clear existing timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // Set scrolling to false after scroll ends
       scrollTimeoutRef.current = setTimeout(() => {
         setIsScrolling(false);
       }, 150);
@@ -238,13 +256,15 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, []);
+  }, [isMounted]);
 
   // ===============================================================
   // INITIAL NAVIGATION SETUP
   // ===============================================================
 
   useEffect(() => {
+    if (!isMounted) return;
+
     // Disable scroll restoration
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
@@ -254,19 +274,21 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
     if (defaultSection !== "home") {
       const timer = setTimeout(() => {
         navigateToSection(defaultSection);
-      }, 500); // Delay to ensure components are mounted
+      }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [defaultSection, navigateToSection]);
+  }, [defaultSection, navigateToSection, isMounted]);
 
   // ===============================================================
   // KEYBOARD NAVIGATION
   // ===============================================================
 
   useEffect(() => {
+    if (!isMounted) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey) return; // Ignore if modifier keys are pressed
+      if (event.ctrlKey || event.metaKey) return;
 
       const currentIndex = SECTIONS.findIndex(s => s.id === activeSectionId);
       
@@ -275,7 +297,7 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
         case 'PageDown':
           event.preventDefault();
           if (currentIndex < SECTIONS.length - 1) {
-            navigateToSection(SECTIONS[currentIndex + 1].id as SectionId);
+            navigateToSection(SECTIONS[currentIndex + 1].id);
           }
           break;
           
@@ -283,7 +305,7 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
         case 'PageUp':
           event.preventDefault();
           if (currentIndex > 0) {
-            navigateToSection(SECTIONS[currentIndex - 1].id as SectionId);
+            navigateToSection(SECTIONS[currentIndex - 1].id);
           }
           break;
           
@@ -294,28 +316,36 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
           
         case 'End':
           event.preventDefault();
-          navigateToSection(SECTIONS[SECTIONS.length - 1].id as SectionId);
+          navigateToSection(SECTIONS[SECTIONS.length - 1].id);
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeSectionId, navigateToSection]);
+  }, [activeSectionId, navigateToSection, isMounted]);
 
   // ===============================================================
-  // RENDER
+  // RENDER - SIMPLIFIED WITHOUT ANIMATEPRESENCE
   // ===============================================================
+
+  if (!isMounted) {
+    return (
+      <div className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
+        <SectionLoadingFallback sectionId="loading" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
       {/* Navigation */}
       <Navbar 
-        activeSection={activeSectionId as any} 
+        // activeSection={activeSectionId}
         onNavigate={navigateToSection}
       />
 
-      {/* Main Content */}
+      {/* Main Content - NO ANIMATEPRESENCE TO PREVENT MULTIPLE CHILDREN ISSUE */}
       <main
         ref={scrollContainerRef}
         className={`
@@ -327,22 +357,22 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
           scrollSnapType: "y mandatory",
           scrollBehavior: "smooth",
         }}
+        id="main-content"
       >
-        <AnimatePresence mode="wait">
-          {SECTIONS.map((sectionConfig) => {
-            const isVisible = visibleSections.has(sectionConfig.id);
-            const isActive = activeSectionId === sectionConfig.id;
-            
-            return (
-              <EnhancedSection
-                key={sectionConfig.id}
-                sectionConfig={sectionConfig}
-                isVisible={isVisible}
-                isActive={isActive}
-              />
-            );
-          })}
-        </AnimatePresence>
+        {/* FIXED: Render sections directly without AnimatePresence */}
+        {SECTIONS.map((sectionConfig) => {
+          const isVisible = visibleSections.has(sectionConfig.id);
+          const isActive = activeSectionId === sectionConfig.id;
+          
+          return (
+            <EnhancedSection
+              key={sectionConfig.id}
+              sectionConfig={sectionConfig}
+              isVisible={isVisible}
+              isActive={isActive}
+            />
+          );
+        })}
       </main>
 
       {/* Performance Monitor (Development Only) */}
@@ -382,7 +412,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ metrics, active
   >
     <div className="space-y-2">
       <div className="text-yellow-400 font-bold border-b border-white/20 pb-1 mb-2">
-        Performance Monitor
+        🚀 Activity Performance Monitor
       </div>
       
       <div className="grid grid-cols-2 gap-4">
@@ -421,7 +451,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ metrics, active
         
         <div>
           <div className="text-pink-400">Status:</div>
-          <div className="font-bold text-green-400">Optimized</div>
+          <div className="font-bold text-green-400">✅ Optimized</div>
         </div>
       </div>
     </div>
@@ -435,7 +465,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ metrics, active
 interface ScrollProgressIndicatorProps {
   activeSectionId: string;
   totalSections: number;
-  onSectionClick: (sectionId: SectionId) => void;
+  onSectionClick: (sectionId: string) => void;
 }
 
 const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = ({
@@ -452,7 +482,7 @@ const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = ({
         {SECTIONS.map((section, index) => (
           <motion.button
             key={section.id}
-            onClick={() => onSectionClick(section.id as SectionId)}
+            onClick={() => onSectionClick(section.id)}
             className={`
               w-3 h-3 rounded-full border-2 transition-all duration-300
               ${index <= activeIndex 
@@ -466,6 +496,7 @@ const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = ({
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
+            aria-label={`Navigate to ${section.id} section`}
           />
         ))}
         

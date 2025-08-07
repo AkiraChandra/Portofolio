@@ -1,4 +1,4 @@
-// File: src/components/sections/Hero/components/TypeWritter.tsx - REPLACE EXISTING
+// File: src/components/sections/Hero/components/TypeWritter.tsx - FIXED VERSION
 // Enhanced TypeWriter Component dengan Activity Lifecycle Management
 
 'use client';
@@ -11,7 +11,7 @@ import {
 } from '@/contexts/ActivityLifecycleContext';
 
 // ===============================================================
-// INTERFACES
+// INTERFACES - FIXED
 // ===============================================================
 
 interface TypeWriterProps {
@@ -20,7 +20,7 @@ interface TypeWriterProps {
   deletingSpeed?: number;
   pauseDuration?: number;
   className?: string;
-  sectionId: string;
+  sectionId: string; // Required, not optional
   loop?: boolean;
   showCursor?: boolean;
   cursorChar?: string;
@@ -293,12 +293,13 @@ TypeWriter.displayName = 'TypeWriter';
 export default TypeWriter;
 
 // ===============================================================
-// ADDITIONAL HOOK FOR TYPEWRITER CONTROL
+// ADDITIONAL HOOK FOR TYPEWRITER CONTROL - FIXED
 // ===============================================================
 
 export const useTypeWriter = (
   words: string[],
-  options: Partial<TypeWriterProps> = {}
+  sectionId: string, // Added required sectionId parameter
+  options: Partial<Omit<TypeWriterProps, 'words' | 'sectionId'>> = {}
 ) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentWord, setCurrentWord] = useState(words[0] || '');
@@ -316,9 +317,10 @@ export const useTypeWriter = (
     pause,
     resume,
     reset,
-    TypeWriterComponent: (props: Partial<TypeWriterProps>) => (
+    TypeWriterComponent: (props: Omit<Partial<TypeWriterProps>, 'sectionId'>) => (
       <TypeWriter
         words={words}
+        sectionId={sectionId} 
         {...options}
         {...props}
       />

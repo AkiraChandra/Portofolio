@@ -1,4 +1,4 @@
-// File: src/contexts/ActivityLifecycleContext.tsx - BUAT BARU
+// File: src/contexts/ActivityLifecycleContext.tsx - FINAL FIX FOR INFINITE LOOPS
 // Core Activity Lifecycle Manager untuk Portfolio Performance Enhancement
 
 'use client';
@@ -19,7 +19,7 @@ import React, {
 
 interface SectionResources {
   timers: Set<NodeJS.Timeout>;
-  intervals: Set<NodeJS.Timer>;
+  intervals: Set<NodeJS.Timeout>;
   animationFrames: Set<number>;
   observers: Set<IntersectionObserver | ResizeObserver>;
   gsapTimelines: Set<any>;
@@ -104,9 +104,11 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
     memoryUsage: 0
   });
 
-  // Refs
+  // Refs for stable operations
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
-  const performanceMonitorRef = useRef<NodeJS.Timer | null>(null);
+  const performanceMonitorRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitializedRef = useRef(false);
+  const registeredSectionsRef = useRef<Set<string>>(new Set());
 
   // ===============================================================
   // UTILITY FUNCTIONS
@@ -135,114 +137,118 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
   const cleanupSectionResources = useCallback((section: SectionActivity) => {
     log(`🧹 Cleaning up resources for section: ${section.sectionId}`);
 
-    // Clear timers
-    section.resources.timers.forEach(timer => {
-      clearTimeout(timer);
-      log(`  ⏰ Cleared timer`);
-    });
-    section.resources.timers.clear();
-
-    // Clear intervals
-    section.resources.intervals.forEach(interval => {
-      clearInterval(interval);
-      log(`  ⏰ Cleared interval`);
-    });
-    section.resources.intervals.clear();
-
-    // Cancel animation frames
-    section.resources.animationFrames.forEach(frame => {
-      cancelAnimationFrame(frame);
-      log(`  🎬 Cancelled animation frame`);
-    });
-    section.resources.animationFrames.clear();
-
-    // Disconnect observers
-    section.resources.observers.forEach(observer => {
-      observer.disconnect();
-      log(`  👁️ Disconnected observer`);
-    });
-    section.resources.observers.clear();
-
-    // Pause GSAP timelines
-    section.resources.gsapTimelines.forEach(timeline => {
-      if (timeline && typeof timeline.pause === 'function') {
-        timeline.pause();
-        log(`  🎭 Paused GSAP timeline`);
-      }
-    });
-
-    // Stop motion controls
-    section.resources.motionControls.forEach(control => {
-      if (control && typeof control.stop === 'function') {
-        control.stop();
-        log(`  🎯 Stopped motion control`);
-      }
-    });
-
-    // Remove event listeners
-    section.resources.eventListeners.forEach((listeners, element) => {
-      listeners.forEach(({ event, handler }) => {
-        element.removeEventListener(event, handler);
-        log(`  🎧 Removed ${event} listener`);
+    try {
+      // Clear timers
+      section.resources.timers.forEach(timer => {
+        clearTimeout(timer);
       });
-    });
-    section.resources.eventListeners.clear();
+      section.resources.timers.clear();
 
-    // Execute cleanup functions
-    section.cleanupFunctions.forEach(cleanup => {
-      try {
-        cleanup();
-        log(`  🔧 Executed cleanup function`);
-      } catch (error) {
-        console.warn(`Cleanup function failed for ${section.sectionId}:`, error);
-      }
-    });
-    section.cleanupFunctions.clear();
+      // Clear intervals
+      section.resources.intervals.forEach(interval => {
+        clearTimeout(interval);
+      });
+      section.resources.intervals.clear();
 
-    // Execute suspend callbacks
-    section.suspendCallbacks.forEach(callback => {
-      try {
-        callback();
-        log(`  ⏸️ Executed suspend callback`);
-      } catch (error) {
-        console.warn(`Suspend callback failed for ${section.sectionId}:`, error);
-      }
-    });
+      // Cancel animation frames
+      section.resources.animationFrames.forEach(frame => {
+        cancelAnimationFrame(frame);
+      });
+      section.resources.animationFrames.clear();
+
+      // Disconnect observers
+      section.resources.observers.forEach(observer => {
+        observer.disconnect();
+      });
+      section.resources.observers.clear();
+
+      // Pause GSAP timelines
+      section.resources.gsapTimelines.forEach(timeline => {
+        if (timeline && typeof timeline.pause === 'function') {
+          timeline.pause();
+        }
+      });
+
+      // Stop motion controls
+      section.resources.motionControls.forEach(control => {
+        if (control && typeof control.stop === 'function') {
+          control.stop();
+        }
+      });
+
+      // Remove event listeners
+      section.resources.eventListeners.forEach((listeners, element) => {
+        listeners.forEach(({ event, handler }) => {
+          element.removeEventListener(event, handler);
+        });
+      });
+      section.resources.eventListeners.clear();
+
+      // Execute cleanup functions
+      section.cleanupFunctions.forEach(cleanup => {
+        try {
+          cleanup();
+        } catch (error) {
+          console.warn(`Cleanup function failed for ${section.sectionId}:`, error);
+        }
+      });
+      section.cleanupFunctions.clear();
+
+      // Execute suspend callbacks
+      section.suspendCallbacks.forEach(callback => {
+        try {
+          callback();
+        } catch (error) {
+          console.warn(`Suspend callback failed for ${section.sectionId}:`, error);
+        }
+      });
+
+    } catch (error) {
+      console.error(`Error cleaning up section ${section.sectionId}:`, error);
+    }
   }, [log]);
 
   const resumeSectionActivities = useCallback((section: SectionActivity) => {
     log(`▶️ Resuming activities for section: ${section.sectionId}`);
 
-    // Resume GSAP timelines
-    section.resources.gsapTimelines.forEach(timeline => {
-      if (timeline && typeof timeline.play === 'function') {
-        timeline.play();
-        log(`  🎭 Resumed GSAP timeline`);
-      }
-    });
+    try {
+      // Resume GSAP timelines
+      section.resources.gsapTimelines.forEach(timeline => {
+        if (timeline && typeof timeline.play === 'function') {
+          timeline.play();
+        }
+      });
 
-    // Execute resume callbacks
-    section.resumeCallbacks.forEach(callback => {
-      try {
-        callback();
-        log(`  ▶️ Executed resume callback`);
-      } catch (error) {
-        console.warn(`Resume callback failed for ${section.sectionId}:`, error);
-      }
-    });
+      // Execute resume callbacks
+      section.resumeCallbacks.forEach(callback => {
+        try {
+          callback();
+        } catch (error) {
+          console.warn(`Resume callback failed for ${section.sectionId}:`, error);
+        }
+      });
+    } catch (error) {
+      console.error(`Error resuming section ${section.sectionId}:`, error);
+    }
   }, [log]);
 
   // ===============================================================
-  // SECTION MANAGEMENT
+  // SECTION MANAGEMENT - FIXED TO PREVENT DUPLICATE REGISTRATIONS
   // ===============================================================
 
   const registerSection = useCallback((sectionId: string) => {
+    // CRITICAL FIX: Prevent duplicate registrations
+    if (registeredSectionsRef.current.has(sectionId)) {
+      log(`⚠️ Section ${sectionId} already registered, skipping`);
+      return;
+    }
+
     log(`📝 Registering section: ${sectionId}`);
+    registeredSectionsRef.current.add(sectionId);
     
     setSections(prev => {
       if (prev.has(sectionId)) {
-        log(`  ⚠️ Section ${sectionId} already registered`);
-        return prev;
+        return prev; // Already exists, don't update
       }
 
       const newSection: SectionActivity = {
@@ -259,87 +265,107 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
 
       const updated = new Map(prev);
       updated.set(sectionId, newSection);
-
-      // Start observing if element exists
-      const element = document.getElementById(sectionId);
-      if (element && intersectionObserverRef.current) {
-        intersectionObserverRef.current.observe(element);
-        log(`  👁️ Started observing section element`);
-      }
-
       return updated;
     });
 
     setLoadedSections(prev => new Set([...prev, sectionId]));
+
+    // Observe element after a delay to ensure DOM is ready
+    requestAnimationFrame(() => {
+      const element = document.getElementById(sectionId);
+      if (element && intersectionObserverRef.current) {
+        try {
+          intersectionObserverRef.current.observe(element);
+          log(`  👁️ Started observing section element: ${sectionId}`);
+        } catch (error) {
+          console.warn(`Failed to observe element ${sectionId}:`, error);
+        }
+      }
+    });
   }, [activeSectionId, visibleSections, loadedSections, log]);
 
   const unregisterSection = useCallback((sectionId: string) => {
+    if (!registeredSectionsRef.current.has(sectionId)) {
+      return; // Not registered, skip
+    }
+
     log(`🗑️ Unregistering section: ${sectionId}`);
+    registeredSectionsRef.current.delete(sectionId);
     
-    const section = sections.get(sectionId);
-    if (section) {
-      cleanupSectionResources(section);
+    setSections(prev => {
+      const section = prev.get(sectionId);
+      if (section) {
+        cleanupSectionResources(section);
+      }
 
       // Stop observing element
       const element = document.getElementById(sectionId);
       if (element && intersectionObserverRef.current) {
-        intersectionObserverRef.current.unobserve(element);
-        log(`  👁️ Stopped observing section element`);
+        try {
+          intersectionObserverRef.current.unobserve(element);
+          log(`  👁️ Stopped observing section element: ${sectionId}`);
+        } catch (error) {
+          console.warn(`Failed to unobserve element ${sectionId}:`, error);
+        }
       }
 
-      setSections(prev => {
-        const updated = new Map(prev);
-        updated.delete(sectionId);
-        return updated;
-      });
+      const updated = new Map(prev);
+      updated.delete(sectionId);
+      return updated;
+    });
 
-      setLoadedSections(prev => {
-        const updated = new Set(prev);
-        updated.delete(sectionId);
-        return updated;
-      });
+    setLoadedSections(prev => {
+      const updated = new Set(prev);
+      updated.delete(sectionId);
+      return updated;
+    });
 
-      setVisibleSections(prev => {
-        const updated = new Set(prev);
-        updated.delete(sectionId);
-        return updated;
-      });
-    }
-  }, [sections, cleanupSectionResources, log]);
+    setVisibleSections(prev => {
+      const updated = new Set(prev);
+      updated.delete(sectionId);
+      return updated;
+    });
+  }, [cleanupSectionResources, log]);
 
   const setActiveSection = useCallback((sectionId: string) => {
     if (sectionId === activeSectionId) return;
 
     log(`🎯 Switching active section from ${activeSectionId} to ${sectionId}`);
 
-    // Suspend current active section
-    const currentSection = sections.get(activeSectionId);
-    if (currentSection && currentSection.isActive) {
-      currentSection.isActive = false;
-      cleanupSectionResources(currentSection);
-      log(`  🛑 Suspended section: ${activeSectionId}`);
-    }
+    setSections(prev => {
+      const updated = new Map(prev);
 
-    // Suspend all other active sections (safety measure)
-    sections.forEach((section, id) => {
-      if (id !== sectionId && section.isActive) {
-        section.isActive = false;
-        cleanupSectionResources(section);
-        log(`  🛑 Suspended background section: ${id}`);
+      // Suspend current active section
+      const currentSection = updated.get(activeSectionId);
+      if (currentSection && currentSection.isActive) {
+        currentSection.isActive = false;
+        cleanupSectionResources(currentSection);
+        log(`  🛑 Suspended section: ${activeSectionId}`);
       }
+
+      // Suspend all other active sections
+      updated.forEach((section, id) => {
+        if (id !== sectionId && section.isActive) {
+          section.isActive = false;
+          cleanupSectionResources(section);
+          log(`  🛑 Suspended background section: ${id}`);
+        }
+      });
+
+      // Activate new section
+      const newSection = updated.get(sectionId);
+      if (newSection) {
+        newSection.isActive = true;
+        newSection.lastActiveTime = Date.now();
+        resumeSectionActivities(newSection);
+        log(`  ▶️ Activated section: ${sectionId}`);
+      }
+
+      return updated;
     });
 
-    // Activate new section
-    const newSection = sections.get(sectionId);
-    if (newSection) {
-      newSection.isActive = true;
-      newSection.lastActiveTime = Date.now();
-      resumeSectionActivities(newSection);
-      log(`  ▶️ Activated section: ${sectionId}`);
-    }
-
     setActiveSectionIdState(sectionId);
-  }, [activeSectionId, sections, cleanupSectionResources, resumeSectionActivities, log]);
+  }, [activeSectionId, cleanupSectionResources, resumeSectionActivities, log]);
 
   // ===============================================================
   // RESOURCE TRACKING
@@ -350,36 +376,57 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
     type: keyof SectionResources,
     resource: any
   ) => {
-    const section = sections.get(sectionId);
-    if (section) {
-      section.resources[type].add(resource);
-      log(`📊 Tracked ${type} resource for section: ${sectionId}`);
-    }
-  }, [sections, log]);
+    setSections(prev => {
+      const updated = new Map(prev);
+      const section = updated.get(sectionId);
+      if (section) {
+        if (type === 'eventListeners') {
+          console.warn('Use addEventListenerResource for event listeners');
+          return prev;
+        }
+        
+        (section.resources[type] as Set<any>).add(resource);
+        log(`📊 Tracked ${type} resource for section: ${sectionId}`);
+      }
+      return updated;
+    });
+  }, [log]);
 
   const addCleanup = useCallback((sectionId: string, cleanup: () => void) => {
-    const section = sections.get(sectionId);
-    if (section) {
-      section.cleanupFunctions.add(cleanup);
-      log(`🔧 Added cleanup function for section: ${sectionId}`);
-    }
-  }, [sections, log]);
+    setSections(prev => {
+      const updated = new Map(prev);
+      const section = updated.get(sectionId);
+      if (section) {
+        section.cleanupFunctions.add(cleanup);
+        log(`🔧 Added cleanup function for section: ${sectionId}`);
+      }
+      return updated;
+    });
+  }, [log]);
 
   const addSuspendCallback = useCallback((sectionId: string, callback: () => void) => {
-    const section = sections.get(sectionId);
-    if (section) {
-      section.suspendCallbacks.add(callback);
-      log(`⏸️ Added suspend callback for section: ${sectionId}`);
-    }
-  }, [sections, log]);
+    setSections(prev => {
+      const updated = new Map(prev);
+      const section = updated.get(sectionId);
+      if (section) {
+        section.suspendCallbacks.add(callback);
+        log(`⏸️ Added suspend callback for section: ${sectionId}`);
+      }
+      return updated;
+    });
+  }, [log]);
 
   const addResumeCallback = useCallback((sectionId: string, callback: () => void) => {
-    const section = sections.get(sectionId);
-    if (section) {
-      section.resumeCallbacks.add(callback);
-      log(`▶️ Added resume callback for section: ${sectionId}`);
-    }
-  }, [sections, log]);
+    setSections(prev => {
+      const updated = new Map(prev);
+      const section = updated.get(sectionId);
+      if (section) {
+        section.resumeCallbacks.add(callback);
+        log(`▶️ Added resume callback for section: ${sectionId}`);
+      }
+      return updated;
+    });
+  }, [log]);
 
   // ===============================================================
   // UTILITY FUNCTIONS
@@ -402,10 +449,12 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
   }, [sections]);
 
   // ===============================================================
-  // INTERSECTION OBSERVER SETUP
+  // INTERSECTION OBSERVER SETUP - ONE TIME ONLY
   // ===============================================================
 
   useEffect(() => {
+    if (isInitializedRef.current) return; // Prevent multiple initializations
+    
     intersectionObserverRef.current = new IntersectionObserver(
       (entries) => {
         let mostVisibleSection = '';
@@ -415,9 +464,12 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
           const sectionId = entry.target.id;
           if (!sectionId) return;
 
-          log(`👁️ Intersection change: ${sectionId} - ${entry.isIntersecting ? 'visible' : 'hidden'}`);
+          // Throttle logging
+          if (Math.random() < 0.1) { // Only log 10% of intersection changes
+            log(`👁️ Intersection: ${sectionId} - ${entry.isIntersecting ? 'visible' : 'hidden'}`);
+          }
 
-          // Update visibility
+          // Update visibility state
           setVisibleSections(prev => {
             const updated = new Set(prev);
             if (entry.isIntersecting) {
@@ -428,42 +480,35 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
             return updated;
           });
 
-          // Update section visibility state
-          setSections(prev => {
-            const updated = new Map(prev);
-            const section = updated.get(sectionId);
-            if (section) {
-              section.isVisible = entry.isIntersecting;
-              updated.set(sectionId, section);
-            }
-            return updated;
-          });
-
-          // Find most visible section for focus
+          // Find most visible section
           if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
             maxRatio = entry.intersectionRatio;
             mostVisibleSection = sectionId;
           }
         });
 
-        // Auto-focus most visible section
+        // Auto-focus most visible section (throttled)
         if (mostVisibleSection && mostVisibleSection !== activeSectionId) {
-          log(`🎯 Auto-focusing most visible section: ${mostVisibleSection}`);
-          setActiveSection(mostVisibleSection);
+          // Throttle section switching to prevent rapid changes
+          requestAnimationFrame(() => {
+            setActiveSection(mostVisibleSection);
+          });
         }
       },
       {
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0],
-        rootMargin: '-5% 0px'
+        threshold: [0, 0.25, 0.5, 0.75, 1.0],
+        rootMargin: '-10% 0px'
       }
     );
+
+    isInitializedRef.current = true;
 
     return () => {
       if (intersectionObserverRef.current) {
         intersectionObserverRef.current.disconnect();
       }
     };
-  }, [activeSectionId, setActiveSection, log]);
+  }, []); // Empty dependency array - only run once
 
   // ===============================================================
   // PERFORMANCE MONITORING
@@ -492,14 +537,14 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
         activeObservers: totalObservers,
         memoryUsage
       });
-    }, 2000);
+    }, 3000); // Increased interval to reduce overhead
 
     return () => {
       if (performanceMonitorRef.current) {
         clearInterval(performanceMonitorRef.current);
       }
     };
-  }, [sections, debugMode]);
+  }, [debugMode, sections]);
 
   // ===============================================================
   // CLEANUP ON UNMOUNT
@@ -508,6 +553,7 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
   useEffect(() => {
     return () => {
       log('🧹 Cleaning up all sections on unmount');
+      
       sections.forEach(section => {
         cleanupSectionResources(section);
       });
@@ -519,8 +565,12 @@ export const ActivityLifecycleProvider: React.FC<ActivityLifecycleProviderProps>
       if (performanceMonitorRef.current) {
         clearInterval(performanceMonitorRef.current);
       }
+
+      // Clear registration tracking
+      registeredSectionsRef.current.clear();
+      isInitializedRef.current = false;
     };
-  }, [sections, cleanupSectionResources, log]);
+  }, []); // Empty dependency to prevent re-runs
 
   // ===============================================================
   // CONTEXT VALUE
@@ -573,10 +623,9 @@ export const useActivityLifecycle = (): ActivityContextType => {
 };
 
 // ===============================================================
-// ACTIVITY-AWARE HOOKS
+// ACTIVITY-AWARE HOOKS - STABLE VERSIONS
 // ===============================================================
 
-// Enhanced useEffect that only runs when section is active
 export const useActiveEffect = (
   effect: () => (() => void) | void,
   deps: React.DependencyList,
@@ -586,7 +635,7 @@ export const useActiveEffect = (
   
   React.useEffect(() => {
     if (!isActive(sectionId)) {
-      return; // Skip effect if section is not active
+      return;
     }
 
     const cleanup = effect();
@@ -596,10 +645,10 @@ export const useActiveEffect = (
     }
 
     return cleanup;
-  }, [isActive(sectionId), ...deps]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive(sectionId), sectionId, ...deps]);
 };
 
-// Enhanced setTimeout that auto-manages with activity lifecycle
 export const useActiveTimeout = (
   callback: () => void,
   delay: number | null,
@@ -607,6 +656,11 @@ export const useActiveTimeout = (
 ) => {
   const { isActive, trackResource } = useActivityLifecycle();
   const timeoutRef = React.useRef<NodeJS.Timeout>();
+  const callbackRef = React.useRef(callback);
+
+  React.useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   React.useEffect(() => {
     if (!isActive(sectionId) || delay === null) {
@@ -615,7 +669,7 @@ export const useActiveTimeout = (
 
     timeoutRef.current = setTimeout(() => {
       if (isActive(sectionId)) {
-        callback();
+        callbackRef.current();
       }
     }, delay);
 
@@ -626,19 +680,23 @@ export const useActiveTimeout = (
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isActive(sectionId), delay, callback, sectionId, trackResource]);
+  }, [isActive(sectionId), delay, sectionId, trackResource]);
 
   return timeoutRef.current;
 };
 
-// Enhanced setInterval that auto-manages with activity lifecycle
 export const useActiveInterval = (
   callback: () => void,
   delay: number | null,
   sectionId: string
 ) => {
   const { isActive, trackResource } = useActivityLifecycle();
-  const intervalRef = React.useRef<NodeJS.Timer>();
+  const intervalRef = React.useRef<NodeJS.Timeout>();
+  const callbackRef = React.useRef(callback);
+
+  React.useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   React.useEffect(() => {
     if (!isActive(sectionId) || delay === null) {
@@ -647,7 +705,7 @@ export const useActiveInterval = (
 
     intervalRef.current = setInterval(() => {
       if (isActive(sectionId)) {
-        callback();
+        callbackRef.current();
       }
     }, delay);
 
@@ -658,12 +716,11 @@ export const useActiveInterval = (
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive(sectionId), delay, callback, sectionId, trackResource]);
+  }, [isActive(sectionId), delay, sectionId, trackResource]);
 
   return intervalRef.current;
 };
 
-// Enhanced IntersectionObserver that integrates with activity lifecycle
 export const useActiveIntersectionObserver = (
   callback: IntersectionObserverCallback,
   options: IntersectionObserverInit,
@@ -671,17 +728,22 @@ export const useActiveIntersectionObserver = (
 ) => {
   const { isActive, trackResource } = useActivityLifecycle();
   const observerRef = React.useRef<IntersectionObserver>();
+  const callbackRef = React.useRef(callback);
+
+  React.useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   const observe = React.useCallback((element: Element) => {
     if (!isActive(sectionId)) return;
 
     if (!observerRef.current) {
-      observerRef.current = new IntersectionObserver(callback, options);
+      observerRef.current = new IntersectionObserver(callbackRef.current, options);
       trackResource(sectionId, 'observers', observerRef.current);
     }
 
     observerRef.current.observe(element);
-  }, [isActive(sectionId), callback, options, sectionId, trackResource]);
+  }, [isActive(sectionId), options, sectionId, trackResource]);
 
   const unobserve = React.useCallback((element: Element) => {
     if (observerRef.current) {
