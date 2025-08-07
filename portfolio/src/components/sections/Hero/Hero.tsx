@@ -1,7 +1,7 @@
-// src/components/sections/Hero/Hero.tsx - ENHANCED PERFORMANCE (Design Unchanged)
+// src/components/sections/Hero/Hero.tsx - FIXED IMPLEMENTATION
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MovingStars from "@/components/ui/animations/Movingstars";
@@ -12,17 +12,62 @@ import AboutModal from "@/components/sections/Hero/components/AboutModal";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 
+// ✅ FIXED: Activity Hook dengan proper dependency
+const useHeroActivity = () => {
+  const [isActive, setIsActive] = useState(true);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  useEffect(() => {
+    // ✅ FIXED: Remove isActive from dependency to prevent loop
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target.id === 'home') {
+            const newIsActive = entry.intersectionRatio > 0.5;
+            
+            setIsActive((prevIsActive) => {
+              if (newIsActive !== prevIsActive) {
+                console.log(`🏠 Hero: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
+              }
+              return newIsActive;
+            });
+          }
+        });
+      },
+      { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
+    );
+
+    // ✅ FIXED: Immediate observation without setTimeout
+    const heroElement = document.getElementById('home');
+    if (heroElement && observerRef.current) {
+      observerRef.current.observe(heroElement);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []); // ✅ FIXED: Empty dependency array
+
+  return { isActive };
+};
+
 const Hero: React.FC = memo(() => {
-Hero.displayName = "Hero";
-  // 🚀 OPTIMIZATION 1: Simplified media queries
+  Hero.displayName = "Hero";
+  
+  // ✅ FIXED: Activity hook integration
+  const { isActive } = useHeroActivity();
+  
+  // Media queries
   const isMobile = useMediaQuery("(max-width: 768px)");
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   
-  // 🚀 OPTIMIZATION 2: Minimized state
+  // States
   const [isVisible, setIsVisible] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   
-  // 🚀 OPTIMIZATION 3: Memoized constants
+  // Memoized data
   const words = useMemo(() => 
     ["Web Developer", "UI/UX Designer", "Full Stack Developer", "System Analyst", "Data Analyst"], 
     []
@@ -30,27 +75,29 @@ Hero.displayName = "Hero";
   
   const { width, height } = useAstronautSize();
 
-  // 🚀 OPTIMIZATION 4: Optimized intersection observer
+  // ✅ FIXED: Single intersection observer untuk visibility animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
       { 
         threshold: 0.1,
-        rootMargin: '50px' // Start animation earlier
+        rootMargin: '50px'
       }
     );
 
-    const heroElement = document.getElementById('hero-section');
-    if (heroElement) observer.observe(heroElement);
+    const heroElement = document.getElementById('home');
+    if (heroElement) {
+      observer.observe(heroElement);
+    }
 
     return () => observer.disconnect();
   }, []);
 
-  // 🚀 OPTIMIZATION 5: Memoized handlers
+  // Event handlers
   const handleAboutClick = useCallback(() => setIsAboutModalOpen(true), []);
   const closeAboutModal = useCallback(() => setIsAboutModalOpen(false), []);
 
-  // 🚀 OPTIMIZATION 6: Memoized animation variants with hardware acceleration
+  // ✅ FIXED: Add isActive to animation dependencies
   const optimizedAnimations = useMemo(() => ({
     hero: {
       leftContent: {
@@ -105,7 +152,7 @@ Hero.displayName = "Hero";
     },
     astronaut: {
       float: {
-        animate: prefersReducedMotion ? {} : {
+        animate: prefersReducedMotion || !isActive ? {} : {
           y: isMobile ? [-3, 3, -3] : [-10, 10, -10],
           transition: {
             duration: isMobile ? 4 : 6,
@@ -128,7 +175,7 @@ Hero.displayName = "Hero";
         },
       },
       arrow: {
-        animate: prefersReducedMotion ? {} : {
+        animate: prefersReducedMotion || !isActive ? {} : {
           y: [0, 5, 0],
           transition: {
             duration: 2,
@@ -138,9 +185,9 @@ Hero.displayName = "Hero";
         },
       },
     },
-  }), [isMobile, prefersReducedMotion]);
+  }), [isMobile, prefersReducedMotion, isActive]);
 
-  // 🚀 OPTIMIZATION 7: Memoized button style for consistency
+  // Memoized button styles
   const buttonBaseClasses = useMemo(() => 
     "inline-flex items-center gap-2 bg-gradient-to-r from-primary/80 to-yellow-400/80 " +
     "dark:from-primary-dark/80 dark:to-yellow-400/80 text-black rounded-lg backdrop-blur-sm font-medium " +
@@ -149,7 +196,7 @@ Hero.displayName = "Hero";
     []
   );
 
-  // 🚀 OPTIMIZATION 8: Memoized hover animations
+  // Memoized animations
   const hoverAnimation = useMemo(() => 
     prefersReducedMotion ? {} : { scale: 1.02, y: -1 },
     [prefersReducedMotion]
@@ -172,18 +219,19 @@ Hero.displayName = "Hero";
 
   return (
     <>
+      {/* ✅ FIXED: Single id="home" for consistency */}
       <section 
-        id="hero-section"
+        id="home"
         className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden lg:px-24"
         style={{ 
           contain: 'layout style paint',
-          willChange: 'auto' // Only animate when needed
+          willChange: 'auto'
         }}
       >
-        {/* 🚀 OPTIMIZATION 9: Conditional stars rendering */}
+        {/* ✅ FIXED: Conditional MovingStars based on isActive */}
         {(!isMobile || !prefersReducedMotion) && (
           <div className="absolute inset-0 z-0">
-            <MovingStars />
+            {isActive && <MovingStars />}
           </div>
         )}
 
@@ -193,6 +241,7 @@ Hero.displayName = "Hero";
         {/* Main Content */}
         <div className="container mx-auto px-4 relative z-10 h-full min-h-screen flex items-center">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10 lg:py-0 xl:py-0">
+            
             {/* Left Column - Text Content */}
             <motion.div
               id="hero-content-left"
@@ -339,8 +388,8 @@ Hero.displayName = "Hero";
             >
               {/* Container for both glow and astronaut */}
               <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10">
-                {/* 🚀 OPTIMIZATION 10: Conditional glow rendering */}
-                {!isMobile && !prefersReducedMotion && (
+                {/* ✅ FIXED: Conditional glow rendering based on isActive */}
+                {!isMobile && !prefersReducedMotion && isActive && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="absolute w-full max-w-[500px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-75 opacity-30" />
                     <div className="absolute w-full max-w-[350px] aspect-square rounded-full bg-[var(--glow-middle)] blur-2xl scale-75 opacity-40" />
@@ -348,13 +397,13 @@ Hero.displayName = "Hero";
                   </div>
                 )}
 
-                {/* 🚀 OPTIMIZATION 11: Optimized astronaut with hardware acceleration */}
+                {/* Astronaut */}
                 <motion.div
                   animate={optimizedAnimations.astronaut.float.animate}
                   className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
                   style={{
-                    willChange: prefersReducedMotion ? 'auto' : 'transform',
-                    transform: 'translateZ(0)' // Force hardware acceleration
+                    willChange: prefersReducedMotion || !isActive ? 'auto' : 'transform',
+                    transform: 'translateZ(0)'
                   }}
                 >
                   <Image
@@ -373,34 +422,6 @@ Hero.displayName = "Hero";
             </motion.div>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          variants={optimizedAnimations.scroll.indicator}
-          initial="initial"
-          animate="animate"
-          className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white/50"
-        >
-          <span className="text-xs sm:text-sm mb-2">Scroll to explore</span>
-          <motion.div
-            animate={optimizedAnimations.scroll.arrow.animate}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 sm:h-6 sm:w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
-            </svg>
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* About Modal */}
@@ -408,6 +429,15 @@ Hero.displayName = "Hero";
         isOpen={isAboutModalOpen}
         onClose={closeAboutModal}
       />
+
+      {/* ✅ FIXED: Debug indicator */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-green-500">
+          <div>Hero: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
+          <div>Stars: {isActive && (!isMobile || !prefersReducedMotion) ? '🌟 ON' : '⭐ OFF'}</div>
+          <div>TypeWriter: {isActive ? '✏️ ON' : '📝 OFF'}</div>
+        </div>
+      )}
     </>
   );
 });
