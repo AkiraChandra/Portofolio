@@ -1,7 +1,7 @@
 // src/components/sections/Projects/Projects.tsx (MOBILE OPTIMIZED)
 "use client";
 
-import React, { useState, useRef, useEffect, memo } from "react";
+import React, { useState, useRef, useEffect, memo, useCallback } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import Planet from "./components/Planet";
 import ProjectPreview from "./components/ProjectPreview";
@@ -13,7 +13,52 @@ import { useProjects } from "@/hooks/projects/useProjects";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 import { Loader } from "lucide-react";
 import { debounce } from "@/utils/helpers/debounce";
+
+
+
 const Projects = memo(() => {
+
+  // ✅ TAMBAH 2: Activity Hook (setelah imports, sebelum Projects component)
+const useProjectsActivity = () => {
+  const [isActive, setIsActive] = useState(true);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target.id === 'projects') {
+            const newIsActive = entry.intersectionRatio > 0.5;
+            
+            setIsActive((prevIsActive) => {
+              if (newIsActive !== prevIsActive) {
+                console.log(`🚀 Projects: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
+              }
+              return newIsActive;
+            });
+          }
+        });
+      },
+      { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
+    );
+
+    const projectsElement = document.getElementById('projects');
+    if (projectsElement) {
+      observer.observe(projectsElement);
+    }
+
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, []);
+
+  return { isActive };
+};
+  const { isActive } = useProjectsActivity();
+
+
+
   const { projects, loading, error, refetch } = useProjects();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
@@ -33,6 +78,7 @@ const Projects = memo(() => {
     totalProjects: projects?.length || 0,
     previewDuration: isMobile ? 4000 : 6000, // Faster transitions on mobile
     lineDuration: isMobile ? 800 : 1000,
+    isActive
   });
 
   const { planetSize, spacing } = useProjectSizes();
@@ -47,6 +93,7 @@ const Projects = memo(() => {
   const handlePlanetHover = debounce(
     (index) => {
       // Disable hover on mobile for performance
+      if (!isActive) return; // Prevent hover if not active
       if (isMobile) return;
 
       const currentTime = Date.now();
@@ -65,6 +112,7 @@ const Projects = memo(() => {
   );
 
   const handlePlanetClick = (projectId: string) => {
+    if(!isActive) return; // Prevent navigation if not active
     if (isNavigating) return;
 
     setIsNavigating(true);
@@ -80,6 +128,7 @@ const Projects = memo(() => {
     );
   };
 
+
   // Enhanced drag handlers for mobile
   const handleDragStart = () => {
     setIsDragging(true);
@@ -87,7 +136,7 @@ const Projects = memo(() => {
 
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
-
+    if (!isActive) return; // Prevent navigation if not active
     if (isMobile) {
       const swipe = info.offset.x;
       const velocity = info.velocity.x;
@@ -104,6 +153,14 @@ const Projects = memo(() => {
       }
     }
   };
+
+  useEffect(() => {
+    if (!isActive) {
+      pausePreview();
+    } else {
+      resumePreview();
+    }
+  }, [isActive, pausePreview, resumePreview]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -193,13 +250,13 @@ const Projects = memo(() => {
 
       {/* Background with better overflow control */}
       <div className="absolute inset-0 overflow-hidden">
-        <MovingStars />
+        {isActive && <MovingStars />}
       </div>
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 
-      <AnimatePresence mode="wait">
+      { <AnimatePresence mode="wait">
         {/* Main Content */}
         <div
           className={`relative w-full min-h-screen flex flex-col ${mobileSpacing.sectionPadding}`}
@@ -292,7 +349,7 @@ const Projects = memo(() => {
                         >
                           <ProjectPreview
                             project={project}
-                            isVisible={true}
+                            isVisible={isActive}
                           />
                         </motion.div>
                       )
@@ -445,7 +502,7 @@ const Projects = memo(() => {
                         {/* Planet component */}
                         <Planet
                           project={project}
-                          isActive={index === activeIndex}
+                          isActive={index === activeIndex && isActive}
                           index={index}
                           totalPlanets={projects.length}
                           size={planetSize}
@@ -489,7 +546,12 @@ const Projects = memo(() => {
             </div>
           </div>
         </div>
-      </AnimatePresence>
+      </AnimatePresence>}
+    {process.env.NODE_ENV === 'development' && (
+    <div className="fixed top-16 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50">
+      Projects: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}
+    </div>
+  )}
     </section>
   );
 });

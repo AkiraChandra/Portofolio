@@ -1,96 +1,160 @@
-// src/hooks/projects/useProjectTransition.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
+// src/hooks/projects/useProjectTransition.ts - ENHANCED WITH ACTIVITY SUPPORT
+// Modifikasi untuk mendukung pause/resume berdasarkan activity state
+
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface UseProjectTransitionProps {
   totalProjects: number;
   previewDuration?: number;
   lineDuration?: number;
+  isActive?: boolean; // ✅ TAMBAH: Activity state prop
+}
+
+interface UseProjectTransitionReturn {
+  activeIndex: number;
+  progress: number;
+  isLineAnimating: boolean;
+  jumpToProject: (index: number) => void;
+  pausePreview: () => void;
+  resumePreview: () => void;
+  resetProgress: () => void;
 }
 
 export const useProjectTransition = ({
   totalProjects,
   previewDuration = 6000,
-  lineDuration = 1000
-}: UseProjectTransitionProps) => {
+  lineDuration = 1200,
+  isActive = true, // ✅ TAMBAH: Default true untuk backward compatibility
+}: UseProjectTransitionProps): UseProjectTransitionReturn => {
+  // Core states
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isLineAnimating, setIsLineAnimating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lineIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Refs untuk timer management
+  const previewTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lineTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Refs untuk tracking time
+  const startTimeRef = useRef<number>(0);
+  const pausedTimeRef = useRef<number>(0);
+  const totalPausedTimeRef = useRef<number>(0);
 
-  const clearTimers = useCallback(() => {
-    if (previewTimeoutRef.current) {
-      clearTimeout(previewTimeoutRef.current);
-      previewTimeoutRef.current = null;
+  // ✅ TAMBAH: Activity-aware timer management
+  const clearAllTimers = useCallback(() => {
+    if (previewTimerRef.current) {
+      clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
     }
-    if (lineIntervalRef.current) {
-      clearInterval(lineIntervalRef.current);
-      lineIntervalRef.current = null;
+    if (lineTimerRef.current) {
+      clearTimeout(lineTimerRef.current);
+      lineTimerRef.current = null;
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
     }
   }, []);
 
-  const animateLine = useCallback(() => {
-    setIsLineAnimating(true);
-    setProgress(0);
-
-    const startTime = Date.now();
-    lineIntervalRef.current = setInterval(() => {
-      const elapsedTime = Date.now() - startTime;
-      const newProgress = (elapsedTime / lineDuration) * 100;
-
-      if (newProgress >= 100) {
-        clearInterval(lineIntervalRef.current!);
-        setProgress(100);
-        setIsLineAnimating(false);
-        setActiveIndex((prev) => (prev + 1) % totalProjects);
-      } else {
-        setProgress(newProgress);
-      }
-    }, 16);
-  }, [lineDuration, totalProjects]);
-
-  const startPreviewTimer = useCallback(() => {
-    if (!isPaused) {
-      previewTimeoutRef.current = setTimeout(() => {
-        animateLine();
-      }, previewDuration);
-    }
-  }, [isPaused, previewDuration, animateLine]);
-
-  useEffect(() => {
-    clearTimers();
-    startPreviewTimer();
-
-    return clearTimers;
-  }, [activeIndex, isPaused, clearTimers, startPreviewTimer]);
-
-  const jumpToProject = useCallback((index: number) => {
-    if (index === activeIndex) return;
-    
-    clearTimers();
-    setProgress(0);
-    setIsLineAnimating(false);
-    setActiveIndex(index);
-  }, [activeIndex, clearTimers]);
-
+  // ✅ TAMBAH: Pause functionality
   const pausePreview = useCallback(() => {
-    setIsPaused(true);
-    clearTimers();
-  }, [clearTimers]);
+    if (!isPaused) {
+      pausedTimeRef.current = Date.now();
+      setIsPaused(true);
+      clearAllTimers();
+      console.log('⏸️ ProjectTransition: Paused');
+    }
+  }, [isPaused, clearAllTimers]);
 
+  // ✅ TAMBAH: Resume functionality
   const resumePreview = useCallback(() => {
-    setIsPaused(false);
+    if (isPaused) {
+      totalPausedTimeRef.current += Date.now() - pausedTimeRef.current;
+      setIsPaused(false);
+      console.log('▶️ ProjectTransition: Resumed');
+    }
+  }, [isPaused]);
+
+  // ✅ TAMBAH: Reset progress
+  const resetProgress = useCallback(() => {
+    setProgress(0);
+    startTimeRef.current = Date.now();
+    totalPausedTimeRef.current = 0;
   }, []);
+
+  // ✅ MODIFIKASI: Activity-aware progress tracking
+  const updateProgress = useCallback(() => {
+    if (!isActive || isPaused) return;
+
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - startTimeRef.current - totalPausedTimeRef.current;
+    const newProgress = Math.min((elapsedTime / previewDuration) * 100, 100);
+    
+    setProgress(newProgress);
+
+    if (newProgress >= 100) {
+      // Start line animation
+      setIsLineAnimating(true);
+      
+      lineTimerRef.current = setTimeout(() => {
+        // Move to next project
+        setActiveIndex((prev) => (prev + 1) % totalProjects);
+        setIsLineAnimating(false);
+        resetProgress();
+      }, lineDuration);
+    }
+  }, [isActive, isPaused, previewDuration, lineDuration, totalProjects, resetProgress]);
+
+  // ✅ MODIFIKASI: Activity-aware automatic progression
+  useEffect(() => {
+    if (!isActive || isPaused || totalProjects <= 1) {
+      clearAllTimers();
+      return;
+    }
+
+    // Start progress tracking
+    resetProgress();
+    
+    progressIntervalRef.current = setInterval(updateProgress, 50);
+
+    return clearAllTimers;
+  }, [activeIndex, isActive, isPaused, totalProjects, updateProgress, resetProgress, clearAllTimers]);
+
+  // ✅ TAMBAH: Auto-pause/resume based on activity
+  useEffect(() => {
+    if (!isActive) {
+      pausePreview();
+    } else if (isActive && isPaused) {
+      resumePreview();
+    }
+  }, [isActive, pausePreview, resumePreview, isPaused]);
+
+  // ✅ MODIFIKASI: Enhanced jumpToProject dengan activity check
+  const jumpToProject = useCallback((index: number) => {
+    if (!isActive || index < 0 || index >= totalProjects) return;
+    
+    clearAllTimers();
+    setActiveIndex(index);
+    setIsLineAnimating(false);
+    resetProgress();
+    
+    console.log(`🎯 ProjectTransition: Jumped to project ${index + 1}`);
+  }, [isActive, totalProjects, clearAllTimers, resetProgress]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return clearAllTimers;
+  }, [clearAllTimers]);
 
   return {
     activeIndex,
     progress,
     isLineAnimating,
-    isPaused,
     jumpToProject,
     pausePreview,
-    resumePreview
+    resumePreview,
+    resetProgress,
   };
 };
