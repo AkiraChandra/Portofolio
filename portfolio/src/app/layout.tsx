@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import { ThemeProvider } from "@/features/theme/ThemeProvider";
 import "./globals.css";
 import { AnimationProvider } from "@/contexts/AnimationContext";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // OPTIMIZATION 1: Reduce font weights from 9 to 3 (saves ~150KB)
 // Only load weights that are actually used in the project
@@ -112,17 +113,18 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
 
-
         {/* CRITICAL CSS INLINE */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
             body{margin:0;overflow-x:hidden;min-height:100vh;background:#0a0a0a}
             .hero-section{min-height:100vh;position:relative;display:flex;align-items:center}
             .astronaut-container{position:relative;z-index:20;width:100%;max-width:400px;margin:0 auto}
             .gradient-bg{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
-          `
-        }} />
-        
+          `,
+          }}
+        />
+
         <noscript>
           <link rel="stylesheet" href="/_next/static/css/app/layout.css" />
         </noscript>
@@ -232,7 +234,10 @@ export default function RootLayout({
       >
         {/* OPTIMIZATION 15 & 16: Simplified app container without hydration issues */}
         <AnimationProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <SpeedInsights />
+          </ThemeProvider>
         </AnimationProvider>
 
         {/* OPTIMIZATION 17: Simplified client-side optimizations */}
