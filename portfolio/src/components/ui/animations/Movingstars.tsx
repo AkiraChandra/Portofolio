@@ -1,9 +1,14 @@
+// src/components/ui/animations/Movingstars.tsx
 'use client';
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-const MovingStars = () => {
+interface MovingStarsProps {
+  isActive?: boolean; // ✅ SUDAH ADA
+}
+
+const MovingStars = ({ isActive = true }: MovingStarsProps) => { 
   const [starPositions, setStarPositions] = useState<Array<{
     bottom: number;
     left: number;
@@ -43,6 +48,12 @@ const MovingStars = () => {
   };
 
   useEffect(() => {
+    if (!isActive) {
+      setStarPositions([]);
+      setIsLoaded(false);
+      return;
+    }
+
     const positions: Array<{ bottom: number; left: number }> = [];
     const totalStars = 70;
     for (let i = 0; i < totalStars; i++) {
@@ -56,9 +67,9 @@ const MovingStars = () => {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isActive]); 
 
-  if (starPositions.length === 0) {
+  if (!isActive || starPositions.length === 0) {
     return null;
   }
 
@@ -68,16 +79,17 @@ const MovingStars = () => {
         {starPositions.map((position, i) => (
           <div
             key={i}
-            className={`absolute animate-star transition-opacity duration-300 ${
-              isLoaded ? 'start-animation' : ''
+            className={`absolute transition-opacity duration-300 ${
+              isActive && isLoaded ? 'animate-star start-animation' : 'opacity-30'
             }`}
             style={{
               height: '1px',
               width: '50px',
-              background: 'linear-gradient(90deg, transparent, rgb(var(--color-text-primary)), transparent)',
+              background: `linear-gradient(90deg, transparent, rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'}, transparent)`, // ✅ REDUCED OPACITY WHEN INACTIVE
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
-              animationDelay: `${i * 0.5}s`,
+              animationDelay: isActive ? `${i * 0.5}s` : '0s',
+              animationPlayState: isActive ? 'running' : 'paused',
             }}
           >
             <div
@@ -92,9 +104,11 @@ const MovingStars = () => {
                 alt="star"
                 width={20}
                 height={20}
-                className="object-contain"
+                className={`object-contain transition-all duration-300 ${
+                  isActive ? 'opacity-100' : 'opacity-30'
+                }`} 
                 style={{
-                  filter: 'drop-shadow(0 0 3px rgb(var(--color-text-primary)))',
+                  filter: `drop-shadow(0 0 3px rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'})`,
                 }}
               />
             </div>

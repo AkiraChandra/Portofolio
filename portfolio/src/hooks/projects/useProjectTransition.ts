@@ -5,12 +5,14 @@ interface UseProjectTransitionProps {
   totalProjects: number;
   previewDuration?: number;
   lineDuration?: number;
+  isActive?: boolean;
 }
 
 export const useProjectTransition = ({
   totalProjects,
   previewDuration = 6000,
-  lineDuration = 1000
+  lineDuration = 1000,
+  isActive
 }: UseProjectTransitionProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -32,6 +34,7 @@ export const useProjectTransition = ({
   }, []);
 
   const animateLine = useCallback(() => {
+    if (!isActive) return; 
     setIsLineAnimating(true);
     setProgress(0);
 
@@ -49,15 +52,15 @@ export const useProjectTransition = ({
         setProgress(newProgress);
       }
     }, 16);
-  }, [lineDuration, totalProjects]);
+  }, [lineDuration, totalProjects, isActive]);
 
   const startPreviewTimer = useCallback(() => {
-    if (!isPaused) {
-      previewTimeoutRef.current = setTimeout(() => {
-        animateLine();
-      }, previewDuration);
-    }
-  }, [isPaused, previewDuration, animateLine]);
+  if (!isPaused && isActive) { 
+    previewTimeoutRef.current = setTimeout(() => {
+      animateLine();
+    }, previewDuration);
+  }
+}, [isPaused, isActive, previewDuration, animateLine]); 
 
   useEffect(() => {
     clearTimers();

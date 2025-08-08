@@ -231,7 +231,7 @@ const Hero: React.FC = memo(() => {
         {/* ✅ FIXED: Conditional MovingStars based on isActive */}
         {(!isMobile || !prefersReducedMotion) && (
           <div className="absolute inset-0 z-0">
-            {isActive && <MovingStars />}
+            {isActive && <MovingStars isActive={isActive} />}
           </div>
         )}
 
