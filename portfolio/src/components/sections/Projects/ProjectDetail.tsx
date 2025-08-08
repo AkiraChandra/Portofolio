@@ -24,9 +24,10 @@ import SmartImage from "@/components/common/SmartImage";
 
 interface ProjectDetailProps {
   project: Project;
+  isActive?: boolean; 
 }
 
-const ProjectDetail = ({ project }: ProjectDetailProps) => {
+const ProjectDetail = ({ project, isActive = true }: ProjectDetailProps) => {
   const router = useRouter();
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -111,7 +112,7 @@ const ProjectDetail = ({ project }: ProjectDetailProps) => {
         {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
         <div className="absolute inset-0 overflow-hidden">
-          <MovingStars />
+          <MovingStars isActive={isActive} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 

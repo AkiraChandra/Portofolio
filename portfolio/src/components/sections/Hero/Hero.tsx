@@ -1,9 +1,7 @@
-// File: src/components/sections/Hero/Hero.tsx - FINAL FIXED VERSION
-// Enhanced Hero Component dengan Activity Lifecycle Management
-
+// src/components/sections/Hero/Hero.tsx - FIXED IMPLEMENTATION
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import MovingStars from "@/components/ui/animations/Movingstars";
@@ -13,143 +11,189 @@ import ProfilePicture from "@/components/sections/Hero/components/ProfilePicture
 import AboutModal from "@/components/sections/Hero/components/AboutModal";
 import { config } from "@/config";
 import { useMediaQuery } from "@/hooks/common/useMediaQuery";
-import { 
-  useActivityLifecycle, 
-  useActiveEffect, 
-  useActiveTimeout 
-} from "@/contexts/ActivityLifecycleContext";
+import { useHeroActivity } from "@/hooks/common/useSectionActivity";
 
-// ===============================================================
-// ENHANCED HERO COMPONENT
-// ===============================================================
+// const useHeroActivity = () => {
+//   const [isActive, setIsActive] = useState(true);
+//   const observerRef = useRef<IntersectionObserver | null>(null);
+  
+//   useEffect(() => {
+//     // ✅ FIXED: Remove isActive from dependency to prevent loop
+//     observerRef.current = new IntersectionObserver(
+//       (entries) => {
+//         entries.forEach((entry) => {
+//           if (entry.target.id === 'home') {
+//             const newIsActive = entry.intersectionRatio > 0.5;
+            
+//             setIsActive((prevIsActive) => {
+//               if (newIsActive !== prevIsActive) {
+//                 console.log(`🏠 Hero: ${newIsActive ? 'ACTIVE' : 'SUSPENDED'}`);
+//               }
+//               return newIsActive;
+//             });
+//           }
+//         });
+//       },
+//       { threshold: [0, 0.5, 1.0], rootMargin: '-10% 0px' }
+//     );
+
+//     // ✅ FIXED: Immediate observation without setTimeout
+//     const heroElement = document.getElementById('home');
+//     if (heroElement && observerRef.current) {
+//       observerRef.current.observe(heroElement);
+//     }
+
+//     return () => {
+//       if (observerRef.current) {
+//         observerRef.current.disconnect();
+//       }
+//     };
+//   }, []); // ✅ FIXED: Empty dependency array
+
+//   return { isActive };
+// };
 
 const Hero: React.FC = memo(() => {
-  // Section ID for activity management
-  const SECTION_ID = 'home';
+  Hero.displayName = "Hero";
   
-  // Activity Lifecycle hooks
-  const { isActive, isVisible, addSuspendCallback, addResumeCallback } = useActivityLifecycle();
+  // ✅ FIXED: Activity hook integration
+  const { isActive } = useHeroActivity();
   
-  // Media queries - optimized
+  // Media queries
   const isMobile = useMediaQuery("(max-width: 768px)");
   const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const astronautSize = useAstronautSize();
   
-  // Local state
+  // States
+  const [isVisible, setIsVisible] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [animationPhase, setAnimationPhase] = useState<'loading' | 'entering' | 'active'>('loading');
+  
+  // Memoized data
+  const words = useMemo(() => 
+    ["Web Developer", "UI/UX Designer", "Full Stack Developer", "System Analyst", "Data Analyst"], 
+    []
+  );
+  
+  const { width, height } = useAstronautSize();
 
-  // ===============================================================
-  // OPTIMIZED ANIMATION VARIANTS
-  // ===============================================================
+  // ✅ FIXED: Single intersection observer untuk visibility animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { 
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    );
 
-  const optimizedAnimations = useMemo(() => {
-    if (prefersReducedMotion) {
-      return {
-        leftContent: { initial: {}, animate: {}, transition: { duration: 0 } },
-        rightContent: { initial: {}, animate: {}, transition: { duration: 0 } },
-        scroll: { initial: {}, animate: {}, transition: { duration: 0 } }
-      };
+    const heroElement = document.getElementById('home');
+    if (heroElement) {
+      observer.observe(heroElement);
     }
 
-    const baseAnimation = {
-      duration: isMobile ? 0.4 : 0.8,
-      ease: "easeOut" as const
-    };
+    return () => observer.disconnect();
+  }, []);
 
-    return {
+  // Event handlers
+  const handleAboutClick = useCallback(() => setIsAboutModalOpen(true), []);
+  const closeAboutModal = useCallback(() => setIsAboutModalOpen(false), []);
+
+  // ✅ FIXED: Add isActive to animation dependencies
+  const optimizedAnimations = useMemo(() => ({
+    hero: {
       leftContent: {
         initial: { opacity: 0, x: isMobile ? -20 : -50, y: 20 },
         animate: { opacity: 1, x: 0, y: 0 },
         transition: baseAnimation
       },
       rightContent: {
-        initial: { opacity: 0, x: isMobile ? 20 : 50, scale: 0.9 },
-        animate: { opacity: 1, x: 0, scale: 1 },
-        transition: { ...baseAnimation, delay: isMobile ? 0.1 : 0.2 }
+        hidden: { 
+          opacity: 0, 
+          x: prefersReducedMotion ? 0 : (isMobile ? 20 : 50),
+          scale: prefersReducedMotion ? 1 : 0.9
+        },
+        visible: {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          transition: {
+            duration: isMobile ? 0.4 : 0.8,
+            ease: "easeOut",
+            delay: isMobile ? 0.2 : 0.3,
+          },
+        },
       },
-      scroll: {
-        initial: { opacity: 0, y: 10 },
-        animate: { opacity: 1, y: 0 },
-        transition: { ...baseAnimation, delay: isMobile ? 0.2 : 0.4 }
-      }
-    };
-  }, [isMobile, prefersReducedMotion]);
+      child: {
+        hidden: { 
+          opacity: 0, 
+          y: prefersReducedMotion ? 0 : 20 
+        },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: isMobile ? 0.3 : 0.5,
+            ease: "easeOut"
+          },
+        },
+      },
+    },
+    astronaut: {
+      float: {
+        animate: prefersReducedMotion || !isActive ? {} : {
+          y: isMobile ? [-3, 3, -3] : [-10, 10, -10],
+          transition: {
+            duration: isMobile ? 4 : 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        },
+      },
+    },
+    scroll: {
+      indicator: {
+        initial: { opacity: 0, y: prefersReducedMotion ? 0 : 10 },
+        animate: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            delay: isMobile ? 0.8 : 1.2,
+            duration: isMobile ? 0.3 : 0.5,
+          },
+        },
+      },
+      arrow: {
+        animate: prefersReducedMotion || !isActive ? {} : {
+          y: [0, 5, 0],
+          transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        },
+      },
+    },
+  }), [isMobile, prefersReducedMotion, isActive]);
 
-  // ===============================================================
-  // ACTIVITY-AWARE EFFECTS
-  // ===============================================================
+  // Memoized button styles
+  const buttonBaseClasses = useMemo(() => 
+    "inline-flex items-center gap-2 bg-gradient-to-r from-primary/80 to-yellow-400/80 " +
+    "dark:from-primary-dark/80 dark:to-yellow-400/80 text-black rounded-lg backdrop-blur-sm font-medium " +
+    "hover:from-primary hover:to-yellow-400 dark:hover:from-primary-dark dark:hover:to-yellow-400 " +
+    "transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/25 dark:hover:shadow-primary-dark/25",
+    []
+  );
 
-  // Load animation sequence - only when active
-  useActiveEffect(() => {
-    if (!isActive(SECTION_ID)) return;
-
-    const loadTimer = setTimeout(() => {
-      setHasLoaded(true);
-      setAnimationPhase('entering');
-    }, 100);
-
-    const enterTimer = setTimeout(() => {
-      setAnimationPhase('active');
-    }, isMobile ? 800 : 1200);
-
-    return () => {
-      clearTimeout(loadTimer);
-      clearTimeout(enterTimer);
-    };
-  }, [isActive(SECTION_ID), isMobile], SECTION_ID);
-
-  // Auto-scroll hint animation - only when active
-  useActiveTimeout(() => {
-    if (!isMobile && isActive(SECTION_ID) && animationPhase === 'active') {
-      // Trigger scroll hint animation
-      const scrollHint = document.querySelector('.scroll-hint');
-      if (scrollHint) {
-        scrollHint.classList.add('animate-bounce');
-      }
-    }
-  }, 3000, SECTION_ID);
-
-  // ===============================================================
-  // SUSPEND/RESUME CALLBACKS
-  // ===============================================================
-
-  useEffect(() => {
-    // Add suspend callback
-    addSuspendCallback(SECTION_ID, () => {
-      console.log('🛑 Hero: Suspending activities');
-      setAnimationPhase('loading');
-      
-      // Pause any ongoing animations
-      const heroElement = document.getElementById('home');
-      if (heroElement) {
-        heroElement.style.animationPlayState = 'paused';
-      }
-    });
-
-    // Add resume callback
-    addResumeCallback(SECTION_ID, () => {
-      console.log('▶️ Hero: Resuming activities');
-      setAnimationPhase('active');
-      
-      // Resume animations
-      const heroElement = document.getElementById('home');
-      if (heroElement) {
-        heroElement.style.animationPlayState = 'running';
-      }
-    });
-  }, [addSuspendCallback, addResumeCallback, SECTION_ID]);
-
-  // ===============================================================
-  // EVENT HANDLERS
-  // ===============================================================
-
-  const handleAboutClick = useCallback(() => {
-    if (isActive(SECTION_ID)) {
-      setIsAboutModalOpen(true);
-    }
-  }, [isActive, SECTION_ID]);
+  // Memoized animations
+  const hoverAnimation = useMemo(() => 
+    prefersReducedMotion ? {} : { scale: 1.02, y: -1 },
+    [prefersReducedMotion]
+  );
+  
+  const tapAnimation = useMemo(() => 
+    prefersReducedMotion ? {} : { scale: 0.98 },
+    [prefersReducedMotion]
+  );
 
   const handleCloseModal = useCallback(() => {
     setIsAboutModalOpen(false);
@@ -170,40 +214,31 @@ const Hero: React.FC = memo(() => {
   // ===============================================================
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background-primary via-background-secondary to-background-tertiary dark:from-background-primary-dark dark:via-background-secondary-dark dark:to-background-tertiary-dark">
-      
-      {/* Background Stars - Only when active */}
-      {shouldRenderStars && (
-        <div className="absolute inset-0 z-0">
-          <MovingStars />
-        </div>
-      )}
+    <>
+      {/* ✅ FIXED: Single id="home" for consistency */}
+      <section 
+        id="home"
+        className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark transition-colors duration-300 overflow-hidden lg:px-24"
+        style={{ 
+          contain: 'layout style paint',
+          willChange: 'auto'
+        }}
+      >
+        {/* ✅ FIXED: Conditional MovingStars based on isActive */}
+        {(!isMobile || !prefersReducedMotion) && (
+          <div className="absolute inset-0 z-0">
+            {isActive && <MovingStars isActive={isActive} />}
+          </div>
+        )}
 
-      {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[80vh]">
-          
-          {/* Left Content */}
-          <motion.div
-            className="text-center lg:text-left space-y-6 lg:space-y-8"
-            {...(shouldRenderAnimations ? optimizedAnimations.leftContent : {})}
-          >
-            {/* Greeting */}
-            <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: shouldRenderAnimations ? 1 : 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-text-primary dark:text-text-primary-dark leading-tight">
-                Hi! I'm{" "}
-                <span className="text-primary dark:text-primary-dark bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark bg-clip-text text-transparent">
-                  Akira Chandra
-                </span>
-              </h1>
-            </motion.div>
+        {/* Simplified Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 z-1" />
 
-            {/* Typewriter Effect - Only when active */}
+        {/* Main Content */}
+        <div className="container mx-auto px-4 relative z-10 h-full min-h-screen flex items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-10 w-full items-center py-10 lg:py-0 xl:py-0">
+            
+            {/* Left Column - Text Content */}
             <motion.div
               className="text-xl md:text-2xl lg:text-3xl text-text-secondary dark:text-text-secondary-dark"
               initial={{ opacity: 0 }}
@@ -334,101 +369,68 @@ const Hero: React.FC = memo(() => {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - Profile Picture */}
-          <motion.div
-            className="flex justify-center lg:justify-end"
-            {...(shouldRenderAnimations ? optimizedAnimations.rightContent : {})}
-          >
-            <div className="relative">
-              {/* Profile Picture with Activity-aware loading */}
-              {isVisible(SECTION_ID) ? (
-                <ProfilePicture
-                  src="/profile.jpg"
-                  className="relative z-10"
-                  // priority={isActive(SECTION_ID)}
-                />
-              ) : (
-                <div 
-                  className={`${astronautSize} bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse flex items-center justify-center`}
-                >
-                  <div className="w-1/2 h-1/2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                </div>
-              )}
-
-              {/* Floating Elements - Only when active */}
-              {isActive(SECTION_ID) && !isMobile && (
-                <>
-                  <motion.div
-                    className="absolute -top-4 -left-4 w-8 h-8 bg-primary/20 dark:bg-primary-dark/20 rounded-full"
-                    animate={{
-                      y: [0, -10, 0],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                  
-                  <motion.div
-                    className="absolute -bottom-6 -right-6 w-12 h-12 bg-secondary/20 dark:bg-secondary-dark/20 rounded-full"
-                    animate={{
-                      y: [0, 10, 0],
-                      x: [0, 5, 0],
-                      scale: [1, 0.9, 1],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 1,
-                    }}
-                  />
-                </>
-              )}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Scroll Indicator */}
-        {shouldRenderAnimations && (
-          <motion.div
-            className="scroll-hint absolute bottom-8 left-1/2 transform -translate-x-1/2"
-            {...optimizedAnimations.scroll}
-          >
+            {/* Right Column - Astronaut */}
             <motion.div
-              className="flex flex-col items-center text-text-tertiary dark:text-text-tertiary-dark"
-              animate={{ y: [0, 10, 0] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+              id="hero-content-right"
+              variants={optimizedAnimations.hero.rightContent}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              className="relative z-10 flex items-center justify-center min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] lg:col-span-6 xl:col-span-6 lg:flex lg:items-center xl:flex xl:items-center"
+              style={{ willChange: 'transform, opacity' }}
             >
-              <span className="text-sm font-medium mb-2">Scroll to explore</span>
-              <div className="w-6 h-10 border-2 border-current rounded-full flex justify-center">
+              {/* Container for both glow and astronaut */}
+              <div className="relative flex items-center justify-center lg:translate-y-10 lg:translate-x-10">
+                {/* ✅ FIXED: Conditional glow rendering based on isActive */}
+                {!isMobile && !prefersReducedMotion && isActive && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-full max-w-[500px] aspect-square rounded-full bg-[var(--glow-outer)] blur-3xl scale-75 opacity-30" />
+                    <div className="absolute w-full max-w-[350px] aspect-square rounded-full bg-[var(--glow-middle)] blur-2xl scale-75 opacity-40" />
+                    <div className="absolute w-full max-w-[250px] aspect-square rounded-full bg-[var(--glow-inner)] blur-xl scale-75 opacity-50" />
+                  </div>
+                )}
+
+                {/* Astronaut */}
                 <motion.div
-                  className="w-1 h-3 bg-current rounded-full mt-2"
-                  animate={{ y: [0, 12, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+                  animate={optimizedAnimations.astronaut.float.animate}
+                  className="relative z-20 w-full h-full flex items-center justify-center scale-90 lg:scale-100 xl:scale-110"
+                  style={{
+                    willChange: prefersReducedMotion || !isActive ? 'auto' : 'transform',
+                    transform: 'translateZ(0)'
                   }}
-                />
+                >
+                  <Image
+                    src="/astronaut.png"
+                    alt="Astronaut"
+                    width={width}
+                    height={height}
+                    className="w-full h-full object-contain"
+                    priority={true}
+                    loading="eager"
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Qc7bk/wANVdVzBZFmgjmTM080OoKCKu0HS0T41LbZVPdS/I0gTthV"
+                  />
+                </motion.div>
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </div>
+          </div>
+        </div>
+      </section>
 
       {/* About Modal - FIXED: Remove incompatible prop */}
       <AboutModal
         isOpen={isAboutModalOpen}
         onClose={handleCloseModal}
       />
-    </div>
+
+      {/* ✅ FIXED: Debug indicator */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-green-500">
+          <div>Hero: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
+          <div>Stars: {isActive && (!isMobile || !prefersReducedMotion) ? '🌟 ON' : '⭐ OFF'}</div>
+          <div>TypeWriter: {isActive ? '✏️ ON' : '📝 OFF'}</div>
+        </div>
+      )}
+    </>
   );
 });
 

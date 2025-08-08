@@ -1,19 +1,21 @@
-// File: src/components/sections/Projects/components/ProjectPreview.tsx
+// src/components/sections/Projects/components/ProjectPreview.tsx - ENHANCED WITH ACTIVITY SUPPORT
+// Modifikasi minimal untuk mendukung pause/resume auto-slide
+
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Project } from "@/types/projects";
-import SmartImage from "@/components/common/SmartImage"; // ✅ GANTI: FileViewer ke SmartImage
+import SmartImage from "@/components/common/SmartImage";
 import { useProjectSizes } from "@/hooks/common/useMediaQuery";
 
 interface ProjectPreviewProps {
   project: Project;
-  isVisible: boolean;
+  isVisible: boolean; // ✅ MODIFIKASI: Rename dari existing prop untuk clarity
 }
 
 const ProjectPreview: React.FC<ProjectPreviewProps> = ({
   project,
-  isVisible,
+  isVisible, // ✅ This replaces the original prop name
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -27,64 +29,81 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
     previewImageHeight,
     previewContentHeight,
     mobilePreviewImageHeight,
-    // Mobile-specific configurations
     cardPadding: mobilePadding,
     textSizes: mobileTextSizes,
     autoSlideDuration,
     transitionDuration
   } = useProjectSizes();
 
+  // ✅ TAMBAH: Cleanup function untuk all timers
+  const clearAllTimers = () => {
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+      transitionTimeoutRef.current = null;
+    }
+    if (autoSlideTimeoutRef.current) {
+      clearTimeout(autoSlideTimeoutRef.current);
+      autoSlideTimeoutRef.current = null;
+    }
+  };
+
   useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-      if (autoSlideTimeoutRef.current) {
-        clearTimeout(autoSlideTimeoutRef.current);
-      }
-    };
+    return clearAllTimers;
   }, []);
 
   useEffect(() => {
     setActiveImageIndex(0);
   }, [project.id]);
 
-  // Auto-slide functionality - optimized for mobile
+  // ✅ MODIFIKASI: Activity-aware auto-slide functionality
   useEffect(() => {
+    // Clear any existing timers
+    clearAllTimers();
+
+    // Don't start auto-slide if:
+    // - Not visible/active
+    // - No images or only one image
     if (!project.images || project.images.length <= 1 || !isVisible) {
+      console.log('🖼️ ProjectPreview: Auto-slide disabled', {
+        hasImages: !!project.images,
+        imageCount: project.images?.length || 0,
+        isVisible
+      });
       return;
     }
 
+    console.log('🖼️ ProjectPreview: Starting auto-slide for', project.name);
+
     const startAutoSlide = () => {
       autoSlideTimeoutRef.current = setTimeout(() => {
-        setActiveImageIndex((prev) =>
-          prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
-        );
+        // Double-check visibility before proceeding
+        if (isVisible) {
+          setActiveImageIndex((prev) =>
+            prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
+          );
+        }
       }, autoSlideDuration);
     };
 
     startAutoSlide();
 
-    return () => {
-      if (autoSlideTimeoutRef.current) {
-        clearTimeout(autoSlideTimeoutRef.current);
-      }
-    };
-  }, [activeImageIndex, project.images, isVisible, autoSlideDuration]);
+    return clearAllTimers;
+  }, [project.images, project.name, isVisible, autoSlideDuration]);
 
+  // ✅ MODIFIKASI: Activity-aware manual navigation
   const handlePrevImage = () => {
-    if (autoSlideTimeoutRef.current) {
-      clearTimeout(autoSlideTimeoutRef.current);
-    }
+    if (!isVisible) return; // Prevent interaction when not active
+    
+    clearAllTimers();
     setActiveImageIndex((prev) =>
       prev === 0 ? (project.images?.length ?? 1) - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
-    if (autoSlideTimeoutRef.current) {
-      clearTimeout(autoSlideTimeoutRef.current);
-    }
+    if (!isVisible) return; // Prevent interaction when not active
+    
+    clearAllTimers();
     setActiveImageIndex((prev) =>
       prev === (project.images?.length ?? 1) - 1 ? 0 : prev + 1
     );
@@ -377,6 +396,6 @@ const ProjectPreview: React.FC<ProjectPreviewProps> = ({
       </div>
     </motion.div>
   );
-};
+  };
 
 export default ProjectPreview;

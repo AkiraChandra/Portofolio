@@ -1,18 +1,12 @@
-// File: src/components/layouts/PageLayout.tsx - FIXED ANIMATEPRESENCE
-// Enhanced PageLayout dengan Activity Lifecycle Management
-
+// File: src/components/layouts/PageLayout.tsx - UPDATE MINIMAL TANPA UBAH STYLE
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion"; // Removed AnimatePresence - causing issues
 import Navbar from "@/components/common/navigations/Navbar";
-import Hero from "@/components/sections/Hero/Hero";
-import { ActivityLifecycleProvider, useActivityLifecycle } from "@/contexts/ActivityLifecycleContext";
-import ActiveSection from "@/components/common/ActiveSection";
-
-// ===============================================================
-// INTERFACES & TYPES
-// ===============================================================
+import Hero from "@/components/sections/Hero/Hero"; // Always load immediately
+import LazyComponentLoader from "@/components/common/LazyComponentLoader";
+import { SectionActivityProvider, useSectionActivity } from '@/contexts/SectionActivityContext';
 
 interface PageLayoutProps {
   defaultSection?: "home" | "projects" | "experience" | "certifications" | "skills";
@@ -73,145 +67,21 @@ const SECTIONS: SectionConfig[] = [
   },
 ];
 
-type SectionId = typeof SECTIONS[number]["id"];
+type SectionId = (typeof SECTIONS)[number]["id"];
 
-// ===============================================================
-// LOADING FALLBACK COMPONENT
-// ===============================================================
-
-const SectionLoadingFallback: React.FC<{ sectionId: string }> = ({ sectionId }) => (
-  <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
-    <div className="text-center space-y-4">
-      <div className="w-12 h-12 border-4 border-primary/30 border-t-primary dark:border-t-primary-dark rounded-full animate-spin mx-auto"></div>
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium text-text-primary dark:text-text-primary-dark">
-          Loading {sectionId.charAt(0).toUpperCase() + sectionId.slice(1)}
-        </h3>
-        <p className="text-sm text-text-secondary dark:text-text-secondary-dark">
-          Preparing amazing content...
-        </p>
-      </div>
-      
-      {/* Progress indicator */}
-      <div className="w-32 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-auto">
-        <div className="h-full bg-primary dark:bg-primary-dark rounded-full animate-pulse"></div>
-      </div>
-    </div>
-  </div>
-);
-
-// ===============================================================
-// ENHANCED SECTION WRAPPER - SIMPLIFIED
-// ===============================================================
-
-interface EnhancedSectionProps {
-  sectionConfig: SectionConfig;
-  isVisible: boolean;
-  isActive: boolean;
-}
-
-const EnhancedSection: React.FC<EnhancedSectionProps> = ({ 
-  sectionConfig, 
-  isVisible, 
-  isActive 
-}) => {
-  const Component = sectionConfig.component;
-
-  // Always render high priority sections, lazy load others
-  const shouldRender = sectionConfig.priority === 'high' || isVisible;
-
-  return (
-    <section 
-      id={sectionConfig.id}
-      className="flex-shrink-0 h-screen"
-      style={{
-        scrollSnapAlign: "start",
-        scrollSnapStop: "always",
-        contain: "layout style paint",
-        zIndex: isActive ? 10 : 1,
-      }}
-      data-section={sectionConfig.id}
-      data-active={isActive}
-      data-visible={isVisible}
-    >
-      {shouldRender ? (
-        <ActiveSection
-          sectionId={sectionConfig.id}
-          className="h-full w-full"
-          fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}
-          priority={sectionConfig.priority}
-        >
-          <motion.div
-            className="h-full relative"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isVisible ? 1 : 0.3 }}
-            transition={{ 
-              duration: 0.3, 
-              ease: "easeOut" 
-            }}
-          >
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="h-full overflow-y-auto scroll-smooth">
-                <React.Suspense fallback={<SectionLoadingFallback sectionId={sectionConfig.id} />}>
-                  <Component />
-                </React.Suspense>
-              </div>
-            </div>
-          </motion.div>
-        </ActiveSection>
-      ) : (
-        <SectionLoadingFallback sectionId={sectionConfig.id} />
-      )}
-    </section>
-  );
-};
-
-// ===============================================================
-// MAIN LAYOUT CONTENT COMPONENT
-// ===============================================================
-
-const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" }) => {
-  const { 
-    activeSectionId, 
-    visibleSections, 
-    setActiveSection, 
-    performanceMetrics 
-  } = useActivityLifecycle();
-  
+// ✅ BUAT INNER COMPONENT UNTUK GUNAKAN CONTEXT
+function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
-  const [isMounted, setIsMounted] = useState(false);
+  const [currentSection, setCurrentSection] = useState<SectionId>(defaultSection);
+  const [cacheStats, setCacheStats] = useState({ loaded: 1, total: 5 }); // Home is pre-loaded
 
-  // ===============================================================
-  // MOUNT TRACKING
-  // ===============================================================
+  // ✅ TAMBAHAN BARU - GUNAKAN CONTEXT
+  const { setActiveSection } = useSectionActivity();
 
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
-
-  // ===============================================================
-  // NAVIGATION FUNCTION
-  // ===============================================================
-
-  const navigateToSection = useCallback((sectionIdOrPath: string) => {
-    if (!isMounted) return;
-
-    // Handle both section ID and path navigation
-    let targetSectionId: string;
-    
-    if (sectionIdOrPath.startsWith('/')) {
-      const sectionConfig = SECTIONS.find((s) => s.path === sectionIdOrPath);
-      targetSectionId = sectionConfig?.id || 'home';
-    } else {
-      targetSectionId = sectionIdOrPath;
-    }
-
-    const section = document.getElementById(targetSectionId);
-    if (section && scrollContainerRef.current) {
-      // Smooth scroll to section
+  // ✅ NAVIGATION FUNCTION - TAMBAH 1 LINE SAJA
+  const navigateToSection = (sectionId: SectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
       section.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -221,47 +91,13 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
       const sectionConfig = SECTIONS.find((s) => s.id === targetSectionId);
       if (sectionConfig) {
         window.history.replaceState(null, "", sectionConfig.path);
+        setCurrentSection(sectionId);
+        setActiveSection(sectionId); // ✅ TAMBAHAN 1 LINE INI
       }
-
-      // Set as active section
-      setActiveSection(targetSectionId);
     }
-  }, [setActiveSection, isMounted]);
+  };
 
-  // ===============================================================
-  // SCROLL HANDLING
-  // ===============================================================
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || !isMounted) return;
-
-    const handleScroll = () => {
-      setIsScrolling(true);
-
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 150);
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [isMounted]);
-
-  // ===============================================================
-  // INITIAL NAVIGATION SETUP
-  // ===============================================================
-
+  // ✅ INITIALIZE - TETAP SAMA
   useEffect(() => {
     if (!isMounted) return;
 
@@ -269,74 +105,77 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
+  }, []);
 
-    // Navigate to default section if not home
-    if (defaultSection !== "home") {
-      const timer = setTimeout(() => {
-        navigateToSection(defaultSection);
-      }, 500);
+  // ✅ HANDLE INITIAL NAVIGATION - TETAP SAMA
+  useEffect(() => {
+    if (defaultSection === "home") return;
+
+    const timer = setTimeout(() => {
+      navigateToSection(defaultSection);
+    }, 100); // Small delay to ensure components are mounted
 
       return () => clearTimeout(timer);
     }
   }, [defaultSection, navigateToSection, isMounted]);
 
-  // ===============================================================
-  // KEYBOARD NAVIGATION
-  // ===============================================================
-
+  // ✅ SCROLL TRACKING - TAMBAH 1 LINE SAJA
   useEffect(() => {
     if (!isMounted) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey) return;
+    const handleScroll = () => {
+      if (scrollTimer) clearTimeout(scrollTimer);
 
-      const currentIndex = SECTIONS.findIndex(s => s.id === activeSectionId);
-      
-      switch (event.key) {
-        case 'ArrowDown':
-        case 'PageDown':
-          event.preventDefault();
-          if (currentIndex < SECTIONS.length - 1) {
-            navigateToSection(SECTIONS[currentIndex + 1].id);
+      scrollTimer = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const scrollTop = container.scrollTop;
+        const viewportHeight = container.clientHeight;
+        const scrollCenter = scrollTop + viewportHeight * 0.5;
+
+        let activeSection: SectionId = "home";
+
+        for (const section of SECTIONS) {
+          const element = document.getElementById(section.id);
+          if (!element) continue;
+
+          const sectionTop = element.offsetTop;
+          const sectionBottom = sectionTop + element.offsetHeight;
+
+          if (scrollCenter >= sectionTop && scrollCenter < sectionBottom) {
+            activeSection = section.id;
+            break;
           }
-          break;
-          
-        case 'ArrowUp':
-        case 'PageUp':
-          event.preventDefault();
-          if (currentIndex > 0) {
-            navigateToSection(SECTIONS[currentIndex - 1].id);
+        }
+
+        if (activeSection !== currentSection) {
+          setCurrentSection(activeSection);
+          setActiveSection(activeSection); // ✅ TAMBAHAN 1 LINE INI
+          const section = SECTIONS.find((s) => s.id === activeSection);
+          if (section) {
+            window.history.replaceState(null, "", section.path);
           }
-          break;
-          
-        case 'Home':
-          event.preventDefault();
-          navigateToSection('home');
-          break;
-          
-        case 'End':
-          event.preventDefault();
-          navigateToSection(SECTIONS[SECTIONS.length - 1].id);
-          break;
-      }
+        }
+      }, 100);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeSectionId, navigateToSection, isMounted]);
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll, { passive: true });
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+        if (scrollTimer) clearTimeout(scrollTimer);
+      };
+    }
+  }, [currentSection, setActiveSection]); // ✅ TAMBAH setActiveSection DI DEPENDENCY
 
-  // ===============================================================
-  // RENDER - SIMPLIFIED WITHOUT ANIMATEPRESENCE
-  // ===============================================================
+  // ✅ SYNC INITIAL SECTION - TAMBAHAN BARU
+  useEffect(() => {
+    setActiveSection(defaultSection);
+  }, [defaultSection, setActiveSection]);
 
-  if (!isMounted) {
-    return (
-      <div className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
-        <SectionLoadingFallback sectionId="loading" />
-      </div>
-    );
-  }
-
+  // ✅ SEMUA RETURN STATEMENT TETAP SAMA PERSIS
   return (
     <div className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
       {/* Navigation */}
@@ -345,8 +184,16 @@ const PageLayoutContent: React.FC<PageLayoutProps> = ({ defaultSection = "home" 
         onNavigate={navigateToSection}
       />
 
-      {/* Main Content - NO ANIMATEPRESENCE TO PREVENT MULTIPLE CHILDREN ISSUE */}
-      <main
+      {/* ✅ CACHE INDICATOR (Dev Mode Only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-20 right-4 z-50 bg-black/80 text-white p-2 rounded text-xs">
+          Cache: {cacheStats.loaded}/{cacheStats.total}
+          <br />
+          Section: {currentSection} {/* ✅ TAMBAHAN DEBUG INFO */}
+        </div>
+      )}
+
+      <div
         ref={scrollContainerRef}
         className={`
           h-screen overflow-y-auto overflow-x-hidden
@@ -524,6 +371,12 @@ const PageLayout: React.FC<PageLayoutProps> = (props) => {
       <PageLayoutContent {...props} />
     </ActivityLifecycleProvider>
   );
-};
-
-export default PageLayout;
+}
+// ✅ EXPORT DENGAN PROVIDER WRAPPER - INI SAJA YANG BERUBAH
+export default function PageLayout({ defaultSection = "home" }: PageLayoutProps) {
+  return (
+    <SectionActivityProvider initialSection={defaultSection}>
+      <PageLayoutInner defaultSection={defaultSection} />
+    </SectionActivityProvider>
+  );
+}

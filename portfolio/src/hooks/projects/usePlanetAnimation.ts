@@ -1,26 +1,34 @@
+// src/hooks/projects/usePlanetAnimation.ts - FIXED VERSION
 import { useMemo } from 'react';
-import { AnimationConfig, PlanetAnimation, PlanetAnimationHook } from '@/types/projects';
+import { TargetAndTransition } from 'framer-motion';
+
+// ✅ FIXED: Proper interface for Framer Motion
+export interface PlanetAnimationHook {
+  rotateAnimation: TargetAndTransition;
+  scaleAnimation: TargetAndTransition;
+}
 
 export function usePlanetAnimation(isActive: boolean, isHovered: boolean): PlanetAnimationHook {
-  const rotateAnimation = useMemo<AnimationConfig>(() => ({
+  // ✅ FIXED: Return proper TargetAndTransition for animate prop
+  const rotateAnimation = useMemo<TargetAndTransition>(() => ({
     rotate: (isActive || isHovered) ? [0, 360] : 0,
     transition: {
       duration: 20,
-      repeat: Infinity,
+      repeat: isActive || isHovered ? Infinity : 0, // ✅ FIXED: Stop repeat when inactive
       ease: "linear",
-      repeatType: "loop"
+      repeatType: "loop" as const
     }
   }), [isActive, isHovered]);
 
-  const scaleAnimation = useMemo<PlanetAnimation>(() => ({
-    scale: isActive || isHovered ? 1.1 : 1,
-    rotate: 0,
+  // ✅ FIXED: Return proper TargetAndTransition for whileHover prop
+  const scaleAnimation = useMemo<TargetAndTransition>(() => ({
+    scale: 1.1,
     transition: {
       type: "spring",
       stiffness: 400,
       damping: 25
     }
-  }), [isActive, isHovered]);
+  }), []);
 
   return {
     rotateAnimation,

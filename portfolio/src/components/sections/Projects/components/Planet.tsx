@@ -1,9 +1,10 @@
-// src/components/sections/Projects/components/Planet.tsx (ENHANCED FOR MOBILE)
-import React, { useEffect, useRef } from 'react';
+// src/components/sections/Projects/components/Planet.tsx (ENHANCED WITH SECTION ACTIVITY)
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PlanetProps } from '@/types/projects';
 import { useMediaQuery } from '@/hooks/common/useMediaQuery';
+import { usePlanetAnimation } from '@/hooks/projects/usePlanetAnimation'; // ✅ ADD: Import planet animation hook
 
 interface EnhancedPlanetProps extends PlanetProps {
   size: number;
@@ -12,6 +13,7 @@ interface EnhancedPlanetProps extends PlanetProps {
   onPlanetClick: () => void;
   isTransitioning: boolean;
   isSelected: boolean;
+  sectionActive?: boolean; // ✅ ADD: Section activity status
 }
 
 const Planet: React.FC<EnhancedPlanetProps> = ({
@@ -23,10 +25,20 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
   onHoverEnd,
   onPlanetClick,
   isTransitioning,
-  isSelected
+  isSelected,
+  sectionActive = true // ✅ ADD: Default to true for backward compatibility
 }) => {
   // Mobile detection
   const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  // ✅ ADD: Hover state for planet animation
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // ✅ ADD: Use planet animation hook for rotation
+  const { rotateAnimation, scaleAnimation } = usePlanetAnimation(
+    isActive && sectionActive, // Only animate when both planet and section are active
+    isHovered
+  );
   
   // Refs for cleanup
   const animationRefs = useRef<{
@@ -42,6 +54,13 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
     });
     animationRefs.current = {};
   };
+
+  // ✅ ENHANCED: Cleanup when section becomes inactive
+  useEffect(() => {
+    if (!sectionActive) {
+      cleanupAnimations();
+    }
+  }, [sectionActive]);
 
   // Enhanced cleanup on unmount and route changes
   useEffect(() => {
@@ -127,15 +146,15 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
     }
   });
 
-  // Mobile-optimized glow effects
+  // ✅ ENHANCED: Mobile-optimized glow effects with section activity
   const getMobileGlowVariants = () => ({
     initial: { opacity: 0, scale: 1 },
     animate: { 
-      opacity: isActive ? (isMobile ? [0.2, 0.3, 0.2] : [0.3, 0.5, 0.3]) : 0,
-      scale: isActive ? (isMobile ? [1.05, 1.1, 1.05] : [1.1, 1.2, 1.1]) : 1,
+      opacity: (isActive && sectionActive) ? (isMobile ? [0.2, 0.3, 0.2] : [0.3, 0.5, 0.3]) : 0,
+      scale: (isActive && sectionActive) ? (isMobile ? [1.05, 1.1, 1.05] : [1.1, 1.2, 1.1]) : 1,
       transition: {
         duration: isMobile ? 2 : 3, // Faster on mobile
-        repeat: Infinity,
+        repeat: (isActive && sectionActive) ? Infinity : 0, // ✅ FIXED: Stop repeat when inactive
         ease: "easeInOut"
       }
     },
@@ -153,9 +172,9 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
     }
   });
 
-  // Simplified pulse rings for mobile
+  // ✅ ENHANCED: Simplified pulse rings for mobile with section activity
   const PulseRings = () => {
-    if (!isSelected) return null;
+    if (!isSelected || !sectionActive) return null; // ✅ Don't render if section inactive
     
     const ringCount = isMobile ? 2 : 4; // Fewer rings on mobile
     
@@ -183,7 +202,7 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               duration: isMobile ? 1 : (1.5 + i * 0.2),
               ease: "easeOut",
               delay: i * 0.1,
-              repeat: 2,
+              repeat: sectionActive ? 2 : 0, // ✅ FIXED: Stop repeat when section inactive
               repeatType: "loop"
             }}
           />
@@ -192,9 +211,9 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
     );
   };
 
-  // Simplified energy particles for mobile
+  // ✅ ENHANCED: Simplified energy particles for mobile with section activity
   const EnergyParticles = () => {
-    if (!isSelected) return null;
+    if (!isSelected || !sectionActive) return null; // ✅ Don't render if section inactive
     
     const particleCount = isMobile ? 6 : 12; // Fewer particles on mobile
     
@@ -219,7 +238,7 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               duration: isMobile ? 1 : 1.5,
               ease: "easeOut",
               delay: i * 0.05,
-              repeat: 2,
+              repeat: sectionActive ? 2 : 0, // ✅ FIXED: Stop repeat when section inactive
               repeatType: "loop"
             }}
             style={{
@@ -289,10 +308,24 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
           exit="exit"
           whileHover={isTransitioning ? undefined : "hover"}
           variants={planetVariants}
-          onHoverStart={() => !isTransitioning && onHoverStart()}
-          onHoverEnd={() => !isTransitioning && onHoverEnd()}
+          onHoverStart={() => {
+            if (!isTransitioning) {
+              setIsHovered(true); // ✅ ADD: Set hover state
+              onHoverStart();
+            }
+          }}
+          onHoverEnd={() => {
+            if (!isTransitioning) {
+              setIsHovered(false); // ✅ ADD: Reset hover state
+              onHoverEnd();
+            }
+          }}
           onClick={() => !isTransitioning && onPlanetClick()}
           key={`planet-${project.id}-${isSelected ? 'selected' : 'normal'}`}
+          style={{
+            // ✅ ADD: Apply CSS animation control for section activity
+            animationPlayState: sectionActive ? 'running' : 'paused'
+          }}
         >
           {/* Pulse rings effect */}
           <PulseRings />
@@ -306,15 +339,20 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
                        filter blur-xl pointer-events-none"
             variants={glowVariants}
             style={{
-              willChange: 'transform, opacity' // Optimize for animations
+              willChange: 'transform, opacity', // Optimize for animations
+              // ✅ ADD: Apply CSS animation control
+              animationPlayState: sectionActive ? 'running' : 'paused'
             }}
           />
 
-          {/* Planet image */}
-          <div 
+          {/* ✅ ENHANCED: Planet image with rotation animation */}
+          <motion.div 
             className={`relative flex items-center justify-center overflow-hidden rounded-full
                        ${isSelected ? 'shadow-2xl shadow-primary/50 dark:shadow-primary-dark/50' : ''}`}
-            style={{ width: size, height: size }}>
+            style={{ width: size, height: size }}
+            animate={rotateAnimation} // ✅ FIXED: Apply planet rotation
+            whileHover={scaleAnimation} // ✅ FIXED: Apply scale animation on hover
+          >
             <Image
               src={project.planetImage}
               alt={project.name}
@@ -324,10 +362,10 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               priority={false} 
               loading="lazy" // Lazy load non-priority planets
             />
-          </div>
+          </motion.div>
 
-          {/* Active indicator - simplified for mobile */}
-          {isActive && !isTransitioning && (
+          {/* ✅ ENHANCED: Active indicator with section activity */}
+          {isActive && !isTransitioning && sectionActive && (
             <motion.div
               className="absolute inset-0 border-2 border-primary dark:border-primary-dark rounded-full"
               initial={{ scale: 1.1, opacity: 0 }}
@@ -337,11 +375,13 @@ const Planet: React.FC<EnhancedPlanetProps> = ({
               }}
               transition={{
                 duration: isMobile ? 2 : 3,
-                repeat: Infinity,
+                repeat: sectionActive ? Infinity : 0, // ✅ FIXED: Stop repeat when section inactive
                 ease: "easeInOut"
               }}
               style={{
-                willChange: 'transform, opacity'
+                willChange: 'transform, opacity',
+                // ✅ ADD: Apply CSS animation control
+                animationPlayState: sectionActive ? 'running' : 'paused'
               }}
             />
           )}
