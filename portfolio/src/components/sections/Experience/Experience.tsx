@@ -294,7 +294,7 @@ const Experience = memo(function Experience() {
 
   // ✅ FIXED: Correct activity hook usage
   const { isActive } = useExperienceActivity();
-  
+
   // ✅ DEBUG LOG
   useEffect(() => {
     console.log(`🏢 Experience Section: ${isActive ? "ACTIVE" : "SUSPENDED"}`);
@@ -392,7 +392,7 @@ const Experience = memo(function Experience() {
       <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden opacity-50">
           {/* ✅ ACTIVITY-AWARE: Show moving stars based on activity */}
-          {isActive && <MovingStars />}
+          {isActive && <MovingStars isActive={isActive} />}
         </div>
         <motion.div
           className="relative z-10 flex flex-col items-center gap-4"

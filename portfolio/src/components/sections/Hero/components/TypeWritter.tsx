@@ -1,7 +1,4 @@
-// File: src/components/sections/Hero/components/TypeWritter.tsx - FIXED VERSION
-// Enhanced TypeWriter Component dengan Activity Lifecycle Management
-
-'use client';
+"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import { useSectionActivity, useActiveTimeout } from '@/contexts/SectionActivityContext';
@@ -52,31 +49,17 @@ const TypeWriter = ({ words }: TypeWriterProps) => {
   if (!words.length) return null;
 
   return (
-    <span className={`typewriter-container ${className}`}>
-      <span 
-        className="typewriter-text text-primary dark:text-primary-dark font-semibold"
-        data-section={sectionId}
-        data-active={isActive(sectionId)}
+    <span className="text-text-primary dark:text-yellow-400 text-glow-lg transition-colors duration-300">
+      {text}
+      <span
+        className={`${
+          blink ? "opacity-100" : "opacity-0"
+        } transition-opacity duration-100`}
       >
-        {currentText}
+        |
       </span>
-      
-      {showCursor && (
-        <span 
-          className={`
-            typewriter-cursor inline-block ml-1 font-bold text-primary dark:text-primary-dark
-            transition-opacity duration-100
-            ${cursorVisible ? 'opacity-100' : 'opacity-0'}
-            ${isTypingComplete ? 'animate-pulse' : ''}
-          `}
-        >
-          {cursorChar}
-        </span>
-      )}
     </span>
   );
-});
-
-TypeWriter.displayName = 'TypeWriter';
+};
 
 export default TypeWriter;

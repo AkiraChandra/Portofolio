@@ -1,8 +1,8 @@
 // File: src/components/layouts/PageLayout.tsx - UPDATE MINIMAL TANPA UBAH STYLE
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion"; // Removed AnimatePresence - causing issues
+import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/common/navigations/Navbar";
 import Hero from "@/components/sections/Hero/Hero"; // Always load immediately
 import LazyComponentLoader from "@/components/common/LazyComponentLoader";
@@ -12,60 +12,13 @@ interface PageLayoutProps {
   defaultSection?: "home" | "projects" | "experience" | "certifications" | "skills";
 }
 
-interface SectionConfig {
-  id: string;
-  path: string;
-  component: React.ComponentType;
-  preload?: boolean;
-  priority?: 'high' | 'medium' | 'low';
-}
-
-// ===============================================================
-// DYNAMIC IMPORTS - Lazy loaded components
-// ===============================================================
-
-const Projects = React.lazy(() => import("@/components/sections/Projects/Projects"));
-const Experience = React.lazy(() => import("@/components/sections/Experience/Experience"));
-const Skills = React.lazy(() => import("@/components/sections/Skills/Skills"));
-const Certifications = React.lazy(() => import("@/components/sections/Certifications/Certifications"));
-
-// ===============================================================
-// SECTION CONFIGURATION
-// ===============================================================
-
-const SECTIONS: SectionConfig[] = [
-  { 
-    id: "home", 
-    path: "/", 
-    component: Hero, 
-    preload: true, 
-    priority: 'high' 
-  },
-  { 
-    id: "projects", 
-    path: "/projects", 
-    component: Projects, 
-    priority: 'high' 
-  },
-  { 
-    id: "experience", 
-    path: "/experience", 
-    component: Experience, 
-    priority: 'medium' 
-  },
-  { 
-    id: "certifications", 
-    path: "/certifications", 
-    component: Certifications, 
-    priority: 'low' 
-  },
-  { 
-    id: "skills", 
-    path: "/skills", 
-    component: Skills, 
-    priority: 'medium' 
-  },
-];
+const SECTIONS = [
+  { id: "home", path: "/" },
+  { id: "projects", path: "/projects" },
+  { id: "experience", path: "/experience" },
+  { id: "certifications", path: "/certifications" },
+  { id: "skills", path: "/skills" },
+] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -87,8 +40,7 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
         block: "start",
       });
 
-      // Update URL without page reload
-      const sectionConfig = SECTIONS.find((s) => s.id === targetSectionId);
+      const sectionConfig = SECTIONS.find((s) => s.id === sectionId);
       if (sectionConfig) {
         window.history.replaceState(null, "", sectionConfig.path);
         setCurrentSection(sectionId);
@@ -99,9 +51,6 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
 
   // ✅ INITIALIZE - TETAP SAMA
   useEffect(() => {
-    if (!isMounted) return;
-
-    // Disable scroll restoration
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
@@ -115,13 +64,12 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
       navigateToSection(defaultSection);
     }, 100); // Small delay to ensure components are mounted
 
-      return () => clearTimeout(timer);
-    }
-  }, [defaultSection, navigateToSection, isMounted]);
+    return () => clearTimeout(timer);
+  }, [defaultSection]);
 
   // ✅ SCROLL TRACKING - TAMBAH 1 LINE SAJA
   useEffect(() => {
-    if (!isMounted) return;
+    let scrollTimer: NodeJS.Timeout;
 
     const handleScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
@@ -177,11 +125,15 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
 
   // ✅ SEMUA RETURN STATEMENT TETAP SAMA PERSIS
   return (
-    <div className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
-      {/* Navigation */}
-      <Navbar 
-        // activeSection={activeSectionId}
-        onNavigate={navigateToSection}
+    <main className="min-h-screen overflow-x-hidden">
+      {/* ✅ NAVBAR WITH CACHE INDICATOR */}
+      <Navbar
+        onNavigate={(path) => {
+          const section = SECTIONS.find((s) => s.path === path);
+          if (section) {
+            navigateToSection(section.id);
+          }
+        }}
       />
 
       {/* ✅ CACHE INDICATOR (Dev Mode Only) */}
@@ -195,181 +147,155 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
 
       <div
         ref={scrollContainerRef}
-        className={`
-          h-screen overflow-y-auto overflow-x-hidden
-          scroll-smooth
-          ${isScrolling ? 'scrolling' : ''}
-        `}
+        className="h-screen overflow-y-auto"
         style={{
           scrollSnapType: "y mandatory",
           scrollBehavior: "smooth",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
         }}
-        id="main-content"
       >
-        {/* FIXED: Render sections directly without AnimatePresence */}
-        {SECTIONS.map((sectionConfig) => {
-          const isVisible = visibleSections.has(sectionConfig.id);
-          const isActive = activeSectionId === sectionConfig.id;
-          
-          return (
-            <EnhancedSection
-              key={sectionConfig.id}
-              sectionConfig={sectionConfig}
-              isVisible={isVisible}
-              isActive={isActive}
-            />
-          );
-        })}
-      </main>
+        {/* HOME SECTION */}
+        <motion.section
+          id="home"
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Hero />
+        </motion.section>
 
-      {/* Performance Monitor (Development Only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <PerformanceMonitor metrics={performanceMetrics} activeSectionId={activeSectionId} />
-      )}
-
-      {/* Scroll Progress Indicator */}
-      <ScrollProgressIndicator 
-        activeSectionId={activeSectionId}
-        totalSections={SECTIONS.length}
-        onSectionClick={navigateToSection}
-      />
-    </div>
-  );
-};
-
-// ===============================================================
-// PERFORMANCE MONITOR COMPONENT
-// ===============================================================
-
-interface PerformanceMonitorProps {
-  metrics: {
-    activeTimers: number;
-    activeIntervals: number;
-    activeObservers: number;
-    memoryUsage: number;
-  };
-  activeSectionId: string;
-}
-
-const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ metrics, activeSectionId }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -100 }}
-    animate={{ opacity: 1, x: 0 }}
-    className="fixed bottom-4 left-4 bg-black/90 text-white p-4 rounded-lg text-xs font-mono z-50 shadow-lg border border-white/10"
-  >
-    <div className="space-y-2">
-      <div className="text-yellow-400 font-bold border-b border-white/20 pb-1 mb-2">
-        🚀 Activity Performance Monitor
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <div className="text-green-400">Active Section:</div>
-          <div className="font-bold">{activeSectionId}</div>
-        </div>
-        
-        <div>
-          <div className="text-blue-400">Memory:</div>
-          <div className={`font-bold ${metrics.memoryUsage > 100 ? 'text-red-400' : 'text-green-400'}`}>
-            {metrics.memoryUsage}MB
-          </div>
-        </div>
-        
-        <div>
-          <div className="text-purple-400">Timers:</div>
-          <div className={`font-bold ${metrics.activeTimers > 10 ? 'text-red-400' : 'text-green-400'}`}>
-            {metrics.activeTimers}
-          </div>
-        </div>
-        
-        <div>
-          <div className="text-orange-400">Intervals:</div>
-          <div className={`font-bold ${metrics.activeIntervals > 5 ? 'text-red-400' : 'text-green-400'}`}>
-            {metrics.activeIntervals}
-          </div>
-        </div>
-        
-        <div>
-          <div className="text-cyan-400">Observers:</div>
-          <div className={`font-bold ${metrics.activeObservers > 10 ? 'text-red-400' : 'text-green-400'}`}>
-            {metrics.activeObservers}
-          </div>
-        </div>
-        
-        <div>
-          <div className="text-pink-400">Status:</div>
-          <div className="font-bold text-green-400">✅ Optimized</div>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-// ===============================================================
-// SCROLL PROGRESS INDICATOR
-// ===============================================================
-
-interface ScrollProgressIndicatorProps {
-  activeSectionId: string;
-  totalSections: number;
-  onSectionClick: (sectionId: string) => void;
-}
-
-const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = ({
-  activeSectionId,
-  totalSections,
-  onSectionClick
-}) => {
-  const activeIndex = SECTIONS.findIndex(s => s.id === activeSectionId);
-  const progress = ((activeIndex + 1) / totalSections) * 100;
-
-  return (
-    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-30">
-      <div className="flex flex-col items-center space-y-3">
-        {SECTIONS.map((section, index) => (
-          <motion.button
-            key={section.id}
-            onClick={() => onSectionClick(section.id)}
-            className={`
-              w-3 h-3 rounded-full border-2 transition-all duration-300
-              ${index <= activeIndex 
-                ? 'bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark' 
-                : 'bg-transparent border-gray-400 dark:border-gray-600'
-              }
-              hover:scale-125 hover:border-primary dark:hover:border-primary-dark
-            `}
-            whileHover={{ scale: 1.25 }}
-            whileTap={{ scale: 0.9 }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            aria-label={`Navigate to ${section.id} section`}
+        {/* PROJECTS SECTION */}
+        <motion.section
+          id="projects"
+          className="flex-shrink-0 h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <LazyComponentLoader
+            sectionId="projects"
+            importPath="@/components/sections/Projects/Projects"
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
+                <div className="text-center space-y-4">
+                  <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                  <p className="text-text-primary dark:text-text-primary-dark">Loading Projects...</p>
+                </div>
+              </div>
+            }
           />
-        ))}
-        
-        {/* Progress line */}
-        <div className="absolute left-1/2 top-0 w-0.5 h-full bg-gray-300 dark:bg-gray-700 transform -translate-x-1/2 -z-10">
-          <motion.div
-            className="w-full bg-primary dark:bg-primary-dark origin-top"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: progress / 100 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
-        </div>
+        </motion.section>
+
+        {/* EXPERIENCE SECTION */}
+        <motion.section
+          id="experience"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          {/* ✅ RESTORED NESTED SCROLL - But with better handling */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="experience"
+                importPath="@/components/sections/Experience/Experience"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Experience...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* CERTIFICATIONS SECTION */}
+        <motion.section
+          id="certifications"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="certifications"
+                importPath="@/components/sections/Certifications/Certifications"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Certifications...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* SKILLS SECTION */}
+        <motion.section
+          id="skills"
+          className="flex-shrink-0 relative h-screen"
+          style={{
+            scrollSnapAlign: "start",
+            scrollSnapStop: "always",
+            contain: "layout style paint",
+            zIndex: 1,
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-20%" }}
+        >
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="skills"
+                importPath="@/components/sections/Skills/Skills"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Skills...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
+        </motion.section>
       </div>
-    </div>
-  );
-};
-
-// ===============================================================
-// MAIN PAGE LAYOUT COMPONENT
-// ===============================================================
-
-const PageLayout: React.FC<PageLayoutProps> = (props) => {
-  return (
-    <ActivityLifecycleProvider debugMode={process.env.NODE_ENV === 'development'}>
-      <PageLayoutContent {...props} />
-    </ActivityLifecycleProvider>
+    </main>
   );
 }
 // ✅ EXPORT DENGAN PROVIDER WRAPPER - INI SAJA YANG BERUBAH
