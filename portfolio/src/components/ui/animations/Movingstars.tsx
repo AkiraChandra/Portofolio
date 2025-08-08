@@ -48,6 +48,7 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
   };
 
   useEffect(() => {
+    // ✅ GENERATE POSITIONS ONCE ON MOUNT - tidak bergantung pada isActive
     if (starPositions.length === 0) {
       const positions: Array<{ bottom: number; left: number }> = [];
       const totalStars = 70;
@@ -56,13 +57,14 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
       }
       setStarPositions(positions);
       
+      // ✅ Delay lebih lama untuk memastikan CSS animation siap
       const timer = setTimeout(() => {
         setIsLoaded(true);
-      }, 100);
+      }, 200);
 
       return () => clearTimeout(timer);
     }
-  }, []); 
+  }, []); // ✅ Hanya run sekali saat mount
 
   // ✅ Jangan return null berdasarkan isActive, biarkan komponen tetap render
   if (starPositions.length === 0) {
@@ -70,7 +72,13 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
   }
 
   return (
-    <div className="absolute inset-0 overflow-hidden z-0">
+    <div 
+      className="absolute inset-0 overflow-hidden z-0"
+      style={{
+        opacity: isLoaded ? 1 : 0,
+        transition: 'opacity 0.5s ease-in-out'
+      }}
+    >
       <div className="absolute inset-0">
         {starPositions.map((position, i) => (
           <div
@@ -84,8 +92,9 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
               background: `linear-gradient(90deg, transparent, rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'}, transparent)`,
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
-              animationDelay: isActive ? `${i * 0.5}s` : '0s',
+              animationDelay: isActive && isLoaded ? `${i * 0.5}s` : '0s',
               animationPlayState: isActive ? 'running' : 'paused',
+              visibility: isLoaded ? 'visible' : 'hidden',
             }}
           >
             <div
@@ -93,6 +102,7 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
               style={{
                 top: '-8px',
                 right: '0',
+                visibility: isLoaded ? 'visible' : 'hidden',
               }}
             >
               <Image
