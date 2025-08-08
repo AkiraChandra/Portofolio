@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface MovingStarsProps {
-  isActive?: boolean; // ✅ SUDAH ADA
+  isActive?: boolean;
 }
 
-const MovingStars = ({ isActive = true }: MovingStarsProps) => { 
+const MovingStars = ({ isActive = true }: MovingStarsProps) => {
   const [starPositions, setStarPositions] = useState<Array<{
     bottom: number;
     left: number;
@@ -48,27 +48,24 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
   };
 
   useEffect(() => {
-    if (!isActive) {
-      setIsLoaded(false);
-      return;
+    if (starPositions.length === 0) {
+      const positions: Array<{ bottom: number; left: number }> = [];
+      const totalStars = 70;
+      for (let i = 0; i < totalStars; i++) {
+        positions.push(generatePosition(positions));
+      }
+      setStarPositions(positions);
+      
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
+  }, []); 
 
-    const positions: Array<{ bottom: number; left: number }> = [];
-    const totalStars = 70;
-    for (let i = 0; i < totalStars; i++) {
-      positions.push(generatePosition(positions));
-    }
-
-    setStarPositions(positions);
-    
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [isActive]); 
-
-  if (!isActive || starPositions.length === 0) {
+  // ✅ Jangan return null berdasarkan isActive, biarkan komponen tetap render
+  if (starPositions.length === 0) {
     return null;
   }
 
@@ -84,7 +81,7 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
             style={{
               height: '1px',
               width: '50px',
-              background: `linear-gradient(90deg, transparent, rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'}, transparent)`, // ✅ REDUCED OPACITY WHEN INACTIVE
+              background: `linear-gradient(90deg, transparent, rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'}, transparent)`,
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
               animationDelay: isActive ? `${i * 0.5}s` : '0s',
@@ -105,7 +102,7 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
                 height={20}
                 className={`object-contain transition-all duration-300 ${
                   isActive ? 'opacity-100' : 'opacity-30'
-                }`} 
+                }`}
                 style={{
                   filter: `drop-shadow(0 0 3px rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'})`,
                 }}
