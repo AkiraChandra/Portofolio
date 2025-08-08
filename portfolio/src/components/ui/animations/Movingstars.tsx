@@ -5,11 +5,14 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface MovingStarsProps {
-  isActive?: boolean;
+  isActive?: boolean; // ✅ SUDAH ADA
 }
 
-const MovingStars = ({ isActive = true }: MovingStarsProps) => {
-  const [starPositions, setStarPositions] = useState<Array<{ bottom: number; left: number }>>([]);
+const MovingStars = ({ isActive = true }: MovingStarsProps) => { 
+  const [starPositions, setStarPositions] = useState<Array<{
+    bottom: number;
+    left: number;
+  }>>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const generatePosition = (existingPositions: Array<{ bottom: number; left: number }>) => {
@@ -46,7 +49,6 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
 
   useEffect(() => {
     if (!isActive) {
-      setStarPositions([]);
       setIsLoaded(false);
       return;
     }
@@ -59,46 +61,56 @@ const MovingStars = ({ isActive = true }: MovingStarsProps) => {
 
     setStarPositions(positions);
     
-    // Delay yang lebih singkat dan set isLoaded bersamaan dengan positions
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 50);
+    }, 100);
 
     return () => clearTimeout(timer);
-  }, [isActive]);
+  }, [isActive]); 
 
   if (!isActive || starPositions.length === 0) {
     return null;
   }
 
   return (
-    <div 
-      className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0"
-      style={{ 
-        opacity: isLoaded ? 1 : 0,
-        transition: 'opacity 0.3s ease-in-out'
-      }}
-    >
-      <div className="relative w-full h-full">
+    <div className="absolute inset-0 overflow-hidden z-0">
+      <div className="absolute inset-0">
         {starPositions.map((position, i) => (
           <div
             key={i}
-            className="absolute animate-twinkle opacity-0"
+            className={`absolute transition-opacity duration-300 ${
+              isActive && isLoaded ? 'animate-star start-animation' : 'opacity-30'
+            }`}
             style={{
+              height: '1px',
+              width: '50px',
+              background: `linear-gradient(90deg, transparent, rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'}, transparent)`, // ✅ REDUCED OPACITY WHEN INACTIVE
               bottom: `${position.bottom}%`,
               left: `${position.left}%`,
-              animationDelay: `${i * 0.1}s`,
-              animationDuration: `${3 + Math.random() * 2}s`,
+              animationDelay: isActive ? `${i * 0.5}s` : '0s',
+              animationPlayState: isActive ? 'running' : 'paused',
             }}
           >
-            <Image
-              src="/images/star.svg"
-              alt=""
-              width={4}
-              height={4}
-              className="w-1 h-1"
-              priority
-            />
+            <div
+              className="absolute"
+              style={{
+                top: '-8px',
+                right: '0',
+              }}
+            >
+              <Image
+                src="/star.png"
+                alt="star"
+                width={20}
+                height={20}
+                className={`object-contain transition-all duration-300 ${
+                  isActive ? 'opacity-100' : 'opacity-30'
+                }`} 
+                style={{
+                  filter: `drop-shadow(0 0 3px rgb(var(--color-text-primary))${isActive ? '' : ', 0.3'})`,
+                }}
+              />
+            </div>
           </div>
         ))}
       </div>
