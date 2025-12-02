@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -288,6 +289,8 @@ const Skills: React.FC = memo(() => {
 
   const handleSkillSelect = useCallback((skill: SkillWithCategory) => {
     setSelectedSkill(skill);
+    // Lock body scroll when modal opens
+    document.body.style.overflow = 'hidden';
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -386,6 +389,7 @@ const Skills: React.FC = memo(() => {
   }
 
   return (
+    <>
     <section id="skills" className="relative bg-black overflow-hidden py-24">
       {/* Moving Stars Background - Activity aware */}
       <div className="absolute inset-0 z-0">
@@ -863,16 +867,40 @@ const Skills: React.FC = memo(() => {
           </motion.div>
         )}
       </div>
+      
+      {/* ✅ Debug indicator */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-32 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-purple-500">
+          <div>Skills: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
+          <div>Stars: {isActive ? '🌟 ON' : '⭐ OFF'}</div>
+          <div>Marquee: {isActive ? '🎠 ON' : '🚫 OFF'}</div>
+        </div>
+      )}
+    </section>
 
-      {/* Enhanced Skill Detail Modal */}
+    {/* Modal Portal - Render directly to body */}
+    {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {selectedSkill && (
           <motion.div
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
+            style={{ 
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9999,
+              margin: 0,
+              transform: 'none'
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedSkill(null)}
+            onClick={() => {
+              setSelectedSkill(null);
+              document.body.style.overflow = 'unset';
+            }}
           >
             <motion.div
               className="bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-lg rounded-xl 
@@ -903,7 +931,10 @@ const Skills: React.FC = memo(() => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedSkill(null)}
+                    onClick={() => {
+                      setSelectedSkill(null);
+                      document.body.style.overflow = 'unset';
+                    }}
                     className="p-2 rounded-lg hover:bg-background-secondary dark:hover:bg-background-secondary-dark
                              text-text-tertiary dark:text-text-tertiary-dark hover:text-text-primary dark:hover:text-text-primary-dark
                              transition-colors duration-200"
@@ -921,17 +952,10 @@ const Skills: React.FC = memo(() => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
-      
-      {/* ✅ Debug indicator */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-32 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-purple-500">
-          <div>Skills: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
-          <div>Stars: {isActive ? '🌟 ON' : '⭐ OFF'}</div>
-          <div>Marquee: {isActive ? '🎠 ON' : '🚫 OFF'}</div>
-        </div>
-      )}
-    </section>
+      </AnimatePresence>,
+      document.body
+    )}
+    </>
   );
 });
 

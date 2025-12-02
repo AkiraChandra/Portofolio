@@ -132,14 +132,20 @@ const Certifications = () => {
   // Event Handlers
   const handleCertificationClick = useCallback((certification: Certification) => {
     setSelectedCertification(certification);
+    // Lock body scroll when modal opens
+    document.body.style.overflow = 'hidden';
   }, []);
 
   const handleClosePreview = useCallback(() => {
     setSelectedCertification(null);
+    // Unlock body scroll when modal closes
+    document.body.style.overflow = 'unset';
   }, []);
 
   const handleFeaturedCertificationClick = useCallback((certification: Certification) => {
     setSelectedCertification(certification);
+    // Lock body scroll when modal opens
+    document.body.style.overflow = 'hidden';
   }, []);
 
   // Responsive adjustments - KEEP GRID AS DEFAULT

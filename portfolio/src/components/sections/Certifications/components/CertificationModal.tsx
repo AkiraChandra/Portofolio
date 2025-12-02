@@ -2,6 +2,7 @@
 'use client';
 
 import React, { memo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, ExternalLink, CheckCircle, X 
@@ -23,22 +24,37 @@ const CertificationModal = memo(({
 
   const statusInfo = getCertificationStatusInfo(certification);
 
-  return (
+  return typeof document !== 'undefined' ? createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {certification && (
         <motion.div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            margin: 0,
+            transform: 'none'
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-sm rounded-2xl border border-border-primary/20 dark:border-border-primary-dark/20 max-w-2xl w-full max-h-[80vh] overflow-hidden"
+          onClick={() => {
+            onClose();
+            document.body.style.overflow = 'unset';
+          }}
         >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative bg-background-primary/95 dark:bg-background-primary-dark/95 backdrop-blur-sm rounded-2xl border border-border-primary/20 dark:border-border-primary-dark/20 max-w-2xl w-full max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
           {/* Header */}
           <div className="p-6 border-b border-border-primary/20 dark:border-border-primary-dark/20">
             <div className="flex items-start justify-between">
@@ -54,7 +70,10 @@ const CertificationModal = memo(({
                 </div>
               </div>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  document.body.style.overflow = 'unset';
+                }}
                 className="p-2 rounded-lg hover:bg-background-secondary dark:hover:bg-background-secondary-dark transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -171,9 +190,11 @@ const CertificationModal = memo(({
             </div>
           </div>
         </motion.div>
-      </div>
-    </AnimatePresence>
-  );
+      </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  ) : null;
 });
 
 CertificationModal.displayName = 'CertificationModal';
