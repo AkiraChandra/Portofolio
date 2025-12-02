@@ -179,25 +179,24 @@ const Certifications = () => {
 
   return (
     <section id="certifications" className="py-16 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
-      {/* Modern Glow Background Effects - Like Skills Page */}
-      {/* Glow Orbs & Background Effects */}
+      {/* Glow Orbs & Background Effects - Optimized */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {/* Primary glow orbs - only when active */}
+        {/* Primary glow orbs - simplified animation, only when active */}
         {isActive && (
           <>
             <motion.div
               className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 dark:opacity-30"
               style={{
                 background: 'radial-gradient(circle, rgba(246, 176, 13, 0.3) 0%, rgba(246, 176, 13, 0.1) 50%, transparent 100%)',
-                filter: 'blur(60px)'
+                filter: 'blur(60px)',
+                willChange: 'transform'
               }}
               animate={{
                 x: [0, 100, 0],
                 y: [0, -50, 0],
-                scale: [1, 1.2, 1],
               }}
               transition={{
-                duration: 8,
+                duration: 12,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
@@ -207,18 +206,18 @@ const Certifications = () => {
               className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 dark:opacity-25"
               style={{
                 background: 'radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(147, 51, 234, 0.1) 50%, transparent 100%)',
-                filter: 'blur(50px)'
+                filter: 'blur(50px)',
+                willChange: 'transform'
               }}
               animate={{
                 x: [0, -80, 0],
                 y: [0, 60, 0],
-                scale: [1, 0.9, 1],
               }}
               transition={{
-                duration: 8,
+                duration: 12,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: 2
+                delay: 6
               }}
             />
           </>
@@ -235,31 +234,31 @@ const Certifications = () => {
           />
         </div>
 
-        {/* Floating particles - only when active */}
-        {isActive && [...Array(6)].map((_, i) => (
+        {/* Floating particles - reduced count, only when active */}
+        {isActive && [...Array(3)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-2 h-2 bg-primary/20 dark:bg-primary-dark/30 rounded-full"
             style={{
-              left: `${10 + i * 15}%`,
-              top: `${20 + (i % 3) * 30}%`,
+              left: `${20 + i * 30}%`,
+              top: `${30 + (i % 2) * 40}%`,
+              willChange: 'transform, opacity'
             }}
             animate={{
               y: [0, -100, 0],
               opacity: [0, 0.6, 0],
-              scale: [0.5, 1, 0.5]
             }}
             transition={{
-              duration: 8 + i,
+              duration: 10 + i * 2,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: i * 1.5,
+              delay: i * 3,
             }}
           />
         ))}
         {/* Moving Stars - placed above orbs */}
         <div className="absolute inset-0 pointer-events-none z-10">
-          {isActive && <MovingStars isActive={isActive} />}
+          {isActive && <MovingStars isActive={isActive} starCount={50} />}
         </div>
       </div>
       {/* Remove or lower opacity of dark overlays to make effects visible */}

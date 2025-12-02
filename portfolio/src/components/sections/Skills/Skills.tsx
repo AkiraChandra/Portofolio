@@ -389,7 +389,7 @@ const Skills: React.FC = memo(() => {
     <section id="skills" className="relative bg-black overflow-hidden py-24">
       {/* Moving Stars Background - Activity aware */}
       <div className="absolute inset-0 z-0">
-        {isActive && <MovingStars isActive={isActive} />}
+        {isActive && <MovingStars isActive={isActive} starCount={50} />}
       </div>
 
       {/* Main Container */}

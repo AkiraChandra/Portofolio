@@ -48,11 +48,11 @@ const FeaturedCertifications = memo(
 
       const interval = setInterval(() => {
         const now = Date.now();
-        // Only auto-advance if no recent manual action (within 4 seconds)
-        if (now - lastManualAction > 4000) {
+        // Only auto-advance if no recent manual action (within 6 seconds)
+        if (now - lastManualAction > 6000) {
           setCurrentIndex((prev) => (prev + 1) % certifications.length);
         }
-      }, 4000);
+      }, 5000);
 
       return () => clearInterval(interval);
     }, [isAutoPlaying, certifications.length, lastManualAction]);
@@ -250,13 +250,14 @@ const HorizontalCertificationCard = memo(
           height: "160px",
           left: "50%",
           marginLeft: isMobile ? "-140px" : isTablet ? "-250px" : "-300px",
+          willChange: isCenter ? 'transform, opacity' : 'auto',
         }}
         animate={transformStyles}
         transition={{
-          duration: 0.6,
+          duration: 0.5,
           ease: [0.25, 0.46, 0.45, 0.94],
-          scale: { duration: 0.4 },
-          opacity: { duration: 0.4 },
+          scale: { duration: 0.3 },
+          opacity: { duration: 0.3 },
         }}
         onClick={onClick}
         whileHover={
@@ -282,6 +283,10 @@ const HorizontalCertificationCard = memo(
             : ""
         }
       `}
+          style={{
+            contain: 'layout style paint',
+            willChange: isCenter ? 'background-color, border-color, box-shadow' : 'auto'
+          }}
         >
           {/* Subtle background gradient - Skills style */}
           <div
@@ -306,6 +311,7 @@ const HorizontalCertificationCard = memo(
                     src={certification.certificateImage}
                     alt={`${certification.name} certificate`}
                     fill
+                    priority={isCenter}
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={() => setImageError(true)}
                     style={{ objectFit: "cover" }}

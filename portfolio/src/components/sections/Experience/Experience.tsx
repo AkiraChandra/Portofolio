@@ -392,7 +392,7 @@ const Experience = memo(function Experience() {
       <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden opacity-50">
           {/* ✅ ACTIVITY-AWARE: Show moving stars based on activity */}
-          {isActive && <MovingStars isActive={isActive} />}
+          {isActive && <MovingStars isActive={isActive} starCount={40} />}
         </div>
         <motion.div
           className="relative z-10 flex flex-col items-center gap-4"
@@ -483,7 +483,7 @@ const Experience = memo(function Experience() {
       <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
       <div className="absolute inset-0 overflow-hidden">
         {/* ✅ ACTIVITY-AWARE: MovingStars only when active */}
-        {isActive && <MovingStars />}
+        {isActive && <MovingStars isActive={isActive} starCount={50} />}
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 

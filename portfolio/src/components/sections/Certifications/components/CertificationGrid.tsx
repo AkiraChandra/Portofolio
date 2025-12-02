@@ -63,6 +63,10 @@ const CertificationGrid = memo(({
       initial="hidden"
       animate="visible"
       className={`${gridClasses} w-full`}
+      style={{
+        contain: 'layout style paint',
+        willChange: 'contents'
+      }}
     >
       {certifications.map((certification, index) => (
         <motion.div
@@ -71,7 +75,8 @@ const CertificationGrid = memo(({
           className="w-full"
           style={{
             // Stagger delay for smoother animation
-            animationDelay: shouldReduceMotion ? '0ms' : `${index * 50}ms`
+            animationDelay: shouldReduceMotion ? '0ms' : `${index * 50}ms`,
+            willChange: index < 6 ? 'transform, opacity' : 'auto', // Only first 6 items
           }}
         >
           <CertificationCard
