@@ -26,6 +26,7 @@ import {
   renderCategoryIcon 
 } from '@/utils/skills/iconUtils';
 import type { SkillWithCategory } from '@/types/skills';
+import { useSkillsActivity } from '@/hooks/common/useSectionActivity';
 
 // Types
 type ViewMode = 'grid' | 'list';
@@ -40,7 +41,8 @@ const FeaturedSkillItem = memo<{
   skill: SkillWithCategory;
   index: number;
   onSelect: (skill: SkillWithCategory) => void;
-}>(({ skill, index, onSelect }) => {
+  isActive?: boolean;
+}>(({ skill, index, onSelect, isActive = true }) => {
   const handleClick = useCallback(() => {
     onSelect(skill);
   }, [skill, onSelect]);
@@ -104,17 +106,19 @@ const FeaturedSkillItem = memo<{
             animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
             transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
           >
-            {/* Shimmer effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                repeatDelay: 3,
-                ease: "easeInOut"
-              }}
-            />
+            {/* Shimmer effect - only when active */}
+            {isActive && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: "easeInOut"
+                }}
+              />
+            )}
           </motion.div>
         </div>
       </div>
@@ -154,6 +158,9 @@ const CategoryButton = memo<{
 // ==========================================
 
 const Skills: React.FC = memo(() => {
+  // ✅ Activity detection
+  const { isActive } = useSkillsActivity();
+  
   // Mobile detection
   const isMobile = useMediaQuery("(max-width: 768px)");
   
@@ -325,6 +332,11 @@ const Skills: React.FC = memo(() => {
     }
   }, [loading]);
 
+  // ✅ Activity logging
+  useEffect(() => {
+    console.log(`🎨 Skills Section: ${isActive ? 'ACTIVE' : 'SUSPENDED'}`);
+  }, [isActive]);
+
   // ==========================================
   // RENDER OPTIMIZATIONS
   // ==========================================
@@ -374,10 +386,10 @@ const Skills: React.FC = memo(() => {
   }
 
   return (
-    <section className="relative bg-black overflow-hidden py-24">
-      {/* Moving Stars Background */}
+    <section id="skills" className="relative bg-black overflow-hidden py-24">
+      {/* Moving Stars Background - Activity aware */}
       <div className="absolute inset-0 z-0">
-        <MovingStars />
+        {isActive && <MovingStars isActive={isActive} />}
       </div>
 
       {/* Main Container */}
@@ -446,16 +458,20 @@ const Skills: React.FC = memo(() => {
             <div 
               className="relative overflow-hidden rounded-lg group"
               onMouseEnter={(e) => {
-                const animations = e.currentTarget.querySelectorAll('[data-marquee]');
-                animations.forEach(el => {
-                  (el as HTMLElement).style.animationPlayState = 'paused';
-                });
+                if (isActive) {
+                  const animations = e.currentTarget.querySelectorAll('[data-marquee]');
+                  animations.forEach(el => {
+                    (el as HTMLElement).style.animationPlayState = 'paused';
+                  });
+                }
               }}
               onMouseLeave={(e) => {
-                const animations = e.currentTarget.querySelectorAll('[data-marquee]');
-                animations.forEach(el => {
-                  (el as HTMLElement).style.animationPlayState = 'running';
-                });
+                if (isActive) {
+                  const animations = e.currentTarget.querySelectorAll('[data-marquee]');
+                  animations.forEach(el => {
+                    (el as HTMLElement).style.animationPlayState = 'running';
+                  });
+                }
               }}
             >
               {/* Gradient overlays */}
@@ -468,7 +484,7 @@ const Skills: React.FC = memo(() => {
                 <motion.div
                   data-marquee
                   className="flex gap-4 flex-shrink-0"
-                  animate={{ x: [`0%`, `-100%`] }}
+                  animate={isActive ? { x: [`0%`, `-100%`] } : {}}
                   transition={{
                     duration: featuredSkills.length * 3,
                     ease: "linear",
@@ -481,6 +497,7 @@ const Skills: React.FC = memo(() => {
                       skill={skill}
                       index={index}
                       onSelect={handleSkillSelect}
+                      isActive={isActive}
                     />
                   ))}
                 </motion.div>
@@ -489,7 +506,7 @@ const Skills: React.FC = memo(() => {
                 <motion.div
                   data-marquee
                   className="flex gap-4 flex-shrink-0"
-                  animate={{ x: [`0%`, `-100%`] }}
+                  animate={isActive ? { x: [`0%`, `-100%`] } : {}}
                   transition={{
                     duration: featuredSkills.length * 3,
                     ease: "linear",
@@ -502,6 +519,7 @@ const Skills: React.FC = memo(() => {
                       skill={skill}
                       index={index}
                       onSelect={handleSkillSelect}
+                      isActive={isActive}
                     />
                   ))}
                 </motion.div>
@@ -904,6 +922,15 @@ const Skills: React.FC = memo(() => {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* ✅ Debug indicator */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-32 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-purple-500">
+          <div>Skills: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
+          <div>Stars: {isActive ? '🌟 ON' : '⭐ OFF'}</div>
+          <div>Marquee: {isActive ? '🎠 ON' : '🚫 OFF'}</div>
+        </div>
+      )}
     </section>
   );
 });

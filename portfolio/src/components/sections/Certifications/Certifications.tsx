@@ -16,17 +16,26 @@ import CertificationModal from './components/CertificationModal';
 import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
 import MovingStars from "@/components/ui/animations/Movingstars";
+import { useCertificationsActivity } from '@/hooks/common/useSectionActivity';
 
 type ViewMode = 'grid' | 'list';
 type FilterType = 'all' | 'active' | 'featured' | 'expired' | 'valid' | 'expiring' | 'lifetime' | 'verified';
 type SortType = 'newest' | 'oldest' | 'name' | 'organization' | 'status';
 
 const Certifications = () => {
+  // ✅ Activity detection
+  const { isActive } = useCertificationsActivity();
+  
   // Hooks
   const { certifications, loading, error } = useCertifications();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isTablet = useMediaQuery('(max-width: 1024px)');
   const shouldReduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+  // ✅ Activity logging
+  useEffect(() => {
+    console.log(`📜 Certifications Section: ${isActive ? 'ACTIVE' : 'SUSPENDED'}`);
+  }, [isActive]);
 
   // State Management
   const [viewMode, setViewMode] = useState<ViewMode>('grid'); // DEFAULT TO GRID
@@ -169,47 +178,51 @@ const Certifications = () => {
   }
 
   return (
-    <section className="py-16 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
+    <section id="certifications" className="py-16 md:py-12 lg:py-20 relative min-h-screen bg-background-primary dark:bg-background-primary-dark">
       {/* Modern Glow Background Effects - Like Skills Page */}
       {/* Glow Orbs & Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {/* Primary glow orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 dark:opacity-30"
-          style={{
-        background: 'radial-gradient(circle, rgba(246, 176, 13, 0.3) 0%, rgba(246, 176, 13, 0.1) 50%, transparent 100%)',
-        filter: 'blur(60px)'
-          }}
-          animate={{
-        x: [0, 100, 0],
-        y: [0, -50, 0],
-        scale: [1, 1.2, 1],
-          }}
-          transition={{
-        duration: 8,
-        repeat: Infinity,
-        ease: "easeInOut"
-          }}
-        />
-        
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 dark:opacity-25"
-          style={{
-        background: 'radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(147, 51, 234, 0.1) 50%, transparent 100%)',
-        filter: 'blur(50px)'
-          }}
-          animate={{
-        x: [0, -80, 0],
-        y: [0, 60, 0],
-        scale: [1, 0.9, 1],
-          }}
-          transition={{
-        duration: 8,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: 2
-          }}
-        />
+        {/* Primary glow orbs - only when active */}
+        {isActive && (
+          <>
+            <motion.div
+              className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 dark:opacity-30"
+              style={{
+                background: 'radial-gradient(circle, rgba(246, 176, 13, 0.3) 0%, rgba(246, 176, 13, 0.1) 50%, transparent 100%)',
+                filter: 'blur(60px)'
+              }}
+              animate={{
+                x: [0, 100, 0],
+                y: [0, -50, 0],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            
+            <motion.div
+              className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 dark:opacity-25"
+              style={{
+                background: 'radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(147, 51, 234, 0.1) 50%, transparent 100%)',
+                filter: 'blur(50px)'
+              }}
+              animate={{
+                x: [0, -80, 0],
+                y: [0, 60, 0],
+                scale: [1, 0.9, 1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2
+              }}
+            />
+          </>
+        )}
 
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 opacity-10 dark:opacity-20">
@@ -222,31 +235,31 @@ const Certifications = () => {
           />
         </div>
 
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
+        {/* Floating particles - only when active */}
+        {isActive && [...Array(6)].map((_, i) => (
           <motion.div
-        key={i}
-        className="absolute w-2 h-2 bg-primary/20 dark:bg-primary-dark/30 rounded-full"
-        style={{
-          left: `${10 + i * 15}%`,
-          top: `${20 + (i % 3) * 30}%`,
-        }}
-        animate={{
-          y: [0, -100, 0],
-          opacity: [0, 0.6, 0],
-          scale: [0.5, 1, 0.5]
-        }}
-        transition={{
-          duration: 8 + i,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: i * 1.5,
-        }}
+            key={i}
+            className="absolute w-2 h-2 bg-primary/20 dark:bg-primary-dark/30 rounded-full"
+            style={{
+              left: `${10 + i * 15}%`,
+              top: `${20 + (i % 3) * 30}%`,
+            }}
+            animate={{
+              y: [0, -100, 0],
+              opacity: [0, 0.6, 0],
+              scale: [0.5, 1, 0.5]
+            }}
+            transition={{
+              duration: 8 + i,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 1.5,
+            }}
           />
         ))}
         {/* Moving Stars - placed above orbs */}
         <div className="absolute inset-0 pointer-events-none z-10">
-          <MovingStars />
+          {isActive && <MovingStars isActive={isActive} />}
         </div>
       </div>
       {/* Remove or lower opacity of dark overlays to make effects visible */}
@@ -388,6 +401,15 @@ const Certifications = () => {
           )}
         </AnimatePresence>
       </div>
+      
+      {/* ✅ Debug indicator */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-48 right-4 bg-black/80 text-white p-2 rounded text-xs font-mono z-50 border border-yellow-500">
+          <div>Certifications: {isActive ? '🟢 ACTIVE' : '🔴 SUSPENDED'}</div>
+          <div>Stars: {isActive ? '🌟 ON' : '⭐ OFF'}</div>
+          <div>Glows: {isActive ? '✨ ON' : '🚫 OFF'}</div>
+        </div>
+      )}
     </section>
   );
 };
