@@ -19,8 +19,16 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
 }) => {
   const { animations } = config;
 
+  // Prevent image download
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
   return (
-    <div className={`relative ${className}`}>
+    <div 
+      className={`relative ${className}`}
+      onContextMenu={handleContextMenu}
+    >
       {/* OPTIMIZATION 1: Simplified container animation with hardware acceleration */}
       <motion.div
         className="relative w-full h-full"
@@ -37,13 +45,17 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
           transform: 'translateZ(0)' // Force hardware acceleration
         }}
       >
-        {/* OPTIMIZATION 3: Optimized Profile Image with performance settings */}
-        <motion.div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white/20 dark:border-white/10">
+        {/* OPTIMIZATION 3: Optimized Profile Image with performance settings & download protection */}
+        <motion.div 
+          className="relative w-full h-full rounded-full overflow-hidden border-2 border-white/20 dark:border-white/10 select-none"
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
+        >
           <Image
             src={src}
             alt="Profile"
             fill
-            className="object-cover"
+            className="object-cover pointer-events-none select-none"
             sizes="(max-width: 480px) 140px, (max-width: 768px) 160px, (max-width: 1024px) 160px, 220px"
             priority={false} 
             loading="lazy"    
@@ -54,6 +66,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({
               width: '100%',
               height: '100%'
             }}
+            draggable={false}
           />
         </motion.div>
       </motion.div>

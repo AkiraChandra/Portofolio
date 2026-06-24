@@ -439,3 +439,40 @@ body {
     background-position: -100% 50%;
   }
 }
+
+/* ==============================================
+   PROFILE PICTURE DOWNLOAD PROTECTION
+   ============================================== */
+
+/* Disable right-click context menu on profile images */
+img[draggable="false"],
+.profile-picture-protected {
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Additional protection for profile image container */
+div[draggable="false"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Prevent text selection on profile picture area */
+.select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Disable dragging completely */
+img[draggable="false"] {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
