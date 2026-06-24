@@ -31,14 +31,17 @@ const nextConfig: NextConfig = {
   // ✅ EXPERIMENTAL FEATURES - CSS FIX (Fixed for Next.js 15)
   experimental: {
     optimizePackageImports: ['framer-motion', 'lucide-react'],
-    turbo: {},
     cssChunking: 'strict', // ✅ FIX CSS Build Issues
     webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'TTFB'],
     serverMinification: true,
     // ✅ REMOVED: optimizeCss (deprecated in Next.js 15)
     // ✅ REMOVED: optimizeServerReact (deprecated)
     // ✅ REMOVED: gzipSize (deprecated)
+    // ✅ REMOVED: turbo (moved to turbopack)
   },
+
+  // ✅ TURBOPACK CONFIGURATION
+  turbopack: {},
 
   // ✅ COMPILER OPTIMIZATIONS
   compiler: {
