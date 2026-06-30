@@ -23,10 +23,11 @@ import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 interface FeaturedCertificationsProps {
   certifications: Certification[];
   onCertificationClick: (cert: Certification) => void;
+  isActive?: boolean;
 }
 
 const FeaturedCertifications = memo(
-  ({ certifications, onCertificationClick }: FeaturedCertificationsProps) => {
+  ({ certifications, onCertificationClick, isActive = true }: FeaturedCertificationsProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
     const [lastManualAction, setLastManualAction] = useState(0);
@@ -42,9 +43,9 @@ const FeaturedCertifications = memo(
       return { visible: 3, spacing: 110 }; // More compact for desktop
     }, [isMobile, isTablet]);
 
-    // Auto-play functionality - respects manual actions
+    // Auto-play functionality - respects manual actions, pauses when section inactive
     useEffect(() => {
-      if (!isAutoPlaying || certifications.length <= 1) return;
+      if (!isAutoPlaying || certifications.length <= 1 || !isActive) return;
 
       const interval = setInterval(() => {
         const now = Date.now();
@@ -55,7 +56,7 @@ const FeaturedCertifications = memo(
       }, 5000);
 
       return () => clearInterval(interval);
-    }, [isAutoPlaying, certifications.length, lastManualAction]);
+    }, [isAutoPlaying, certifications.length, lastManualAction, isActive]);
 
     // Navigation handlers - Reset auto-scroll timer on manual action
     const handlePrevious = useCallback(() => {

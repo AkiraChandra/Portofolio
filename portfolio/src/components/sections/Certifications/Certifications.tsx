@@ -319,6 +319,7 @@ const Certifications = () => {
             <FeaturedCertifications
               certifications={featuredCertifications}
               onCertificationClick={handleFeaturedCertificationClick}
+              isActive={isActive}
             />
           </motion.div>
         )}

@@ -194,18 +194,20 @@ const SkillCard: React.FC<SkillCardProps> = ({
                     animate={{ width: `${(skill.proficiency_level / 5) * 100}%` }}
                     transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
                   >
-                    {/* Enhanced shimmer effect */}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                      animate={{ x: [-50, 150] }}
-                      transition={{ 
-                        duration: 1.5, 
-                        delay: 0.8, 
-                        ease: "easeInOut",
-                        repeat: Infinity,
-                        repeatDelay: 3
-                      }}
-                    />
+                    {/* Enhanced shimmer effect - only when section is active */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                        animate={{ x: [-50, 150] }}
+                        transition={{ 
+                          duration: 1.5, 
+                          delay: 0.8, 
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                          repeatDelay: 3
+                        }}
+                      />
+                    )}
                   </motion.div>
                 </div>
                 

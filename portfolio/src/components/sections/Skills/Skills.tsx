@@ -68,11 +68,13 @@ const FeaturedSkillItem = memo<{
             {renderCategoryIcon(skill.category_name, "w-4 h-4")}
           </div>
           <div className="flex items-center gap-1">
-            <motion.div 
-              className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
-              animate={{ scale: [1, 1.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
+            {isActive && (
+              <motion.div 
+                className="w-1 h-1 rounded-full bg-primary dark:bg-primary-dark"
+                animate={{ scale: [1, 1.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            )}
             <span className="text-xs text-primary dark:text-primary-dark font-medium">
               {skill.proficiency_level}/5
             </span>
@@ -349,7 +351,7 @@ const Skills: React.FC = memo(() => {
     return (
       <section className="relative min-h-screen bg-black overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <MovingStars />
+          {isActive && <MovingStars isActive={isActive} />}
         </div>
         <div className="relative z-10 container mx-auto px-6 py-16">
           <div className="text-center">
@@ -366,7 +368,7 @@ const Skills: React.FC = memo(() => {
     return (
       <section className="relative min-h-screen bg-black overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <MovingStars />
+          {isActive && <MovingStars isActive={isActive} />}
         </div>
         <div className="relative z-10 container mx-auto px-6 py-16">
           <div className="text-center">
@@ -784,6 +786,7 @@ const Skills: React.FC = memo(() => {
                         compact={true}
                         className="w-full h-full"
                         onClick={() => handleSkillSelect(skill)}
+                        isActive={isActive}
                       />
                     </motion.div>
                   ))}
@@ -812,6 +815,7 @@ const Skills: React.FC = memo(() => {
                         compact={false}
                         className="w-full h-full"
                         onClick={() => handleSkillSelect(skill)}
+                        isActive={isActive}
                       />
                     </motion.div>
                   ))}
