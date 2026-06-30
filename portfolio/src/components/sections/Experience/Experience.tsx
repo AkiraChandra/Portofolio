@@ -389,7 +389,7 @@ const Experience = memo(function Experience() {
   // Loading state
   if (loading) {
     return (
-      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen bg-black flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden opacity-50">
           {/* ✅ ACTIVITY-AWARE: Show moving stars based on activity */}
           {isActive && <MovingStars isActive={isActive} starCount={40} />}
@@ -424,7 +424,7 @@ const Experience = memo(function Experience() {
   // Error state
   if (error) {
     return (
-      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen bg-black flex items-center justify-center">
         <motion.div
           className="relative z-10 flex flex-col items-center gap-4 max-w-md text-center px-4"
           initial={{ opacity: 0 }}
@@ -457,7 +457,7 @@ const Experience = memo(function Experience() {
   // No experiences state
   if (!experiences?.length) {
     return (
-      <section className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen bg-black flex items-center justify-center">
         <motion.div
           className="relative z-10 text-center px-4"
           initial={{ opacity: 0 }}
@@ -477,15 +477,14 @@ const Experience = memo(function Experience() {
     <section
       ref={experienceSectionRef}
       id="experience" // ✅ IMPORTANT: ID for section activity detection
-      className="relative min-h-screen bg-background-primary dark:bg-background-primary-dark px-4"
+      className="relative min-h-screen bg-black px-4"
     >
       <style dangerouslySetInnerHTML={{ __html: scrollbarHideStyles }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black z-1" />
       <div className="absolute inset-0 overflow-hidden">
         {/* ✅ ACTIVITY-AWARE: MovingStars only when active */}
         {isActive && <MovingStars isActive={isActive} starCount={50} />}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
 
       <div ref={headerRef} className={`mb-0 ${isMobile ? "pb-20" : "pb-0"}`}>
         <FloatingElements

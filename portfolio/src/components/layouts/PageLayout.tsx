@@ -173,28 +173,34 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
         {/* PROJECTS SECTION */}
         <motion.section
           id="projects"
-          className="flex-shrink-0 h-screen"
+          className="flex-shrink-0 relative h-screen"
           style={{
             scrollSnapAlign: "start",
             scrollSnapStop: "always",
+            contain: "layout style paint",
           }}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
-          <LazyComponentLoader
-            sectionId="projects"
-            importPath="@/components/sections/Projects/Projects"
-            fallback={
-              <div className="min-h-screen flex items-center justify-center bg-background-primary dark:bg-background-primary-dark">
-                <div className="text-center space-y-4">
-                  <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
-                  <p className="text-text-primary dark:text-text-primary-dark">Loading Projects...</p>
-                </div>
-              </div>
-            }
-          />
+          {/* ✅ ADD NESTED SCROLL CONTAINER WITH BLACK BACKGROUND */}
+          <div className="absolute inset-0 overflow-hidden bg-black">
+            <div className="h-full overflow-y-auto scroll-smooth">
+              <LazyComponentLoader
+                sectionId="projects"
+                importPath="@/components/sections/Projects/Projects"
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
+                      <p className="text-text-primary dark:text-text-primary-dark">Loading Projects...</p>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
+          </div>
         </motion.section>
 
         {/* EXPERIENCE SECTION */}
@@ -211,8 +217,8 @@ function PageLayoutInner({ defaultSection = "home" }: PageLayoutProps) {
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-20%" }}
         >
-          {/* ✅ RESTORED NESTED SCROLL - But with better handling */}
-          <div className="absolute inset-0 overflow-hidden">
+          {/* ✅ NESTED SCROLL CONTAINER WITH BLACK BACKGROUND */}
+          <div className="absolute inset-0 overflow-hidden bg-black">
             <div className="h-full overflow-y-auto scroll-smooth">
               <LazyComponentLoader
                 sectionId="experience"

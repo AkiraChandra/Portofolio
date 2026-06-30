@@ -142,7 +142,7 @@ const Projects = memo(() => {
   // Loading state
   if (loading) {
     return (
-      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen w-full bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader className="w-8 h-8 animate-spin text-primary dark:text-primary-dark" />
           <p className="text-text-primary dark:text-text-primary-dark">
@@ -156,14 +156,14 @@ const Projects = memo(() => {
   // Error state
   if (error) {
     return (
-      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen w-full bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <p className="text-red-500 dark:text-red-400">
             Failed to load projects
           </p>
           <button
             onClick={refetch}
-            className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-background-primary"
+            className="px-4 py-2 bg-primary dark:bg-primary-dark rounded-lg text-black"
           >
             Try Again
           </button>
@@ -175,7 +175,7 @@ const Projects = memo(() => {
   // No projects state
   if (!projects?.length) {
     return (
-      <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark flex items-center justify-center">
+      <section className="relative min-h-screen w-full bg-black flex items-center justify-center">
         <p className="text-text-primary dark:text-text-primary-dark">
           No projects available.
         </p>
@@ -212,17 +212,14 @@ const Projects = memo(() => {
   const mobileSpacing = getMobileSpacing();
 
   return (
-    <section className="relative min-h-screen w-full bg-background-primary dark:bg-background-primary-dark overflow-x-hidden">
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent dark:via-black/70 dark:to-black z-1" />
-
+    <section className="relative min-h-screen w-full bg-black overflow-x-hidden">
       {/* Background with better overflow control */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden bg-black">
         {isActive && <MovingStars isActive={isActive} />}
       </div>
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent dark:via-black/20 dark:to-black z-1" />
+      {/* Gradient Overlay - Covers entire section height */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black z-1" />
 
       {
         <AnimatePresence mode="wait">
